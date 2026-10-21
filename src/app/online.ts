@@ -1,3 +1,4 @@
+import { getAccount } from './account';
 import { devParam, secureToken } from './devParams';
 import { TRACK_LIST } from '../data/tracks';
 import { Session, isRoomCode, newRoomCode, MAX_CARS, MAX_HUMANS, type RoomSettings } from '../net/session';
@@ -8,11 +9,21 @@ import { el } from '../ui/dom';
 const NAME_KEY = '4mules.name';
 const plural = (n: number, w: string) => `${n} ${w}${n > 1 ? 's' : ''}`;
 
-function storedName(): string {
+/**
+ * The name the others see: the pseudo of the account. Without an account (offline, development: ?name=) a guest name made
+ * once and kept in this browser. Nobody types a pseudo here.
+ */
+function playerName(): string {
+  const pseudo = getAccount()?.pseudo ?? devParam('name');
+  if (pseudo) return pseudo.slice(0, 16);
   try {
-    return localStorage.getItem(NAME_KEY) ?? '';
+    const kept = localStorage.getItem(NAME_KEY);
+    if (kept) return kept;
+    const made = `Invité${secureToken(3, '0123456789')}`;
+    localStorage.setItem(NAME_KEY, made);
+    return made;
   } catch {
-    return '';
+    return `Invité${secureToken(3, '0123456789')}`;
   }
 }
 
@@ -61,22 +72,8 @@ export function openOnlineLobby(onSession: (s: Session) => void, joinCode?: stri
     },
   });
 
-  const nameInput = el('input', { type: 'text', maxlength: 16, value: storedName(), 'aria-label': 'Votre pseudo', 'data-testid': 'online-name', placeholder: 'Votre pseudo' });
+  const name = playerName();
   const error = el('p', { class: 'online__error', role: 'alert', 'data-testid': 'online-error' });
-  const pseudo = (): string | null => {
-    const name = nameInput.value.trim().slice(0, 16);
-    if (!name) {
-      error.textContent = 'Choisissez un pseudo.';
-      nameInput.focus();
-      return null;
-    }
-    try {
-      localStorage.setItem(NAME_KEY, name);
-    } catch {
-      /* not kept */
-    }
-    return name;
-  };
 
   async function enter(code: string, host: boolean, name: string): Promise<void> {
     const s = new Session({
@@ -115,26 +112,21 @@ export function openOnlineLobby(onSession: (s: Session) => void, joinCode?: stri
     });
     body.replaceChildren(
       el('p', { class: 'muted', text: 'Créez une partie et envoyez le lien à vos amis, ou rejoignez-en une avec son code. Chacun joue sur son appareil.' }),
-      el('label', { class: 'online__field' }, el('span', { text: 'Pseudo' }), nameInput),
+      el('p', { class: 'online__you', 'data-testid': 'online-name' }, 'Vous jouez sous le pseudo ', el('b', { text: name }), '.'),
       Button({
         text: 'Créer une partie',
         variant: 'yellow',
         size: 'lg',
         block: true,
         attrs: { 'data-testid': 'online-create' },
-        onClick: () => {
-          const name = pseudo();
-          if (name) void enter(newRoomCode(), true, name);
-        },
+        onClick: () => void enter(newRoomCode(), true, name),
       }),
       el('div', { class: 'online__join' }, codeInput, Button({
         text: 'Rejoindre',
         variant: 'blue',
         attrs: { 'data-testid': 'online-join' },
         onClick: () => {
-          const name = pseudo();
           const code = codeInput.value.trim().toUpperCase();
-          if (!name) return;
           if (!isRoomCode(code)) {
             error.textContent = 'Le code a 5 lettres (sans I ni O).';
             return;
@@ -238,8 +230,8 @@ export function openOnlineLobby(onSession: (s: Session) => void, joinCode?: stri
   }
 
   drawChoice();
-  // a player coming back (reload) or a friend who already has a pseudo: straight into the room
-  if (joinCode && isRoomCode(joinCode) && storedName()) void enter(joinCode, false, storedName());
+  // a player coming back (reload) or a friend with an invitation link: straight into the room under their own pseudo
+  if (joinCode && isRoomCode(joinCode)) void enter(joinCode, false, name);
   return modal;
 }
 

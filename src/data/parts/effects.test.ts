@@ -6,7 +6,7 @@ import { COSMETICS, ITEMS, PARTS, getPart } from './catalogue';
 import { describeEffect, effectValue, modsFor, modsForLoadout, statRows } from './effects';
 import { MAX_LEVEL, RARITIES, SLOTS, type Effect, type PartDef } from './types';
 
-const fake = (effects: Effect[]): PartDef => ({ kind: 'part', id: 'fake', name: 'fake', slot: 'engine', rarity: 'common', effects });
+const fake = (effects: Effect[]): PartDef => ({ kind: 'part', id: 'fake', name: 'fake', slot: 'engine', rarity: 'common', family: 'speed', effects });
 const withPart = (e: Effect, level: number): CarMods => modsFor([{ part: fake([e]), level }]);
 const ev = <T extends GameEvent['type']>(es: GameEvent[], t: T) => es.filter((x): x is Extract<GameEvent, { type: T }> => x.type === t);
 
@@ -31,8 +31,8 @@ describe('catalogue', () => {
     }
   });
 
-  it('rarer parts are not weaker: total effect value grows with rarity inside a slot', () => {
-    const power = (p: PartDef) => p.effects.reduce((s, e) => s + effectValue(e, 1) * (e.kind === 'wear' ? 1 : 3), 0);
+  it('rarer parts are not weaker: what they give (drawbacks apart) grows with rarity inside a slot', () => {
+    const power = (p: PartDef) => p.effects.reduce((s, e) => s + Math.max(0, effectValue(e, 1)) * (e.kind === 'wear' ? 1 : 3), 0);
     for (const slot of SLOTS) {
       const best = (r: string) => Math.max(...PARTS.filter((p) => p.slot === slot && p.rarity === r).map(power));
       expect(best('legendary'), slot).toBeGreaterThanOrEqual(best('epic'));
@@ -46,7 +46,7 @@ describe('effect values by level', () => {
   it('never decrease with level, and level 5 is stronger than level 1', () => {
     for (const p of PARTS) {
       for (const e of p.effects) {
-        let prev = -1;
+        let prev = -Infinity;
         for (let l = 1; l <= MAX_LEVEL; l++) {
           const v = effectValue(e, l);
           expect(v, `${p.id} level ${l}`).toBeGreaterThanOrEqual(prev);
@@ -57,10 +57,16 @@ describe('effect values by level', () => {
     }
   });
 
-  it('wear grows by one per level, discrete effects by one at level 5', () => {
-    expect(effectValue({ kind: 'wear', category: 'tires', amount: 2 }, 3)).toBe(4);
-    expect(effectValue({ kind: 'reroll', amount: 1 }, 4)).toBe(1);
-    expect(effectValue({ kind: 'reroll', amount: 1 }, 5)).toBe(2);
+  it('the main effect gains 1 at level 5 only (not cells of the die nor relances), a drawback never grows, a secondary effect stays as it is', () => {
+    expect(effectValue({ kind: 'wear', category: 'tires', amount: 2 }, 3)).toBe(2);
+    expect(effectValue({ kind: 'wear', category: 'tires', amount: 2 }, 5)).toBe(3);
+    expect(effectValue({ kind: 'freeStop', amount: 1 }, 4)).toBe(1);
+    expect(effectValue({ kind: 'freeStop', amount: 1 }, 5)).toBe(2);
+    expect(effectValue({ kind: 'freeStop', amount: 1 }, 5, false)).toBe(1);
+    // cells of the die and relances never grow with the level
+    expect(effectValue({ kind: 'reroll', amount: 1 }, 5)).toBe(1);
+    expect(effectValue({ kind: 'moveBonus', gears: [4], amount: 1 }, 5)).toBe(1);
+    expect(effectValue({ kind: 'wear', category: 'gearbox', amount: -1, perLevel: 0 }, 5)).toBe(-1);
     expect(effectValue({ kind: 'wear', category: 'tires', amount: 2 }, 99)).toBe(effectValue({ kind: 'wear', category: 'tires', amount: 2 }, 5));
   });
 });
@@ -81,10 +87,10 @@ describe('every effect kind, applied by the engine', () => {
     expect(s.cars[0].maxWear.brakes).toBe(s.cars[0].wear.brakes);
   });
 
-  it.each(levels)('moveBonus: more cells on the listed gears (level %i) [§1]', (level) => {
+  it.each(levels)('moveBonus: more cells on the listed gears, the same at every level (level %i) [§1]', (level) => {
     const e: Effect = { kind: 'moveBonus', gears: [3], amount: 1 };
     const c = solo(withPart(e, level)).cars[0];
-    expect(distanceForFace(DEFAULT_CONFIG, c, 3, 6).roll).toBe(6 + effectValue(e, level));
+    expect(distanceForFace(DEFAULT_CONFIG, c, 3, 6).roll).toBe(6 + 1); // cells of the die never grow with the level
     expect(distanceForFace(DEFAULT_CONFIG, c, 4, 9).roll).toBe(9);
   });
 
@@ -166,7 +172,7 @@ describe('loadout to mods', () => {
     const loadout = { parts: { engine: 'eng-turbo', tires: 'tir-grip', wing: 'wng-drs' } };
     const mods = modsForLoadout(loadout, { 'eng-turbo': 1, 'tir-grip': 5, 'wng-drs': 3 });
     expect(mods.wearBonus.engine).toBe(2);
-    expect(mods.moveBonus).toEqual([{ gears: [4], amount: 1 }]);
+    expect(mods.moveBonus).toEqual([{ gears: [5], amount: 1 }]);
     expect(mods.overshootTireDiscount).toBe(2); // 1 + floor(0.25 * 4)
     expect(mods.rerolls).toBe(1);
   });
@@ -190,7 +196,7 @@ describe('loadout to mods', () => {
     const mods = modsFor([{ part: getPart('brk-carbon')!, level: 1 }]);
     const rows = Object.fromEntries(statRows(mods, startPointsFor(DEFAULT_CONFIG)).map((r) => [r.key, r.value]));
     expect(rows.freeStops).toBe(1);
-    expect(rows['wear-tires']).toBe(6); // lap-2 start points
+    expect(rows['wear-tires']).toBe(5); // lap-2 start points (6), less the drawback of the part (1)
     expect(rows['wear-handling']).toBe(2);
     const boosted = Object.fromEntries(statRows(modsFor([{ part: getPart('tir-stock')!, level: 1 }]), startPointsFor(DEFAULT_CONFIG)).map((r) => [r.key, r.value]));
     expect(boosted['wear-tires']).toBe(8);

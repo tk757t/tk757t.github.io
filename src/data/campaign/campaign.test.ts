@@ -61,7 +61,9 @@ describe('campaign levels', () => {
       }
     }
     expect(opponentMods(LEVELS[1].opponents[0]).wearBonus.brakes).toBe(2);
-    expect(opponentMods(LEVELS[0].opponents[0]).wearBonus).toEqual({});
+    // the rival of level 1 has the active aerodynamics: +3 road holding, less its drawback of 1
+    expect(opponentMods(LEVELS[0].opponents[0]).wearBonus).toEqual({ handling: 2 });
+    expect(opponentMods(LEVELS[0].opponents[0]).moveBonus).toEqual([{ gears: [1, 2, 3], amount: 1 }]);
   });
 
   it('seats show their fictional names, and their pictures only when the asset registry has them', () => {

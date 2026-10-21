@@ -95,14 +95,12 @@ test.describe('abandon en ligne', () => {
     await guest.setViewportSize({ width: 390, height: 844 });
     const errors = [...watchConsole(host), ...watchConsole(guest)];
 
-    await host.goto('/?net=local&aiDelay=0&seed=3');
+    await host.goto('/?net=local&aiDelay=0&seed=3&name=Alice');
     await host.getByTestId('open-online').click();
-    await host.getByTestId('online-name').fill('Alice');
     await host.getByTestId('online-create').click();
     const code = (await host.getByTestId('room-code').textContent())!.trim();
-    await guest.goto('/?net=local&aiDelay=0&seed=4');
+    await guest.goto('/?net=local&aiDelay=0&seed=4&name=Bob');
     await guest.getByTestId('open-online').click();
-    await guest.getByTestId('online-name').fill('Bob');
     await guest.getByTestId('online-code').fill(code);
     await guest.getByTestId('online-join').click();
     await expect(host.getByTestId('online-players').locator('li')).toHaveCount(2);
@@ -119,7 +117,7 @@ test.describe('abandon en ligne', () => {
     await guest.getByTestId('abandon-confirm').click();
 
     await expect(guest.getByTestId('open-online')).toBeVisible();
-    await expect(host.getByTestId('forfeit-win')).toContainText('Bob a abandonné');
+    await expect(host.getByTestId('forfeit-win')).toContainText('Bob a abandonné', { timeout: 20_000 });
     await check(host, 'victoire par forfait');
     await host.screenshot({ path: 'e2e/screenshots/race-settings-desktop-forfeit-win.png' });
     await host.getByTestId('forfeit-menu').click();

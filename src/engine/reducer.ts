@@ -9,6 +9,7 @@ import {
   driftWetness,
   effectiveDrop,
   isRaining,
+  lapTireWear,
   movementOf,
   progressOf,
   weatherFromD20,
@@ -64,7 +65,8 @@ export function createGame(options: CreateGameOptions): RaceState {
   const cars: CarState[] = ids.map((id, i) => {
     const mods: CarMods = { ...NO_MODS, ...options.mods?.[id] };
     const maxWear = { ...base };
-    for (const cat of WEAR_CATEGORIES) maxWear[cat] += mods.wearBonus[cat] ?? 0;
+    // a drawback can take a gauge down, never below 0
+    for (const cat of WEAR_CATEGORIES) maxWear[cat] = Math.max(0, maxWear[cat] + (mods.wearBonus[cat] ?? 0));
     return {
       id,
       team: i % 5,
@@ -356,6 +358,12 @@ function applyMove(s: RaceState, car: CarState, option: MoveOption, events: Game
     if (car.laps < 1) continue; // crossing the line from the grid only starts the first lap
     car.stint++;
     events.push({ type: 'LAP_COMPLETED', carId: car.id, laps: car.laps });
+    // the tires wear a little every lap; the last lap of the race is free (the car is about to finish), and practice has no wear
+    const worn = car.laps < s.config.laps && !s.config.practice ? lapTireWear(s.config, car, isRaining(s)) : 0;
+    if (worn > 0) {
+      events.push({ type: 'TIRE_WEAR', carId: car.id, amount: worn, laps: car.stint });
+      loseWear(s, car, 'tires', worn, 'tire wear', events);
+    }
   }
   const cell = s.track.cells[option.cellId];
   car.cornerId = cell.corner ? option.cornerId : null;

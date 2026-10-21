@@ -16,16 +16,16 @@ Seeds 1 à 200 :
 | Niveau | Circuit | Tours | Victoires | Abandons du joueur | Rang moyen | Manches | Étoiles 0 / 1 / 2 / 3 |
 |---|---|---|---|---|---|---|---|
 | 1. Débutant | anneau | 2 | 87,0 % | 6,0 % | 1,13 | 21 | 6,0 % / 0,0 % / 62,0 % / 32,0 % |
-| 2. Challenger | lac | 3 | 38,5 % | 10,0 % | 1,91 | 50 | 10,0 % / 20,0 % / 69,0 % / 1,0 % |
-| 3. Champion | epingles | 3 | 31,0 % | 13,5 % | 2,10 | 59 | 13,5 % / 16,0 % / 50,0 % / 20,5 % |
+| 2. Challenger | lac | 3 | 39,0 % | 10,0 % | 1,91 | 51 | 10,0 % / 20,5 % / 68,5 % / 1,0 % |
+| 3. Champion | epingles | 3 | 33,0 % | 15,5 % | 2,08 | 59 | 15,5 % / 12,5 % / 72,0 % / 0,0 % |
 
 Seeds 1000 à 1199 :
 
 | Niveau | Circuit | Tours | Victoires | Abandons du joueur | Rang moyen | Manches | Étoiles 0 / 1 / 2 / 3 |
 |---|---|---|---|---|---|---|---|
 | 1. Débutant | anneau | 2 | 85,0 % | 5,5 % | 1,15 | 20 | 5,5 % / 0,0 % / 61,0 % / 33,5 % |
-| 2. Challenger | lac | 3 | 42,0 % | 8,5 % | 1,82 | 50 | 8,5 % / 16,5 % / 75,0 % / 0,0 % |
-| 3. Champion | epingles | 3 | 31,0 % | 15,5 % | 2,17 | 58 | 15,5 % / 19,5 % / 49,0 % / 16,0 % |
+| 2. Challenger | lac | 3 | 42,0 % | 9,5 % | 1,82 | 51 | 9,5 % / 15,5 % / 75,0 % / 0,0 % |
+| 3. Champion | epingles | 3 | 33,0 % | 15,5 % | 2,14 | 59 | 15,5 % / 18,5 % / 66,0 % / 0,0 % |
 
 Bornes respectées sur les deux séries : **oui**.
 

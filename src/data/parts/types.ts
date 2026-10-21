@@ -24,10 +24,22 @@ export const RARITY_LABELS: Record<Rarity, string> = {
 
 export const MAX_LEVEL = 5;
 
+/** The three styles of parts (docs/gdd/10-stats-voitures.md § 10.5): three of one family give a bonus, five give a bigger one. */
+export const FAMILIES = ['speed', 'endurance', 'precision'] as const;
+export type Family = (typeof FAMILIES)[number];
+
+export const FAMILY_LABELS: Record<Family, string> = { speed: 'Vitesse', endurance: 'Endurance', precision: 'Précision' };
+
+/** The gauge of each slot: levels 2 and 4 of a part add a point to it. */
+export const SLOT_GAUGE: Record<Slot, WearCategory> = { engine: 'engine', gearbox: 'gearbox', brakes: 'brakes', tires: 'tires', wing: 'handling', chassis: 'body' };
+
+/** The secondary gauge of each family: level 3 (and 5) of a part, and three parts of the family, add a point to it. */
+export const FAMILY_SECONDARY: Record<Family, WearCategory> = { speed: 'engine', endurance: 'tires', precision: 'handling' };
+
 /**
  * Declarative effect of a part. The engine applies them through CarMods hooks, nothing here runs
- * game logic. Value at level L = floor(amount + perLevel * (L - 1)); perLevel defaults depend on
- * the kind (wear grows by 1 per level, the rest by 1 at level 5).
+ * game logic. The main effect of a part gains 1 at level 5; the gauge points of levels 2 to 5 come from the part's slot and
+ * family (effects.ts). A negative amount is a drawback (epic and legendary parts): it does not grow with the level.
  */
 export type Effect =
   | { kind: 'wear'; category: WearCategory; amount: number; perLevel?: number }
@@ -45,6 +57,7 @@ export interface PartDef {
   name: string;
   slot: Slot;
   rarity: Rarity;
+  family: Family;
   effects: Effect[];
 }
 

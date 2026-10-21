@@ -31,6 +31,15 @@ export function tireFactor(car: Pick<CarState, 'tires' | 'stint'>, raining: bool
   return 1;
 }
 
+/**
+ * Tires lost when a lap is finished (§7): 1 point every `n` laps of the stint, `n` depending on the tires and on the track.
+ * `stint` is the number of laps finished since the last tire change, this one included.
+ */
+export function lapTireWear(config: EngineConfig, car: Pick<CarState, 'tires' | 'stint'>, raining: boolean): number {
+  const every = config.lapTireWear[car.tires][raining ? 'wet' : 'dry'];
+  return every > 0 && car.stint > 0 && car.stint % every === 0 ? 1 : 0;
+}
+
 /** Extra tires lost on a corner overshoot in the rain (§7, hypothesis): 3 on other tires, 1 on rain tires. */
 export function rainExtra(config: EngineConfig, tires: TireType, raining: boolean): number {
   if (!raining) return 0;

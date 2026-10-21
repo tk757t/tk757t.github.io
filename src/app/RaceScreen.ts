@@ -22,7 +22,8 @@ import { assets, type IconName } from '../data/assets';
 import { CAR_COLORS, RaceRenderer, type CarStyle } from '../render';
 import { lookOf } from './carSvg';
 import { toast } from './toast';
-import { Button, LevelBadge, Modal, ProgressBar, setButtonText, setProgress, type ModalHandle } from '../ui/kit';
+import { equippedParts, effectSources, type EffectSources } from '../data/parts/effects';
+import { Badge, Button, LevelBadge, Modal, ProgressBar, setButtonText, setProgress, type ModalHandle } from '../ui/kit';
 import { getProfile } from './profile';
 import { onSoundChange, playSound, setSoundEnabled, soundEnabled } from './sound';
 import { explosionFor, playRaceEvents } from './raceSounds';
@@ -128,6 +129,10 @@ export class RaceScreen {
   private boostBtn = Button({ text: '', variant: 'ghost', attrs: { 'data-testid': 'boost' }, onClick: () => this.toggle('boost') });
   private slipBtn = Button({ text: '', variant: 'ghost', attrs: { 'data-testid': 'slipstream' }, onClick: () => this.toggle('slipstream') });
   private adjustPanel = el('div', { class: 'adjust' });
+  /** What the equipped parts of player 1 give, to name them in the messages; and how often they served this race. */
+  private sources: EffectSources = {};
+  private partUse = { cells: 0, freeStops: 0, rerolls: 0 };
+  private chips = el('div', { class: 'part-chips', 'data-testid': 'part-chips', 'aria-label': 'Effets des pièces', hidden: true });
   private rerollBtn = Button({ text: '', variant: 'blue', block: true, attrs: { 'data-testid': 'reroll' }, onClick: () => this.reroll() });
   private gauges = new Map<WearCategory, { box: HTMLElement; bar: HTMLElement; value: HTMLElement }>();
   private die = el('div', { class: 'die', 'data-testid': 'die', 'aria-live': 'polite' });
@@ -155,7 +160,10 @@ export class RaceScreen {
       if (sprite) this.carStyles[`p${i + 1}`] = { ...this.carStyles[`p${i + 1}`], sprite, nose: assets.carNose };
     }
     const mods: Record<string, CarMods> = {};
-    if (geared) mods.p1 = loadoutMods(profile);
+    if (geared) {
+      mods.p1 = loadoutMods(profile);
+      this.sources = effectSources(equippedParts(profile.loadout, profile.owned));
+    }
     const tires: Record<string, TireType> = {};
     this.lvl?.opponents.forEach((o, i) => {
       mods[`p${i + 2}`] = opponentMods(o);
@@ -201,6 +209,7 @@ export class RaceScreen {
       this.message,
       this.gearRow,
       this.adjustPanel,
+      this.chips,
       gaugeBox,
       this.rerollBtn,
       el('div', { class: 'action-row' }, this.die, this.act),
@@ -459,12 +468,18 @@ export class RaceScreen {
     const r = reducer(this.state, action);
     this.state = r.state;
     if (this.lvl) this.stats = trackStats(this.stats, 'p1', prev, this.state, r.events);
+    for (const e of r.events) {
+      if (!('carId' in e) || e.carId !== 'p1') continue;
+      if (e.type === 'DICE_ROLLED' && e.bonus > 0) this.partUse.cells += e.bonus;
+      else if (e.type === 'FREE_STOP_USED') this.partUse.freeStops += e.used;
+      else if (e.type === 'REROLLED') this.partUse.rerolls++;
+    }
     if (this.replaying) return r.events; // catching up: no sound, no redraw until the end
     this.react(r.events, wasAt);
     const current = currentCar(this.state);
     this.notices = r.events
       .map((e) => {
-        const text = describeEvent(e, this.state, (id) => this.seatName(id));
+        const text = describeEvent(e, this.state, (id) => this.seatName(id), 'carId' in e && e.carId === 'p1' ? this.sources : {});
         const actor = 'carId' in e ? e.carId : null;
         return text && actor && actor !== current?.id ? `${this.seatName(actor)} : ${text}` : text;
       })
@@ -514,6 +529,20 @@ export class RaceScreen {
    * A roll can have no playable destination as it stands (the missing steps cost more brakes than the car has).
    * The player is then given the first adjustment that works, and told about it.
    */
+  /** The effects of the car's parts that matter now, as small badges above the gauges (§ 10.6). Only the car of a person shows them. */
+  private drawChips(car: CarState, gearPhase: boolean): void {
+    const chips: HTMLElement[] = [];
+    if (this.isMine(car.id)) {
+      const gear = gearPhase ? this.pendingGear : car.gear;
+      const cells = car.mods.moveBonus.reduce((sum, b) => sum + (b.gears === 'all' || b.gears.includes(gear) ? b.amount : 0), 0);
+      if (cells !== 0) chips.push(Badge({ text: `${cells > 0 ? '+' : '−'}${Math.abs(cells)} case${Math.abs(cells) > 1 ? 's' : ''} au rapport ${gear}`, tone: cells > 0 ? 'green' : 'red', icon: '🎲', attrs: { 'data-chip': 'cells' } }));
+      if (car.rerolls > 0) chips.push(Badge({ text: `${car.rerolls} relance${car.rerolls > 1 ? 's' : ''}`, tone: 'blue', icon: '↻', attrs: { 'data-chip': 'rerolls' } }));
+      if (car.freeStops > 0) chips.push(Badge({ text: `${car.freeStops} arrêt${car.freeStops > 1 ? 's' : ''} gratuit${car.freeStops > 1 ? 's' : ''}`, tone: 'gold', icon: '⛯', attrs: { 'data-chip': 'freeStops' } }));
+    }
+    this.chips.replaceChildren(...chips);
+    this.chips.hidden = chips.length === 0;
+  }
+
   private rescueBlockedRoll(): void {
     const s = this.state;
     const car = currentCar(s);
@@ -693,6 +722,9 @@ export class RaceScreen {
       g.bar.className = `kit-progress kit-progress--small kit-progress--${level === 'ok' ? 'green' : level === 'warn' ? 'gold' : 'red'}`;
       setProgress(g.bar, v, max);
     }
+
+    // what the equipped parts give right now (relances, free stops, bonus cells at the gear)
+    this.drawChips(car, gearPhase);
 
     // die
     if (!this.rolling) {
@@ -972,6 +1004,7 @@ export class RaceScreen {
         }),
       ),
       ...this.campaignResult(r),
+      ...this.partsSummary(),
       el(
         'ul',
         { class: 'rewards', 'data-testid': 'rewards', hidden: rewardLines.length === 0 },
@@ -988,6 +1021,13 @@ export class RaceScreen {
         Button({ text: this.lvl ? 'Carte' : 'Menu', variant: 'blue', size: 'lg', onClick: () => this.handlers.onMenu() }),
       ),
     );
+  }
+
+  /** "Vos pièces ont servi": what the equipment gave during this race, when it gave something. */
+  private partsSummary(): HTMLElement[] {
+    const u = this.partUse;
+    const bits = [u.cells > 0 ? `+${u.cells} case${u.cells > 1 ? 's' : ''}` : null, u.freeStops > 0 ? `${u.freeStops} arrêt${u.freeStops > 1 ? 's' : ''} gratuit${u.freeStops > 1 ? 's' : ''}` : null, u.rerolls > 0 ? `${u.rerolls} relance${u.rerolls > 1 ? 's' : ''}` : null].filter((x): x is string => x !== null);
+    return bits.length ? [el('p', { class: 'parts-summary', 'data-testid': 'parts-summary', text: `Vos pièces ont servi : ${bits.join(', ')}.` })] : [];
   }
 
   private exposeDebug(): void {
@@ -1022,7 +1062,7 @@ export class RaceScreen {
         stats: () => this.stats,
         destinations: () => enumerateMoves(this.state).filter((o) => o.playable).map((o) => o.cellId),
         /** Tests only: every option of the roll, with what it costs (bodywork, brakes, tires) and whether it ends in the wall. */
-        options: () => enumerateMoves(this.state).map((o) => ({ cellId: o.cellId, playable: o.playable, blocked: o.blocked, bodyLoss: o.bodyLoss, brakesLoss: o.brakesLoss, tiresLoss: o.tiresLoss, crash: o.crash })),
+        options: () => enumerateMoves(this.state).map((o) => ({ cellId: o.cellId, playable: o.playable, blocked: o.blocked, bodyLoss: o.bodyLoss, brakesLoss: o.brakesLoss, tiresLoss: o.tiresLoss, crash: o.crash, laps: o.laps })),
       },
       __screen: this,
       __render: {

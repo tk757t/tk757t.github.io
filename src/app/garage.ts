@@ -2,12 +2,13 @@ import { DEFAULT_CONFIG, startPointsFor } from '../engine/config';
 import { getItem, getPart, ITEMS } from '../data/parts/catalogue';
 import { modsForLoadout, statRows, type StatRow } from '../data/parts/effects';
 import { upgradeCost } from '../data/parts/packs';
-import { COSMETIC_LABELS, MAX_LEVEL, RARITIES, RARITY_LABELS, SLOT_LABELS, type CosmeticKind, type ItemDef, type Slot } from '../data/parts/types';
+import { COSMETIC_LABELS, FAMILY_LABELS, MAX_LEVEL, RARITIES, RARITY_LABELS, SLOT_LABELS, type CosmeticKind, type ItemDef, type Slot } from '../data/parts/types';
 import { equip } from '../data/profile/ops';
 import type { Profile } from '../data/profile/profile';
 import { Button, Modal, Panel, type ModalHandle } from '../ui/kit';
 import { el } from '../ui/dom';
 import { carSvg, lookOf } from './carSvg';
+import { LEAGUES, familyCounts, leagueSheet, seriesLine, statSheet, statsOfProfile } from './carSheet';
 import type { Dispose } from './context';
 import { SLOT_ICONS, cosmeticSwatch, itemIcon, itemLines } from './itemView';
 import { equipItem, unequip, upgrade } from './economy';
@@ -27,6 +28,9 @@ export function statDiff(before: Profile, after: Profile): { label: string; from
   const b = statsOf(after);
   return a.flatMap((row, i) => (row.value === b[i].value ? [] : [{ label: row.label, from: row.value, to: b[i].value }]));
 }
+
+/** The league the "En classé" sheet shows, kept between redraws. */
+let leagueId = 'chicane';
 
 const equippedId = (p: Profile, t: Target): string | undefined => (t.type === 'slot' ? p.loadout.parts[t.slot] : p.loadout[t.kind]);
 
@@ -78,6 +82,19 @@ export function mountGarage(page: HTMLElement): Dispose {
       { class: 'stats', 'data-testid': 'stats' },
       ...rows.filter((r) => r.key.startsWith('wear-') || r.value > 0).flatMap((r) => [el('dt', { text: r.label }), el('dd', { 'data-stat': r.key, text: String(r.value) })]),
     );
+    const details = el('details', { class: 'stat-details', 'data-testid': 'stat-details' }, el('summary', { text: 'Détails des points' }), stats);
+    // "En classé": the same car brought back to the ceilings of a league
+    const leagueBox = el('div', { class: 'league-box' });
+    const leagueSelect = el('select', { 'aria-label': 'Ligue', 'data-testid': 'league-select' }, ...LEAGUES.map((l) => el('option', { value: l.id, text: `Ligue ${l.label}`, ...(l.id === leagueId ? { selected: 'selected' } : {}) })));
+    const drawLeague = (): void => {
+      const league = LEAGUES.find((l) => l.id === leagueId) ?? LEAGUES[2];
+      leagueBox.replaceChildren(leagueSheet(getProfile(), league));
+    };
+    leagueSelect.addEventListener('change', () => {
+      leagueId = leagueSelect.value;
+      drawLeague();
+    });
+    drawLeague();
 
     root.replaceChildren(
       el('div', { class: 'tab-head' }, el('h1', { class: 'tab-title', text: 'Garage' }), el('span', { class: 'counter', 'data-testid': 'fragments', text: `🔷 ${p.fragments} fragments` })),
@@ -89,7 +106,8 @@ export function mountGarage(page: HTMLElement): Dispose {
         el('div', { class: 'col' }, ...(['brakes', 'tires', 'wing'] as Slot[]).map(slotButton)),
       ),
       el('div', { class: 'cos-row' }, ...COSMETIC_KINDS.map(cosmeticButton)),
-      Panel({ tone: 'dark', title: 'Statistiques', children: [stats] }),
+      Panel({ tone: 'dark', title: 'Ma voiture', children: [statSheet(statsOfProfile(p)), seriesLine(familyCounts(p)), details] }),
+      Panel({ tone: 'dark', title: 'En classé', children: [el('label', { class: 'online__field' }, el('span', { text: 'Ligue' }), leagueSelect), leagueBox] }),
     );
   }
 
@@ -121,7 +139,7 @@ export function mountGarage(page: HTMLElement): Dispose {
                     'span',
                     { class: 'info' },
                     el('b', { text: item.name }),
-                    el('small', { text: `${RARITY_LABELS[item.rarity]}${item.kind === 'part' ? ` · Niv. ${p.owned[item.id]}` : ''}${equippedId(p, target) === item.id ? ' · Équipé' : ''}` }),
+                    el('small', { text: `${RARITY_LABELS[item.rarity]}${item.kind === 'part' ? ` · ${FAMILY_LABELS[item.family]} · Niv. ${p.owned[item.id]}` : ''}${equippedId(p, target) === item.id ? ' · Équipé' : ''}` }),
                     el('small', { class: 'fx', text: itemLines(item, p.owned[item.id]).join(' · ') }),
                   ),
                   cosmeticSwatch(item),
@@ -148,6 +166,7 @@ export function mountGarage(page: HTMLElement): Dispose {
               'div',
               { class: 'preview', 'data-testid': 'preview' },
               el('h3', { text: 'Aperçu' }),
+              statSheet(statsOfProfile(after), { compare: statsOfProfile(p), testid: 'preview-sheet' }),
               diff.length
                 ? el('ul', {}, ...diff.map((d) => el('li', { class: d.to > d.from ? 'up' : 'down' }, el('span', { text: d.label }), el('b', { text: `${d.from} → ${d.to}` }))))
                 : el('p', { class: 'muted', text: 'Aucun changement de statistiques.' }),

@@ -63,6 +63,7 @@ describe('messages', () => {
     expect(describeEvent({ type: 'BLOCKED', carId: 'car1', missing: 4, brakes: 0, tires: 0, body: 1, by: 'car' }, s)).toBe('Contact : une voiture barre la route (4 cases manquantes), carrosserie −1.');
     expect(describeEvent({ type: 'WALL_CRASH', carId: 'car1', corner: 'T2', left: 2 }, s)).toBe('Virage T2 : 2 arrêts manquants, la voiture percute le mur et abandonne.');
     expect(describeEvent({ type: 'CORNER_OVERSHOOT', carId: 'car1', corner: 'T2', left: 1, steps: 3, tires: 3 }, s)).toBe('Virage T2 raté (1 arrêt manquant) : pneus −3.');
+    expect(describeEvent({ type: 'TIRE_WEAR', carId: 'car1', amount: 1, laps: 2 }, s)).toBe('Usure des pneus : −1 (tour 2 du relais).');
     expect(describeEvent({ type: 'CORNER_STOP', carId: 'car1', corner: 'T2', left: 1 }, s)).toBe('Arrêt au virage T2 : encore 1 arrêt.');
     expect(describeEvent({ type: 'CORNER_STOP', carId: 'car1', corner: 'T2', left: 0 }, s)).toBe('Virage T2 : tous les arrêts sont faits.');
     expect(describeEvent({ type: 'CONTACT', carId: 'car1', other: 'car2', d20: 1, hit: true }, s)).toBe('Contact avec Joueur 2 : carrosserie −1.');
@@ -71,7 +72,15 @@ describe('messages', () => {
     expect(describeEvent({ type: 'ENGINE_ROLL', carId: 'car1', d20: 15, hit: false }, s)).toBeNull();
     expect(describeEvent({ type: 'PIT_STOP', carId: 'car1', fast: true, tires: 'soft', repairs: 0, d20: 7, restartCells: 4 }, s)).toContain('Arrêt rapide');
     expect(describeEvent({ type: 'PIT_STOP', carId: 'car1', fast: false, tires: 'soft', repairs: 2, d20: null, restartCells: null }, s)).toBe('Arrêt long : pneus neufs, 2 réparations, le tour est perdu.');
-    expect(describeEvent({ type: 'REROLLED', carId: 'car1', left: 0 }, s)).toBe('Relance utilisée (0 restante).');
+    expect(describeEvent({ type: 'REROLLED', carId: 'car1', left: 0 }, s)).toBe('Relance utilisée : 0 restante.');
+    // with the part that gives the effect
+    const named = { dice: 'Turbo calibré', reroll: 'Aileron mobile', freeStop: 'Carbone-céramique', block: 'ABS de course' };
+    const nm = (id: string) => id;
+    expect(describeEvent({ type: 'DICE_ROLLED', carId: 'car1', gear: 4, face: 9, roll: 10, bonus: 1 }, s, nm, named)).toBe('Dé : 9, +1 Turbo calibré : 10 cases.');
+    expect(describeEvent({ type: 'DICE_ROLLED', carId: 'car1', gear: 1, face: 2, roll: 1, bonus: -1 }, s, nm, named)).toBe("Dé : 2, −1 d'équipement : 1 case.");
+    expect(describeEvent({ type: 'REROLLED', carId: 'car1', left: 1 }, s, nm, named)).toBe('Relance utilisée (Aileron mobile) : 1 restante.');
+    expect(describeEvent({ type: 'FREE_STOP_USED', carId: 'car1', corner: 'T2', used: 1 }, s, nm, named)).toBe('1 arrêt gratuit utilisé (Carbone-céramique) !');
+    expect(describeEvent({ type: 'BLOCKED', carId: 'car1', missing: 2, brakes: 0, tires: 0, body: 0, by: 'car' }, s, nm, named)).toBe('Une voiture barre la route (2 cases manquantes) : ABS de course évite la perte de carrosserie.');
     expect(describeEvent({ type: 'FREE_STOP_USED', carId: 'car1', corner: 'T2', used: 2 }, s)).toBe('2 arrêts gratuits utilisés !');
     expect(describeEvent({ type: 'CAR_RETIRED', carId: 'car1', reason: 'tires' }, s)).toBe('Joueur 1 abandonne : pneus usés.');
     expect(describeEvent({ type: 'CAR_RETIRED', carId: 'car1', reason: 'no-move' }, s)).toContain('aucun déplacement');

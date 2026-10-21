@@ -7,6 +7,17 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.1',
+    date: '2026-10-22',
+    notes: [
+      'Jouer en ligne : plus de pseudo à saisir, tu joues sous le pseudo de ton compte.',
+      'Les pneus s’usent à chaque tour : les tendres tous les tours, les durs tous les 2 tours. Le dernier tour est gratuit.',
+      'Garage : la fiche de ta voiture montre six stats et une Puissance, avec l’aperçu avant/après d’une pièce et les séries de famille (Vitesse, Endurance, Précision).',
+      'Pièces : chaque niveau apporte quelque chose, et les pièces épiques et légendaires ont une contrepartie à surveiller.',
+      'En course : des puces montrent les effets de tes pièces (relances, arrêts gratuits, bonus de dé), les messages les nomment, et le bilan de fin dit ce qu’elles ont rapporté.',
+    ],
+  },
+  {
     version: '0.3.0',
     date: '2026-10-21',
     notes: [

@@ -11,7 +11,7 @@ import { termMatchers, type ForbiddenList, loadForbiddenList } from './check-ori
 
 export const GDD_DIR = 'docs/gdd';
 export const RULES_FILE = '02-regles.md';
-export const TABLES = ['dice', 'start-points', 'downshift', 'thresholds', 'tires'] as const;
+export const TABLES = ['dice', 'start-points', 'downshift', 'thresholds', 'tires', 'lap-wear'] as const;
 export type TableTag = (typeof TABLES)[number];
 
 export interface Table {
@@ -158,6 +158,25 @@ function checkTires(t: Table): string[] {
   return out;
 }
 
+/** The wear of the tires at each finished lap (§7): one point lost every `n` laps, per tires and track. */
+function checkLapWear(t: Table, config: EngineConfig): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const row of t.rows) {
+    const tires = TIRES[row[0]];
+    const raining = TRACK[row[1]];
+    if (!tires || raining === undefined) {
+      out.push(`unknown row "${row[0]} / ${row[1]}"`);
+      continue;
+    }
+    seen.add(`${tires}-${raining}`);
+    const every = config.lapTireWear[tires][raining ? 'wet' : 'dry'];
+    if (num(row[2]) !== every) out.push(`${row[0]} / ${row[1]}: ${row[2]}, engine ${every}`);
+  }
+  for (const tires of TIRE_TYPES) for (const raining of [false, true]) if (!seen.has(`${tires}-${raining}`)) out.push(`row ${tires} / ${raining ? 'wet' : 'dry'} is missing`);
+  return out;
+}
+
 /** Every difference between the rules document and the engine config, as readable lines (empty when they agree). */
 export function checkRules(markdown: string, config: EngineConfig = DEFAULT_CONFIG): string[] {
   const out: string[] = [];
@@ -176,7 +195,9 @@ export function checkRules(markdown: string, config: EngineConfig = DEFAULT_CONF
             ? checkDownshift(table, config)
             : tag === 'thresholds'
               ? checkThresholds(table, config)
-              : checkTires(table);
+              : tag === 'lap-wear'
+                ? checkLapWear(table, config)
+                : checkTires(table);
     out.push(...issues.map((i) => `${tag}: ${i}`));
   }
   return out;

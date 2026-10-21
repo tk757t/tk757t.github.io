@@ -99,7 +99,7 @@ Six emplacements (Moteur, Boîte, Freins, Pneus, Aileron, Châssis), 5 pièces p
 | Effet | Ce qu'il fait | Exemple |
 |---|---|---|
 | Jauge | + points de départ (et de maximum) d'une jauge | Cage renforcée : +2 Carrosserie |
-| Plage de dés | + cases à chaque face du dé de certains rapports | Turbo calibré : +1 case en 4e |
+| Plage de dés | + cases à chaque face du dé de certains rapports | Turbo calibré : +1 case en 5e |
 | Relance | relances du dé par course | Aileron mobile : 1 relance |
 | Arrêt gratuit | arrêts de virage pardonnés par course | Carbone-céramique : 1 arrêt gratuit |
 | Rétrogradation | crans non comptés pour le coût d'une rétrogradation | Embrayage souple : 1 cran offert |
@@ -109,9 +109,8 @@ Six emplacements (Moteur, Boîte, Freins, Pneus, Aileron, Châssis), 5 pièces p
 
 ### Ce qu'on change
 
-1. **Progression des jauges** : aujourd'hui une pièce gagne +1 point de jauge par niveau ; au niveau 5, la Monocoque carbone
-   donne +8 Carrosserie et +5 à toutes les autres jauges, soit plus que la voiture de base. Proposition : **+0,5 par niveau**
-   (arrondi en dessous) pour les jauges ; les autres effets gardent leur +1 au niveau 5.
+1. **Progression des niveaux** : remplacée par des paliers visibles à chaque niveau, des contreparties et des familles de pièces,
+   décrits au [chapitre 10](10-stats-voitures.md) (réalisés).
 2. **Plages de dés** : en plus du décalage de tout le dé (`moveBonus`), une pièce peut élargir **la face maximale** d'un dé
    (« +1 au maximum en 5e »). C'est plus faible, plus lisible, et c'est le seul effet de dé autorisé dans les deux premières ligues.
 3. **Six nouvelles pièces au lancement** (une par emplacement) utilisant l'élargissement de la face maximale ([06-contenu-lancement.md](06-contenu-lancement.md)).

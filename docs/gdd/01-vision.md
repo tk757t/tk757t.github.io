@@ -13,6 +13,9 @@
 5. [Économie](05-economie.md) : monnaies, coffres, Pass, achats, équilibrage sur 30 jours
 6. [Contenu du lancement](06-contenu-lancement.md) et saisons 1 à 3
 7. [Technique](07-technique.md) : architecture client / serveur, achats, analytique
+8. [Boutique](08-boutique.md) : offres du jour, cadeau, pack de bienvenue
+9. [Passe de saison](09-passe.md) : 30 paliers gratuits
+10. [Stats des voitures](10-stats-voitures.md) : stats lisibles, niveaux, contreparties, familles, équilibrage
 
 ## Pitch
 

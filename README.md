@@ -17,7 +17,6 @@ Le jeu est gratuit : l'économie (or, gemmes, coffres, boutique du jour, passe d
 - Progression : niveau et expérience, coffres à 4 qualités, pièces de voiture, garage, quêtes, passe de saison gratuit de 30 paliers.
 - Boutique : offres du jour, cadeau quotidien avec série de 7 jours, pack de bienvenue.
 - Comptes : pseudo choisi, jeu en invité ou connexion Discord, aucune donnée personnelle demandée.
-- Éditeur de circuits intégré (`/editor`).
 
 ## Pile technique
 
@@ -58,7 +57,6 @@ src/net       comptes, parties en ligne, configuration Supabase
 src/render    plateau et pions (Pixi), caméra, saisie
 src/app       écrans, navigation par onglets, course
 src/ui        kit d'interface (Button, Panel, Badge, ProgressBar, RarityFrame, Modal)
-src/editor    éditeur de circuits
 supabase/     migrations et fonction serveur
 e2e/          scénarios joueur et captures
 docs/         document de design (docs/gdd), règles du moteur, déploiement

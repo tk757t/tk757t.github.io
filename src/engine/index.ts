@@ -23,6 +23,7 @@ export {
   isRaining,
   movementOf,
   tireFactor,
+  lapTireWear,
   weatherFromD20,
   weatherOf,
 } from './rules';

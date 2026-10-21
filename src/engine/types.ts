@@ -95,6 +95,8 @@ export interface EngineConfig {
   risk: { dry: number; rain: number };
   /** Extra tires lost on a corner overshoot in the rain, by tires worn (§7, §18 hypothesis). */
   rainOvershootExtra: { other: number; rain: number };
+  /** Tires wear a little every lap, whatever the driving (§7): 1 point is lost every `n` laps of the stint (0 = never), dry / wet track. */
+  lapTireWear: Record<TireType, { dry: number; wet: number }>;
 }
 
 /** Per-car modifiers coming from equipped parts (see src/data/parts). The engine reads them through hooks. */
@@ -247,6 +249,8 @@ export type GameEvent =
   | { type: 'CORNER_OVERSHOOT'; carId: string; corner: string; left: number; steps: number; tires: number }
   | { type: 'FREE_STOP_USED'; carId: string; corner: string; used: number }
   | { type: 'WEAR_LOST'; carId: string; category: WearCategory; amount: number; cause: string }
+  /** A lap finished: the tires wear (§7). `laps` is the number of laps of the stint so far. */
+  | { type: 'TIRE_WEAR'; carId: string; amount: number; laps: number }
   | { type: 'WEAR_GAINED'; carId: string; category: WearCategory; amount: number; cause: string }
   | { type: 'LAP_COMPLETED'; carId: string; laps: number }
   | { type: 'CONTACT'; carId: string; other: string; d20: number; hit: boolean }

@@ -26,9 +26,10 @@ test.describe('jouer en ligne', () => {
     const guestErrors = watchConsole(guest);
 
     // the host creates a room
-    await host.goto('/?net=local&aiDelay=0&seed=3');
+    await host.goto('/?net=local&aiDelay=0&seed=3&name=Alice');
     await host.getByTestId('open-online').click();
-    await host.getByTestId('online-name').fill('Alice');
+    await expect(host.getByTestId('online-name')).toContainText('Alice');
+    await expect(host.locator('input[aria-label="Votre pseudo"]')).toHaveCount(0);
     await check(host, 'salon (choix)');
     await host.screenshot({ path: 'e2e/screenshots/online-desktop-choice.png' });
     await host.getByTestId('online-create').click();
@@ -41,9 +42,9 @@ test.describe('jouer en ligne', () => {
     await host.getByTestId('online-ais').selectOption('1');
 
     // the guest joins with the code
-    await guest.goto('/?net=local&aiDelay=0&seed=4');
+    await guest.goto('/?net=local&aiDelay=0&seed=4&name=Bob');
     await guest.getByTestId('open-online').click();
-    await guest.getByTestId('online-name').fill('Bob');
+    await expect(guest.getByTestId('online-name')).toContainText('Bob');
     await guest.getByTestId('online-code').fill(code.toLowerCase());
     await guest.getByTestId('online-join').click();
     await expect(guest.getByTestId('online-players').locator('li')).toHaveCount(2);
@@ -110,20 +111,29 @@ test.describe('jouer en ligne', () => {
     expect([...hostErrors, ...guestErrors]).toEqual([]);
   });
 
-  test('un code invalide est refusé, et le lien d’invitation pré-remplit le code', async ({ page }) => {
+  test('aucun pseudo à saisir (nom d’invité mémorisé hors compte), et un code invalide est refusé', async ({ page }) => {
     const errors = watchConsole(page);
-    await page.addInitScript(() => localStorage.removeItem('4mules.name'));
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem('name-cleared')) return;
+      sessionStorage.setItem('name-cleared', '1');
+      localStorage.removeItem('4mules.name');
+    });
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/?net=local&join=ABCDE');
-    await expect(page.getByTestId('online-code')).toHaveValue('ABCDE');
-    await page.getByTestId('online-join').click();
-    await expect(page.getByTestId('online-error')).toHaveText('Choisissez un pseudo.');
-    await page.getByTestId('online-name').fill('Zoé');
+    await page.goto('/?net=local');
+    await page.getByTestId('open-online').click();
+    // no input for a pseudo: the name shown is the account's, or a guest name when there is no account
+    await expect(page.locator('input[aria-label="Votre pseudo"]')).toHaveCount(0);
+    const shown = (await page.getByTestId('online-name').locator('b').textContent())!;
+    expect(shown).toMatch(/^Invité[0-9]{3}$/);
     await page.getByTestId('online-code').fill('AB1');
     await page.getByTestId('online-join').click();
     await expect(page.getByTestId('online-error')).toContainText('5 lettres');
     await check(page, 'salon erreur');
     await page.screenshot({ path: 'e2e/screenshots/online-mobile-choice-error.png' });
+    // the same name comes back on the next visit
+    await page.goto('/?net=local');
+    await page.getByTestId('open-online').click();
+    await expect(page.getByTestId('online-name').locator('b')).toHaveText(shown);
     expect(errors).toEqual([]);
   });
 });

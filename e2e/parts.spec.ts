@@ -102,6 +102,9 @@ for (const size of sizes) {
       await expect(page.getByTestId('sheet')).toBeVisible();
       await page.locator(`[data-item="${partId}"]`).click();
       await expect(page.getByTestId('preview')).toBeVisible();
+      // the preview shows the bars before and after, and the power that comes out of it
+      await expect(page.getByTestId('preview-sheet').locator('[data-stat-bar]')).toHaveCount(6);
+      await expect(page.getByTestId('preview-sheet').locator('.stat-row__note').filter({ hasText: '→' }).first()).toBeVisible();
       await shot(page, size.name, 'garage-sheet-preview');
       await page.getByRole('button', { name: 'Équiper' }).click();
       await expect(page.getByTestId('sheet')).toHaveCount(0);
@@ -147,13 +150,24 @@ for (const size of sizes) {
       await page.goto('/?seed=5');
       await goTab(page, 'garage');
       await expect(page.locator('[data-slot="wing"]')).toContainText('Aileron mobile');
-      await expect(page.locator('[data-stat="wear-tires"]')).toHaveText(String(BASE.tires + 5)); // slicks pro level 3: base + 3 + 2
+      // the sheet of the car: six bars, the power, the series of families and the league sheet
+      await expect(page.getByTestId('stat-sheet').locator('[data-stat-bar]')).toHaveCount(6);
+      expect(Number(await page.getByTestId('stat-sheet').getByTestId('power').textContent())).toBeGreaterThan(0);
+      await expect(page.locator('[data-family="precision"]')).toHaveAttribute('data-count', '2'); // Aileron mobile, Carbone-céramique
+      await page.getByTestId('league-select').selectOption('paddock');
+      await expect(page.getByTestId('league-sheet')).toBeVisible();
+      await expect(page.getByTestId('league-note')).toContainText('plafonds');
+      const paddockPower = Number(await page.getByTestId('league-sheet').getByTestId('power').textContent());
+      await page.getByTestId('league-select').selectOption('legende');
+      // a higher league cuts less: the power can only go up
+      await expect.poll(async () => Number(await page.getByTestId('league-sheet').getByTestId('power').textContent())).toBeGreaterThanOrEqual(paddockPower);
+      await expect(page.locator('[data-stat="wear-tires"]')).toHaveText(String(BASE.tires + 4)); // slicks pro level 3: +3 +1 (slot, level 2) +1 (family, level 3), minus 1 (drawback of Carbone-céramique)
       await shot(page, size.name, 'garage-loaded');
       await goTab(page, 'race');
 
       await soloSetup(page);
       await page.getByRole('button', { name: 'Démarrer la course' }).click();
-      await expect(page.locator('[data-cat="tires"]')).toContainText(`${BASE.tires + 5}/${BASE.tires + 5}`);
+      await expect(page.locator('[data-cat="tires"]')).toContainText(`${BASE.tires + 4}/${BASE.tires + 4}`);
       await expect(page.locator('[data-cat="engine"]')).toContainText(`${BASE.engine + 3}/${BASE.engine + 3}`); // hybrid engine level 2: base + 2 + 1
       await expect(page.getByRole('button', { name: /Relancer le dé/ })).toBeHidden();
       // the standing start (d20) cannot be rerolled: play it, then roll the first real turn
@@ -161,7 +175,9 @@ for (const size of sizes) {
       await expect(page.getByTestId('die')).not.toHaveClass(/rolling/);
       await humanStep(page);
       await page.getByRole('button', { name: /^(Lancer|Départ)$/ }).click();
-      await expect(page.getByTestId('message')).toContainText("d'équipement"); // hybrid engine: +1 cell on every gear
+      // the hybrid engine gives its cell at gears 4 to 6 only: nothing on the opening turns, the chip of the relance is there
+      await expect(page.getByTestId('message')).toContainText('Dé :');
+      await expect(page.locator('[data-chip="rerolls"]')).toContainText('1 relance');
       const reroll = page.getByRole('button', { name: 'Relancer le dé (1 restante)' });
       await expect(reroll).toBeVisible();
       await shot(page, size.name, 'race-reroll');
@@ -169,6 +185,25 @@ for (const size of sizes) {
       await expect(page.getByTestId('message')).toContainText('Relance utilisée');
       await expect(page.getByRole('button', { name: /Relancer le dé/ })).toBeHidden();
       expect(await page.evaluate(() => (window as unknown as W).__game.state.cars[0].rerolls)).toBe(0);
+      expect(errors).toEqual([]);
+    });
+
+    test('à la fin de la course, le bilan dit ce que les pièces ont rapporté', async ({ page }) => {
+      const errors = watchConsole(page);
+      await injectSave(page, STARTER);
+      await page.goto('/?seed=5');
+      await soloSetup(page);
+      await page.getByRole('button', { name: 'Moins de tours' }).click();
+      await page.getByRole('button', { name: 'Démarrer la course' }).click();
+      await page.waitForFunction(() => '__game' in window);
+      await expect(page.getByTestId('part-chips')).toBeVisible();
+      await expect(page.locator('[data-chip="rerolls"]')).toContainText('1 relance');
+      await page.evaluate(() => (window as unknown as { __game: { autoplay(me?: string): void } }).__game.autoplay('hard'));
+      await expect(page.getByTestId('ranking')).toBeVisible();
+      await expect(page.getByTestId('parts-summary')).toContainText('Vos pièces ont servi');
+      await expect(page.getByTestId('parts-summary')).toContainText('case');
+      await expectUsableLayout(page, 'bilan des pièces');
+      await page.screenshot({ path: `e2e/screenshots/parts-${size.name}-parts-summary.png` });
       expect(errors).toEqual([]);
     });
 

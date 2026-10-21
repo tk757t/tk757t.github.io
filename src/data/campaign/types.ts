@@ -21,6 +21,8 @@ export interface Opponent {
   tires: TireType;
   /** Equipped parts: slot -> part id and level (the same effects as the player's garage). */
   parts: Partial<Record<Slot, { id: string; level: number }>>;
+  /** Difficulty tuning of the level: cells added to the die at the listed gears (the parts never give such low-gear cells). */
+  paceBonus?: { gears: number[]; amount: number }[];
 }
 
 /** What the winner of a level's first clear receives. */

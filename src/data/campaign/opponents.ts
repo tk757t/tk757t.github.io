@@ -26,5 +26,7 @@ export function opponentMods(o: Opponent): CarMods {
     parts[slot] = p.id;
     owned[p.id] = p.level;
   }
-  return modsForLoadout({ parts }, owned);
+  const mods = modsForLoadout({ parts }, owned);
+  for (const b of o.paceBonus ?? []) mods.moveBonus.push({ gears: [...b.gears], amount: b.amount });
+  return mods;
 }

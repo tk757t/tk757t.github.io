@@ -22,6 +22,8 @@ export const LEVELS: CampaignLevel[] = [
         portrait: 4,
         tires: 'soft',
         parts: { wing: { id: 'wng-active', level: 1 } },
+        // the rival of the first level rolls a little farther in the low gears the easy AI uses: it keeps the level inside the bounds
+        paceBonus: [{ gears: [1, 2, 3], amount: 1 }],
       }),
     ],
     goals: [{ kind: 'finish' }, { kind: 'top', n: 2 }, { kind: 'win', condition: 'corner-overtake' }],

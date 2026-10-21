@@ -225,6 +225,24 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 .slot-level { font-size: 12px; color: var(--gold); white-space: nowrap; }
 .cos-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .cos-btn { min-height: 66px; }
+.stat-sheet { display: flex; flex-direction: column; gap: 8px; }
+.stat-power { margin: 0; display: flex; align-items: baseline; gap: 6px; font-size: 18px; }
+.stat-power b { font-size: 30px; color: var(--gold); line-height: 1; }
+.stat-power small { color: var(--text-muted); font-size: 14px; }
+.stat-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.stat-sheet .stat-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 64px; justify-content: stretch; align-items: center; gap: 8px; font-size: 14px; }
+.stat-sheet .stat-rows { gap: 6px; }
+.preview .stat-sheet { margin-bottom: 10px; }
+.stat-row__label { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-row__note { text-align: right; font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+.stat-row.up .stat-row__note { color: var(--success); }
+.stat-row.down .stat-row__note { color: var(--danger); }
+.stat-row.clamped .stat-row__note { color: var(--wear); }
+.series { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.stat-details { margin-top: 6px; font-size: 14px; }
+.stat-details summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--text-muted); }
+.league-box { margin-top: 8px; }
+.part-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 .stats { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin: 0; font-size: 15px; }
 .stats dt { color: var(--text-muted); }
 .stats dd { margin: 0; text-align: right; }
@@ -424,6 +442,8 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 /* online room ("Jouer en ligne") */
 .online { display: flex; flex-direction: column; gap: 12px; }
 .online .kit-btn { margin: 0 0 6px; }
+.online__you { margin: 0; font-size: 16px; color: var(--text-dim, var(--text)); }
+.online__you b { color: var(--gold, var(--text)); }
 .online__field { display: flex; flex-direction: column; gap: 4px; font-size: 16px; min-width: 0; }
 .online input[type='text'] { min-height: 48px; padding: 0 12px; color: var(--text); background: var(--panel-dark); border: 3px solid var(--line); border-radius: 12px; font: inherit; font-size: 18px; width: 100%; box-sizing: border-box; }
 .online input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }

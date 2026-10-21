@@ -69,6 +69,7 @@ Trois gommes : dure, pluie, tendre.
 | Effet | Détail |
 |---|---|
 | Usure en virage | tendre ×2 (×3 à partir du 3e tour du relais), pluie par temps sec ×2, dure ×1 |
+| Usure par tour | 1 point de Pneus à chaque tour terminé : tendre tous les tours, dure tous les 2 tours, pluie tous les tours sur piste sèche et tous les 2 tours sur piste mouillée. Le dernier tour est gratuit, l'entraînement n'use rien, le stand remet le relais à zéro |
 | Tendres | +1 au maximum du dé les 2 premiers tours du relais, puis −1 au minimum et au maximum |
 | Pluie | pneus non-pluie : +3 cases d'arrêt requises en virage, pneus pluie : +1 |
 

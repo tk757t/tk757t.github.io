@@ -81,7 +81,7 @@ la jauge (les réparations ne vont pas au-delà).
 
 | Jauge | Ce qui la fait baisser |
 |---|---|
-| Pneus | sortir d'un virage avec 1 arrêt manquant (§ 2.6) |
+| Pneus | sortir d'un virage avec 1 arrêt manquant (§ 2.6), chaque tour terminé (§ 2.7) |
 | Freins | freiner après le jet, rétrograder de 3 crans ou plus |
 | Boîte | forcer d'une case, rétrograder de 2 crans ou plus |
 | Carrosserie | être arrêté par une voiture (§ 2.5), les contacts avec les voitures voisines (§ 2.8) |
@@ -148,6 +148,20 @@ tours de circuit terminés depuis le dernier changement de pneus.
 | Tendre | mouillée | 2 | 3 |
 | Pluie | sèche | 2 | 2 |
 | Pluie | mouillée | 1 | 1 |
+
+**Usure à chaque tour.** Même sans erreur de conduite, les pneus s'usent : à chaque tour de circuit terminé, ils perdent **1 point
+de Pneus** selon la gomme et la piste. Le dernier tour de la course est gratuit (la voiture arrive), l'entraînement n'a pas d'usure,
+et un arrêt au stand remet le compteur du relais à zéro.
+
+<!-- gdd:lap-wear -->
+| Gomme | Piste | Un point perdu tous les (tours) |
+|---|---|---|
+| Dure | sèche | 2 |
+| Dure | mouillée | 2 |
+| Tendre | sèche | 1 |
+| Tendre | mouillée | 1 |
+| Pluie | sèche | 1 |
+| Pluie | mouillée | 2 |
 
 - **Tendres** : pendant les tours 1 et 2 du relais, la face la plus haute du dé vaut 1 case de plus (en 4e : 7 à 13). Ensuite,
   chaque face vaut 1 case de moins, sans descendre sous 1 (en 4e : 6 à 11).

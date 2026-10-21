@@ -46,6 +46,8 @@ export const DEFAULT_CONFIG: EngineConfig = {
   risk: { dry: 4, rain: 5 },
   // §7 / §18 (hypothesis)
   rainOvershootExtra: { other: 3, rain: 1 },
+  // §7: soft tires lose a point every lap, hard ones every 2 laps, rain tires every lap on a dry track and every 2 laps on a wet one
+  lapTireWear: { soft: { dry: 1, wet: 1 }, hard: { dry: 2, wet: 2 }, rain: { dry: 1, wet: 2 } },
 };
 
 /** The starting points that apply to a race of `laps` laps (§2). */

@@ -16,7 +16,7 @@ function tamper(tag: string, from: string, to: string): string {
 }
 
 describe('GDD rules tables (docs/gdd/02-regles.md)', () => {
-  it('has the nine chapters', () => {
+  it('has the ten chapters', () => {
     expect(files.map((f) => f.name)).toEqual([
       '01-vision.md',
       '02-regles.md',
@@ -27,6 +27,7 @@ describe('GDD rules tables (docs/gdd/02-regles.md)', () => {
       '07-technique.md',
       '08-boutique.md',
       '09-passe.md',
+      '10-stats-voitures.md',
     ]);
   });
 
@@ -48,6 +49,10 @@ describe('GDD rules tables (docs/gdd/02-regles.md)', () => {
   it('catches a wrong die face', () => {
     expect(checkRules(tamper('dice', '| 2 | 2, 3, 3, 4, 4, 4 |', '| 2 | 2, 3, 3, 3, 4, 4 |'))).toEqual([expect.stringContaining('dice: gear 2: faces')]);
     expect(checkRules(tamper('dice', '| 3,33 |', '| 3,5 |'))).toEqual(['dice: gear 2: mean 3,5, engine 3.33']);
+  });
+
+  it('catches a wrong lap wear', () => {
+    expect(checkRules(tamper('lap-wear', '| Tendre | sèche | 1 |', '| Tendre | sèche | 2 |'))).toEqual(['lap-wear: Tendre / sèche: 2, engine 1']);
   });
 
   it('catches a die the engine changed', () => {

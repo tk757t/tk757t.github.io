@@ -1,4 +1,4 @@
-import { describeEffect } from '../data/parts/effects';
+import { describeEffect, levelLines, mainEffectIndex } from '../data/parts/effects';
 import { COSMETIC_LABELS, RARITY_LABELS, SLOT_LABELS, type ItemDef, type Slot } from '../data/parts/types';
 import { el } from './dom';
 import { hex } from './carSvg';
@@ -12,7 +12,10 @@ export const itemKindLabel = (item: ItemDef): string => (item.kind === 'part' ? 
 
 /** One line per effect, or the cosmetic's look. */
 export function itemLines(item: ItemDef, level = 1): string[] {
-  if (item.kind === 'part') return item.effects.map((e) => describeEffect(e, level));
+  if (item.kind === 'part') {
+    const main = mainEffectIndex(item);
+    return [...item.effects.map((e, i) => describeEffect(e, level, i === main)), ...levelLines(item, level)];
+  }
   return [item.cosmetic === 'number' ? `Numéro ${item.value}` : 'Cosmétique, sans effet sur la course'];
 }
 

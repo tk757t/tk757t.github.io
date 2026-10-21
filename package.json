@@ -1,7 +1,7 @@
 {
   "name": "4mules",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,6 +19,7 @@
     "circuits:difficulty": "tsx src/dev-only/tools/circuits-difficulty.ts",
     "thumbs": "tsx src/dev-only/tools/make-thumbs.ts",
     "balance:campaign": "tsx scripts/balance-campaign.ts",
+    "balance:parts": "tsx scripts/balance-parts.ts",
     "check:origin": "tsx tools/check-origin.ts",
     "check:gdd": "tsx tools/check-gdd.ts",
     "build:edge": "tsx tools/build-edge.ts",

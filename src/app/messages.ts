@@ -1,4 +1,5 @@
 import { currentCar, distanceRange, downshiftCost, effectiveDrop, isRaining, weatherOf } from '../engine';
+import type { EffectSources } from '../data/parts/effects';
 import type { CarState, DnfReason, EngineConfig, GameEvent, RaceState, TireType, Weather, WearCategory } from '../engine';
 
 export const WEAR_LABELS: Record<WearCategory, string> = {
@@ -76,30 +77,34 @@ export function cornerStatus(state: RaceState): string | null {
 }
 
 /** One short sentence per event the player should know about (null = not worth showing). */
-export function describeEvent(e: GameEvent, state: RaceState, name: (carId: string) => string = (id) => playerName(state, id)): string | null {
+export function describeEvent(e: GameEvent, state: RaceState, name: (carId: string) => string = (id) => playerName(state, id), sources: EffectSources = {}): string | null {
   switch (e.type) {
     case 'START_ROLL':
       return e.result === 'super' ? `Super départ (d20 : ${e.d20}) : 4 cases !` : e.result === 'stall' ? `Calage au départ (d20 : ${e.d20}) : le tour est perdu.` : `Départ (d20 : ${e.d20}).`;
     case 'DICE_ROLLED': {
       const base = e.roll - e.bonus;
-      return `Dé : ${e.face}${base !== e.face ? ` → ${base}` : ''}${e.bonus ? `, +${e.bonus} d'équipement` : ''} : ${plural(e.roll, 'case')}.`;
+      return `Dé : ${e.face}${base !== e.face ? ` → ${base}` : ''}${e.bonus ? `, ${e.bonus > 0 ? '+' : '−'}${Math.abs(e.bonus)} ${e.bonus > 0 && sources.dice ? sources.dice : "d'équipement"}` : ''} : ${plural(e.roll, 'case')}.`;
     }
     case 'REROLLED':
-      return `Relance utilisée (${e.left} restante${e.left > 1 ? 's' : ''}).`;
+      return `Relance utilisée${sources.reroll ? ` (${sources.reroll})` : ''} : ${e.left} restante${e.left > 1 ? 's' : ''}.`;
     case 'ADJUSTED':
       return null;
     case 'BLOCKED':
       return e.by === 'car'
-        ? `Contact : une voiture barre la route (${plural(e.missing, 'case manquante', 'cases manquantes')}), carrosserie −${e.body}.`
+        ? e.body > 0
+          ? `Contact : une voiture barre la route (${plural(e.missing, 'case manquante', 'cases manquantes')}), carrosserie −${e.body}.`
+          : `Une voiture barre la route (${plural(e.missing, 'case manquante', 'cases manquantes')}) : ${sources.block ?? 'votre équipement'} évite la perte de carrosserie.`
         : `Chemin barré : ${plural(e.missing, 'case manquante', 'cases manquantes')}, freins −${e.brakes}${e.tires ? `, pneus −${e.tires}` : ''}.`;
     case 'WALL_CRASH':
       return `Virage ${e.corner} : ${plural(e.left, 'arrêt manquant', 'arrêts manquants')}, la voiture percute le mur et abandonne.`;
+    case 'TIRE_WEAR':
+      return `Usure des pneus : −${e.amount} (tour ${e.laps} du relais).`;
     case 'CORNER_STOP':
       return e.left > 0 ? `Arrêt au virage ${e.corner} : encore ${plural(e.left, 'arrêt')}.` : `Virage ${e.corner} : tous les arrêts sont faits.`;
     case 'CORNER_OVERSHOOT':
       return `Virage ${e.corner} raté (${plural(e.left, 'arrêt manquant', 'arrêts manquants')}) : pneus −${e.tires}.`;
     case 'FREE_STOP_USED':
-      return `${plural(e.used, 'arrêt gratuit', 'arrêts gratuits')} utilisé${e.used > 1 ? 's' : ''} !`;
+      return `${plural(e.used, 'arrêt gratuit', 'arrêts gratuits')} utilisé${e.used > 1 ? 's' : ''}${sources.freeStop ? ` (${sources.freeStop})` : ''} !`;
     case 'LAP_COMPLETED':
       return `Tour ${e.laps} terminé !`;
     case 'CONTACT':

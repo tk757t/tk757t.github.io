@@ -100,6 +100,8 @@ export class RaceScreen {
   /** What happened in the race, line by line (the journal window). */
   private journal: JournalEntry[] = [];
   private journalModal: ModalHandle | null = null;
+  /** Tells the journal blocks on screen (the window, the docked chat) that a line was added. */
+  private journalBus = new EventTarget();
   private journalFilter: JournalFilter = 'all';
   private aiTimer: ReturnType<typeof setTimeout> | null = null;
   private aiRng: number;
@@ -266,12 +268,14 @@ export class RaceScreen {
     const lines = journalLines(prev, this.state, events, (id) => this.seatName(id), (id) => (id === 'p1' ? this.sources : {}));
     for (const l of lines) this.journal.push({ ...l, n: this.journal.length + 1 });
     if (this.journal.length > 3000) this.journal.splice(0, this.journal.length - 3000);
-    if (lines.length > 0) this.journalModal?.el.dispatchEvent(new CustomEvent('journal-changed'));
+    if (lines.length > 0) this.journalBus.dispatchEvent(new Event('changed'));
   }
 
-  /** The journal window: the lines by round, with filters. The race goes on behind it. */
-  openJournal(): void {
-    if (this.journalModal || this.destroyed) return;
+  /**
+   * Writes the journal into `host` (the lines by round, with filters) and keeps it up to date while the race goes on; returns what stops it.
+   * Used by the journal window and by the docked chat of a large screen, where the journal sits during the race.
+   */
+  mountJournal(host: HTMLElement): () => void {
     const list = el('div', { class: 'journal__list', 'data-testid': 'journal-list', tabindex: '0' });
     const bar = el('div', { class: 'journal__filters', role: 'group', 'aria-label': 'Filtrer le journal' });
     const draw = (): void => {
@@ -311,19 +315,29 @@ export class RaceScreen {
         }),
       );
     drawBar();
+    host.replaceChildren(bar, list);
+    this.journalBus.addEventListener('changed', draw);
+    draw();
+    list.scrollTop = list.scrollHeight;
+    return () => this.journalBus.removeEventListener('changed', draw);
+  }
+
+  /** The journal window: the race goes on behind it. */
+  openJournal(): void {
+    if (this.journalModal || this.destroyed) return;
+    const body = el('div', { class: 'journal' });
+    const stop = this.mountJournal(body);
     const modal = Modal({
       title: 'Journal de course',
       testid: 'race-journal',
-      children: [bar, list],
+      children: [body],
       actions: [Button({ text: 'Fermer', variant: 'green', size: 'lg', block: true, onClick: () => modal.close() })],
       onClose: () => {
+        stop();
         this.journalModal = null;
       },
     });
-    modal.el.addEventListener('journal-changed', draw);
     this.journalModal = modal;
-    draw();
-    list.scrollTop = list.scrollHeight;
   }
 
   // ------------------------------------------------------- settings and giving up

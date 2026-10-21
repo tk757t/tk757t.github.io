@@ -20,6 +20,7 @@ import type { Session, StartInfo } from '../net/session';
 import type { Action } from '../engine';
 import { openSetup, type RaceConfig } from './setup';
 import { openLobbies } from './lobbiesScreen';
+import { setRaceLink } from './chatRace';
 
 function defaultConfig(): RaceConfig {
   const seed = Number(devParam('seed'));
@@ -112,6 +113,7 @@ export class App {
     this.shell = null;
     this.race?.destroy();
     this.race = null;
+    setRaceLink(null);
   }
 
   openLobbies(): void {
@@ -225,6 +227,9 @@ export class App {
         onForfeit: (fn) => session.onForfeit(fn),
       },
     );
+    // the chat of the race (the players of the room) and the journal, for the chat screens
+    const race = this.race;
+    setRaceLink({ session, mountJournal: (host) => race.mountJournal(host) });
   }
 
   async startRace(cfg: RaceConfig): Promise<void> {
@@ -254,5 +259,8 @@ export class App {
           campaign: level && cfg.level !== undefined ? { level: cfg.level, stars: starsFor(level, info).stars } : undefined,
         }),
     });
+    // a race on this device alone: no one to talk to, but the journal can sit in the docked chat
+    const race = this.race;
+    setRaceLink({ session: null, mountJournal: (host) => race.mountJournal(host) });
   }
 }

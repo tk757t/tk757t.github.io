@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.0',
+    date: '2026-10-22',
+    notes: [
+      'Sur ordinateur, le chat reste affiché à droite, dans le menu comme en course, avec les onglets Général, Course et Journal : le journal de course s’y affiche pendant la course.',
+      'Chat de course : une conversation entre les joueurs de la course en cours, que personne d’autre ne voit.',
+      'Sur mobile, une bulle de chat que l’on déplace et que l’on ferme ; le bouton du haut reste.',
+      'Une petite notification à chaque nouveau message du chat, que l’on coupe avec la cloche 🔔 du chat.',
+    ],
+  },
+  {
     version: '0.3.9',
     date: '2026-10-22',
     notes: [

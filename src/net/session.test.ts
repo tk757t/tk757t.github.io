@@ -298,3 +298,51 @@ describe('untrusted messages', () => {
     expect(syncs).toHaveLength(2);
   });
 });
+
+describe('chat of the room', () => {
+  const feed = (s: Session, m: unknown) => (s as unknown as { receive(m: unknown): void }).receive(m);
+
+  it('a player speaks to the others, who see their name; the sender keeps its own message', async () => {
+    const { host, guests } = await room(['Bea']);
+    const heard: string[] = [];
+    guests[0].onChat((m) => heard.push(`${m.name}: ${m.body}`));
+    expect(host.sendChat('  Bonne   chance\u0007 ! ')).toBe(true);
+    expect(heard).toEqual(['Hôte: Bonne chance !']);
+    expect(host.chat).toMatchObject([{ body: 'Bonne chance !', mine: true }]);
+    expect(guests[0].chat).toMatchObject([{ name: 'Hôte', body: 'Bonne chance !', mine: false }]);
+  });
+
+  it('refuses what is empty or too long, and a closed room', async () => {
+    const { host, guests } = await room(['Bea']);
+    expect(host.sendChat('   ')).toBe(false);
+    expect(host.sendChat('x'.repeat(201))).toBe(false);
+    expect(host.sendChat('x'.repeat(200))).toBe(true);
+    guests[0].leave();
+    expect(guests[0].sendChat('encore là ?')).toBe(false);
+  });
+
+  it('only the players of the room are heard, and not faster than every 700 ms', async () => {
+    let t = 1000;
+    const { guests } = await room(['Bea'], SETTINGS, () => t);
+    const g = guests[0];
+    feed(g, { t: 'chat', from: 'intrus', body: 'je ne suis pas là' });
+    expect(g.chat).toHaveLength(0);
+    feed(g, { t: 'chat', from: 'h', body: 'un' });
+    feed(g, { t: 'chat', from: 'h', body: 'deux (trop vite)' });
+    t += 800;
+    feed(g, { t: 'chat', from: 'h', body: 'trois' });
+    feed(g, { t: 'chat', from: 'h', body: 42 });
+    expect(g.chat.map((m) => m.body)).toEqual(['un', 'trois']);
+  });
+
+  it('keeps the last hundred messages', async () => {
+    let t = 0;
+    const { host } = await room(['Bea'], SETTINGS, () => t);
+    for (let i = 0; i < 130; i++) {
+      t += 1000;
+      host.sendChat(`m${i}`);
+    }
+    expect(host.chat).toHaveLength(100);
+    expect(host.chat[0].body).toBe('m30');
+  });
+});

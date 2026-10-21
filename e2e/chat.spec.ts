@@ -89,7 +89,14 @@ async function signIn(page: Page) {
   await expect(page.getByTestId('avatar')).toBeVisible();
 }
 
+/** On a large screen the chat is docked at the right and always there; on a narrow one it is the window of the top bar button. */
+async function openChatUi(page: Page, wide: boolean) {
+  if (wide) await expect(page.getByTestId('chat-dock')).toBeVisible();
+  else await page.getByTestId('chat-open').click();
+}
+
 for (const size of sizes) {
+  const wide = size.width >= 1180;
   test.describe(`chat du canal général (${size.name})`, () => {
     test.use({ reducedMotion: 'reduce' });
 
@@ -99,7 +106,7 @@ for (const size of sizes) {
       const fake = await fakeSupabase(page);
       await signIn(page);
 
-      await page.getByTestId('chat-open').click();
+      await openChatUi(page, wide);
       const list = page.getByTestId('chat-list');
       await expect(list.locator('li.chat__msg')).toHaveCount(3);
       // a message that looks like markup stays text: no element is created from it, nothing runs
@@ -170,15 +177,16 @@ for (const size of sizes) {
       await page.setViewportSize({ width: size.width, height: size.height });
       const fake = await fakeSupabase(page);
       await signIn(page);
-      await page.getByTestId('chat-open').click();
+      await openChatUi(page, wide);
       await expect(page.getByTestId('chat-list').locator('li.chat__msg')).toHaveCount(3);
       fake.messages.push({ id: 4, sender: 'z1', pseudo: 'Zoe_12', body: 'Un nouveau message', created_at: new Date().toISOString(), trophies: 1250 });
       await expect(page.getByTestId('chat-list')).toContainText('Un nouveau message', { timeout: 10_000 });
-      // closed, the window stops asking
+      if (wide) return; // the docked chat is never closed
+      // closed, the chat reads slowly in the background (for the notifications), no more every 3 s
       await page.getByTestId('chat').getByRole('button', { name: 'Fermer' }).click();
       const after = fake.fetches;
-      await page.waitForTimeout(3600);
-      expect(fake.fetches).toBe(after);
+      await page.waitForTimeout(5000);
+      expect(fake.fetches - after).toBeLessThanOrEqual(1);
     });
 
     test('sans compte, pas de bouton de chat', async ({ page }) => {

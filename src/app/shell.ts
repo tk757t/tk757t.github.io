@@ -18,6 +18,8 @@ import { openChat } from './chatScreen';
 import { openLeaderboard } from './leaderboardScreen';
 import { currentRanked } from '../data/ranked';
 import { onSoundChange, playSound, setSoundEnabled, soundEnabled } from './sound';
+import { chatUnread, onChatChange } from './chatStore';
+import { onRaceChatUnread, raceChatUnread } from './chatRace';
 
 const TAB_INFO: Record<TabId, { label: string; icon: string }> = {
   shop: { label: 'Boutique', icon: '🛒' },
@@ -267,6 +269,14 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
   };
   const offProfile = onProfileChange(refresh);
   const offSound = onSoundChange(drawTop);
+  // the messages of the chat nobody has read yet, on the chat button
+  const drawUnread = (): void => {
+    const n = chatUnread() + raceChatUnread();
+    chatBtn.textContent = n > 0 ? `💬 ${n > 99 ? '99+' : n}` : '💬';
+    chatBtn.setAttribute('aria-label', n > 0 ? `Chat, ${n} message${n > 1 ? 's' : ''} non lu${n > 1 ? 's' : ''}` : 'Chat');
+  };
+  const offUnread = [onChatChange(drawUnread), onRaceChatUnread(drawUnread)];
+  drawUnread();
   const offTick = ctx.onTick(drawBadges);
   refresh();
   setTab(initial, true);
@@ -277,6 +287,7 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
     destroy() {
       offProfile();
       offSound();
+      offUnread.forEach((off) => off());
       offTick();
       disposers.forEach((d) => d());
       pages.removeEventListener('pointerdown', onDown);

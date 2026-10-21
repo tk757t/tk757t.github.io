@@ -10,6 +10,11 @@ import { devParam } from './app/devParams';
 import { ensureAccount } from './app/accountScreen';
 import { connectServerGame } from './app/serverGame';
 import { startPresence } from './app/presence';
+import { startChatStore } from './app/chatStore';
+import { setChatOpener, startChatNotices } from './app/chatNotice';
+import { mountChatDock, showInDock } from './app/chatDock';
+import { mountChatBubble } from './app/chatBubble';
+import { openChat } from './app/chatScreen';
 
 await loadDevOrigin();
 applyTokens();
@@ -30,6 +35,14 @@ if (params.has('editor') || (import.meta.env.DEV && /^\/editor\/?$/.test(locatio
   const { mountEditor } = await import('./editor/EditorScreen');
   await mountEditor(root);
 } else {
+  // the chat: read once for the whole visit, docked at the right of a large screen, a floating bubble on a narrow one, a small notification per message
+  startChatStore();
+  startChatNotices();
+  mountChatDock();
+  mountChatBubble();
+  setChatOpener((tab) => {
+    if (!showInDock(tab)) openChat(tab);
+  });
   const app = new App(root);
   app.showShell('race');
   startUpdater();

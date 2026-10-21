@@ -15,6 +15,28 @@ export const MAX_CARS = 4;
 export const GONE_AFTER_MS = 12_000;
 export const PING_EVERY_MS = 3_000;
 
+/** A message of the chat of the room: only the players of the room (the race) ever see it. */
+export interface RoomChatMessage {
+  /** Id of the sender, the only thing the receiver trusts about who wrote it (the name is the one the room knows for that id). */
+  from: string;
+  name: string;
+  body: string;
+  at: number;
+  mine: boolean;
+}
+
+/** Longest chat message of a room, and the least time between two messages of one sender (a message sent faster is dropped). */
+export const ROOM_CHAT_MAX = 200;
+export const ROOM_CHAT_GAP_MS = 700;
+const ROOM_CHAT_KEEP = 100;
+
+/** The text of a chat message as it is sent and shown: control characters removed, spaces collapsed; null when nothing is left or it is too long. */
+export function cleanRoomChat(v: unknown): string | null {
+  if (typeof v !== 'string') return null;
+  const text = v.replace(/[\p{Cc}\p{Cf}]/gu, ' ').replace(/\s+/g, ' ').trim();
+  return text.length > 0 && text.length <= ROOM_CHAT_MAX ? text : null;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -145,6 +167,10 @@ export class Session {
   private actionFns = new Set<Fn<[number, Action]>>();
   private peerFns = new Set<Fn<[]>>();
   private forfeitFns = new Set<Fn<[number]>>();
+  private chatFns = new Set<Fn<[RoomChatMessage]>>();
+  private lastChatFrom = new Map<string, number>();
+  /** The chat of the room, oldest first (the last 100). */
+  readonly chat: RoomChatMessage[] = [];
   /** Ids of the players who gave up the current race. */
   readonly forfeited = new Set<string>();
 
@@ -209,7 +235,22 @@ export class Session {
     return () => this.forfeitFns.delete(fn);
   }
 
+  /** A message of the room chat (someone else's, or one's own right after `sendChat`). */
+  onChat(fn: Fn<[RoomChatMessage]>): () => void {
+    this.chatFns.add(fn);
+    return () => this.chatFns.delete(fn);
+  }
+
   // ---------------------------------------------------------------- actions
+
+  /** Says something to the players of the room. Resolves false when there is nothing to send (empty, too long) or the room is closed. */
+  sendChat(text: string): boolean {
+    const body = cleanRoomChat(text);
+    if (body === null || this.status === 'closed') return false;
+    this.send({ t: 'chat', body });
+    this.pushChat({ from: this.id, name: this.name, body, at: this.now(), mine: true });
+    return true;
+  }
 
   /** Host: changes the race settings (lobby only). */
   setSettings(settings: RoomSettings): void {
@@ -317,6 +358,20 @@ export class Session {
     this.emitLobby();
   }
 
+  private pushChat(m: RoomChatMessage): void {
+    this.chat.push(m);
+    if (this.chat.length > ROOM_CHAT_KEEP) this.chat.splice(0, this.chat.length - ROOM_CHAT_KEEP);
+    this.chatFns.forEach((f) => f(m));
+  }
+
+  /** The name the room knows for a player id (players of the room, then the seats of the race), or null for a stranger. */
+  private nameOf(id: string): string | null {
+    const p = this.players.find((x) => x.id === id);
+    if (p) return p.name;
+    const seat = this.start?.seats.find((x) => x.id === id && !x.ai);
+    return seat ? seat.name : null;
+  }
+
   private emitLobby(): void {
     this.lobbyFns.forEach((f) => f());
   }
@@ -419,6 +474,17 @@ export class Session {
         this.seen.delete(m.from);
         this.peerFns.forEach((f) => f());
         return;
+      case 'chat': {
+        // only a player of the room speaks in it, within the rate, and what arrives is cleaned like what is sent
+        const name = this.nameOf(m.from);
+        const body = cleanRoomChat(m.body);
+        if (name === null || body === null) return;
+        const t = this.now();
+        if (t - (this.lastChatFrom.get(m.from) ?? -Infinity) < ROOM_CHAT_GAP_MS) return;
+        this.lastChatFrom.set(m.from, t);
+        this.pushChat({ from: m.from, name, body, at: t, mine: false });
+        return;
+      }
       case 'ping':
         if (!this.host && !this.hostId && this.status === 'connecting') this.send({ t: 'hello', name: this.name });
         return;

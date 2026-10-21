@@ -58,6 +58,8 @@ async function fakeSupabase(page: Page) {
       return route.fulfill({ status: 204, headers: CORS });
     }
     if (rpc === 'lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 12, ranked_waiting: 3, open_waiting: 1 }] });
+    if (rpc === 'chat_fetch') return route.fulfill({ headers: CORS, json: [] });
+    if (rpc === 'leaderboard_me') return route.fulfill({ headers: CORS, json: [] });
     if (rpc === 'lobby_list') return route.fulfill({ headers: CORS, json: state.lobbies });
     if (rpc === 'lobby_join') {
       const l = state.lobbies.find((x) => x.code === String(body.p_code));

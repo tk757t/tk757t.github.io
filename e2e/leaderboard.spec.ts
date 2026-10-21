@@ -31,6 +31,7 @@ async function fakeSupabase(page: Page, rows: Row[]) {
       const me = rows.find((r) => r.mine);
       return route.fulfill({ headers: CORS, json: me ? [{ rank: me.rank, trophies: me.trophies, total: rows.length }] : [] });
     }
+    if (url.pathname === '/rest/v1/rpc/chat_fetch') return route.fulfill({ headers: CORS, json: [] });
     if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
     if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 3, ranked_waiting: 1, open_waiting: 2 }] });
     return route.fulfill({ status: 404, headers: CORS, json: {} });
@@ -65,10 +66,17 @@ for (const size of sizes) {
       // the ranking sits on the top bar, right of the gems and before the chat
       const gems = await page.getByTestId('gems').boundingBox();
       const board = await page.getByTestId('board-open').boundingBox();
-      const chat = await page.getByTestId('chat-open').boundingBox();
-      expect(gems && board && chat).toBeTruthy();
+      expect(gems && board).toBeTruthy();
       expect(board!.x).toBeGreaterThanOrEqual(gems!.x + gems!.width - 1);
-      expect(chat!.x).toBeGreaterThanOrEqual(board!.x + board!.width - 1);
+      if (size.width >= 1180) {
+        // a large screen has the chat docked at the right: no chat button in the top bar
+        await expect(page.getByTestId('chat-open')).toBeHidden();
+        await expect(page.getByTestId('chat-dock')).toBeVisible();
+      } else {
+        const chat = await page.getByTestId('chat-open').boundingBox();
+        expect(chat).toBeTruthy();
+        expect(chat!.x).toBeGreaterThanOrEqual(board!.x + board!.width - 1);
+      }
       await expectUsableLayout(page, 'barre du haut');
       await expectNoHorizontalOverflow(page, 'barre du haut');
 

@@ -197,3 +197,16 @@ après son déplacement ; les voitures sorties ne comptent pas), incidents (cont
 arrêts aux stands, tours et arrivée, météo (seulement quand elle change). Cinq filtres : **Tout, Moi, Dépassements, Incidents** (avec l'usure), **Arrêts** (stands et
 virages). La fenêtre suit la course en direct, sauf si on lit plus haut ; en ligne, les manches rattrapées au retour d'un joueur sont écrites aussi. Le journal garde les
 3 000 dernières lignes.
+
+## 4.16 Le chat toujours à portée (réalisé)
+
+- **Ordinateur** (écran d'au moins 1180 px, joueur avec pseudo) : le chat est **posé à droite**, en permanence, dans le menu comme en course (le reste de l'écran se loge dans la place restante).
+  Trois onglets : **Général** (le canal de tous), **Course** (le chat des joueurs de la course en cours, pour une course en ligne seulement) et **Journal** (le journal de la course, qui quitte la
+  fenêtre 📋 pendant la course). Les onglets de la course apparaissent au départ et disparaissent à la fin.
+- **Mobile** : le bouton 💬 reste en haut (menu) et une **bulle** flotte au-dessus du menu et de la course : on la **déplace** au doigt (elle reste où on la lâche, jamais hors de l'écran) et on la **ferme**
+  (la fenêtre de chat propose de la ramener). La fenêtre de chat a les onglets Général et Course.
+- **Chat de course** : ne passe par aucun serveur, seulement par la salle de la course (les joueurs de la course sont seuls à le voir). Pas de modération du serveur : un message avec un lien est
+  refusé à l'envoi, la cadence est limitée (un message toutes les 700 ms par joueur) et chacun peut masquer un joueur pour le reste de la course.
+- **Notifications** : une petite notification à chaque nouveau message du canal général (et du chat de course), partout, **désactivable** par la cloche 🔔 du chat (le choix est gardé dans le navigateur) ;
+  elle n'apparaît pas quand ce chat est sous les yeux. Les messages non lus sont comptés sur le bouton, la bulle et l'onglet.
+- Les messages du canal général sont lus par un seul endroit de l'application (toutes les 3 s chat à l'écran, toutes les 8 s sinon) ; la fenêtre, le panneau et les notifications s'y servent.

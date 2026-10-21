@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.5',
+    date: '2026-10-22',
+    notes: [
+      'Garage : le bouton « Équiper le meilleur » choisit, parmi tes pièces, la combinaison qui donne le plus de Puissance.',
+    ],
+  },
+  {
     version: '0.3.4',
     date: '2026-10-22',
     notes: [

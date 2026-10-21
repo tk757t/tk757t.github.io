@@ -1,10 +1,11 @@
-import { getItem, getPart } from '../parts/catalogue';
+import { PARTS, getItem, getPart } from '../parts/catalogue';
+import { carStats } from '../parts/stats';
 import { modsForLoadout } from '../parts/effects';
 import { openTierPack, upgradeCost, type Card } from '../parts/packs';
 import { CHESTS, WINS_PER_RARE, atLeastRare, openChest, rollTier, skipGemCost, type ChestTier } from '../chests';
 import { LEVELS } from '../campaign/levels';
 import { recordResult } from '../../storage/campaign';
-import { MAX_LEVEL, type Loadout, type Slot } from '../parts/types';
+import { MAX_LEVEL, RARITIES, SLOTS, type Loadout, type Slot } from '../parts/types';
 import type { CarMods } from '../../engine/types';
 import type { RankedOutcome } from '../ranked';
 import { nextFloat } from '../../engine/rng';
@@ -128,6 +129,61 @@ export function equip(profile: Profile, itemId: string): Profile | null {
   if (item.kind === 'part') loadout.parts[item.slot] = item.id;
   else loadout[item.cosmetic] = item.id;
   return { ...profile, loadout };
+}
+
+/**
+ * The parts to equip to get the most Power from what the player owns (the Power of the car sheet: the sum of the six bars).
+ * The families give bonuses together, so the slots are not chosen one by one: from the current equipment and from the best part of
+ * each slot, a part is swapped as long as it raises the Power. On equal Power, the rarer and higher-level parts win, and a part
+ * already equipped stays.
+ */
+export function bestParts(profile: Profile): Partial<Record<Slot, string>> {
+  const candidates = Object.fromEntries(SLOTS.map((slot) => [slot, PARTS.filter((p) => p.slot === slot && (profile.owned[p.id] ?? 0) > 0)])) as Record<Slot, (typeof PARTS)[number][]>;
+  const score = (parts: Partial<Record<Slot, string>>): number => {
+    const power = carStats(modsForLoadout({ ...profile.loadout, parts }, profile.owned)).power;
+    const quality = SLOTS.reduce((sum, slot) => {
+      const part = parts[slot] ? getPart(parts[slot]!) : undefined;
+      return sum + (part ? RARITIES.indexOf(part.rarity) * 5 + (profile.owned[part.id] ?? 0) : 0);
+    }, 0);
+    return power * 1000 + quality;
+  };
+  const climb = (start: Partial<Record<Slot, string>>): { parts: Partial<Record<Slot, string>>; value: number } => {
+    let parts = { ...start };
+    let value = score(parts);
+    for (let improved = true; improved; ) {
+      improved = false;
+      for (const slot of SLOTS) {
+        for (const part of candidates[slot]) {
+          if (parts[slot] === part.id) continue;
+          const next = { ...parts, [slot]: part.id };
+          const v = score(next);
+          if (v > value) {
+            parts = next;
+            value = v;
+            improved = true;
+          }
+        }
+      }
+    }
+    return { parts, value };
+  };
+  const fromCurrent = climb(profile.loadout.parts);
+  const fromEmpty = climb({});
+  return fromEmpty.value > fromCurrent.value ? fromEmpty.parts : fromCurrent.parts;
+}
+
+/** Equips the best parts (see bestParts); the slots that already hold the right part are left alone. Null when nothing changes. */
+export function equipBest(profile: Profile): Profile | null {
+  const best = bestParts(profile);
+  const parts = { ...profile.loadout.parts };
+  let changed = false;
+  for (const slot of SLOTS) {
+    if (best[slot] && best[slot] !== parts[slot]) {
+      parts[slot] = best[slot];
+      changed = true;
+    }
+  }
+  return changed ? { ...profile, loadout: { ...profile.loadout, parts } } : null;
 }
 
 export function unequipSlot(profile: Profile, slot: Slot): Profile {

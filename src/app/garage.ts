@@ -11,7 +11,8 @@ import { carSvg, lookOf } from './carSvg';
 import { LEAGUES, familyCounts, leagueSheet, seriesLine, statSheet, statsOfProfile } from './carSheet';
 import type { Dispose } from './context';
 import { SLOT_ICONS, cosmeticSwatch, itemIcon, itemLines } from './itemView';
-import { equipItem, unequip, upgrade } from './economy';
+import { equipBestParts, equipItem, unequip, upgrade } from './economy';
+import { toast } from './toast';
 import { getProfile, onProfileChange } from './profile';
 import { playSound } from './sound';
 
@@ -39,6 +40,33 @@ export function mountGarage(page: HTMLElement): Dispose {
   const root = el('div', { class: 'tab-garage', 'data-testid': 'garage' });
   page.append(root);
   let sheet: ModalHandle | null = null;
+
+  let equipping = false;
+  /** "Équiper le meilleur": the owned parts that give the most Power, in every slot. */
+  function equipBestButton(): HTMLElement {
+    return Button({
+      text: 'Équiper le meilleur',
+      variant: 'green',
+      block: true,
+      disabled: equipping,
+      attrs: { 'data-testid': 'equip-best' },
+      onClick: async () => {
+        if (equipping) return;
+        equipping = true;
+        const before = statsOfProfile(getProfile()).power;
+        try {
+          const changed = await equipBestParts();
+          if (changed === null) return; // the server's refusal is already shown
+          if (changed === 0) toast('Ton équipement est déjà le meilleur possible.');
+          else toast(`${changed} pièce${changed > 1 ? 's' : ''} changée${changed > 1 ? 's' : ''} · Puissance ${before} → ${statsOfProfile(getProfile()).power}`);
+          playSound('levelup');
+        } finally {
+          equipping = false;
+          draw();
+        }
+      },
+    });
+  }
 
   function draw(): void {
     const p = getProfile();
@@ -105,6 +133,7 @@ export function mountGarage(page: HTMLElement): Dispose {
         car,
         el('div', { class: 'col' }, ...(['brakes', 'tires', 'wing'] as Slot[]).map(slotButton)),
       ),
+      equipBestButton(),
       el('div', { class: 'cos-row' }, ...COSMETIC_KINDS.map(cosmeticButton)),
       Panel({ tone: 'dark', title: 'Ma voiture', children: [statSheet(statsOfProfile(p)), seriesLine(familyCounts(p)), details] }),
       Panel({ tone: 'dark', title: 'En classé', children: [el('label', { class: 'online__field' }, el('span', { text: 'Ligue' }), leagueSelect), leagueBox] }),

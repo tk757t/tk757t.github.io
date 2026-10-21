@@ -148,3 +148,12 @@ passe au rapport 5, l'Hybride prototype aux rapports 3 à 6, l'Aérodynamique ac
 | S1b | Données et moteur : paliers de niveau, contreparties, familles, bonus de série, plafonds de ligue (`capLoadoutMods`), calcul des stats (`carStats`) — **fait** | `src/data/parts/{effects,stats,caps}.ts`, tests unitaires |
 | S1c | Interface : fiche en barres et Puissance, comparaison, série de famille, puces du HUD, messages, écran de fin | e2e et captures 390×844 et 1440×900 |
 | S1d | Équilibrage par simulation, ajustement du catalogue, doc, publication | `docs/equilibrage-pieces.md`, `npm run verify` vert |
+
+## 10.9 « Équiper le meilleur » (réalisé)
+
+Le bouton du garage équipe, dans chaque emplacement, la pièce possédée qui donne le plus de **Puissance** (la somme des six barres de la fiche). Les
+familles s'ajoutent entre elles : le choix n'est donc pas fait emplacement par emplacement, mais en échangeant des pièces tant que la Puissance monte, à partir
+de l'équipement porté et à partir de la meilleure pièce de chaque emplacement. À Puissance égale, la pièce la plus rare puis de plus haut niveau l'emporte, et une
+pièce déjà portée reste. Un emplacement sans pièce possédée reste vide, les cosmétiques ne bougent pas, et on ne baisse jamais la Puissance de l'équipement porté. Un
+message dit combien de pièces ont changé et la Puissance avant et après ; si rien ne change : « déjà le meilleur ». Sur un compte, chaque changement est une
+demande d'équipement au serveur, comme un équipement à la main (`bestParts` dans `src/data/profile/ops.ts`).

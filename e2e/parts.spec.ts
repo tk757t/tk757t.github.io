@@ -106,7 +106,7 @@ for (const size of sizes) {
       await expect(page.getByTestId('preview-sheet').locator('[data-stat-bar]')).toHaveCount(6);
       await expect(page.getByTestId('preview-sheet').locator('.stat-row__note').filter({ hasText: '→' }).first()).toBeVisible();
       await shot(page, size.name, 'garage-sheet-preview');
-      await page.getByRole('button', { name: 'Équiper' }).click();
+      await page.getByTestId('sheet').getByRole('button', { name: 'Équiper', exact: true }).click();
       await expect(page.getByTestId('sheet')).toHaveCount(0);
       await expect(slot).toContainText(part.name);
       await shot(page, size.name, 'garage-equipped');
@@ -204,6 +204,35 @@ for (const size of sizes) {
       await expect(page.getByTestId('parts-summary')).toContainText('case');
       await expectUsableLayout(page, 'bilan des pièces');
       await page.screenshot({ path: `e2e/screenshots/parts-${size.name}-parts-summary.png` });
+      expect(errors).toEqual([]);
+    });
+
+    test('« Équiper le meilleur » choisit les pièces qui donnent le plus de Puissance, et ne change rien quand c’est déjà fait', async ({ page }) => {
+      const errors = watchConsole(page);
+      // two engines and two tyres owned, one of each worn: the better ones are not
+      await injectSave(page, {
+        ...STARTER,
+        owned: { ...STARTER.owned, 'eng-stock': 1, 'eng-hybrid': 4, 'tir-pro': 1 },
+        loadout: { ...STARTER.loadout, parts: { engine: 'eng-stock', tires: 'tir-pro' } },
+      });
+      await page.goto('/');
+      await goTab(page, 'garage');
+      const power = async () => Number(await page.getByTestId('power').first().textContent());
+      const before = await power();
+      await expect(page.getByTestId('equip-best')).toBeVisible();
+      await shot(page, size.name, 'garage-equip-best-before');
+      await page.getByTestId('equip-best').click();
+      await expect(page.getByTestId('toast')).toContainText('Puissance');
+      const after = await power();
+      expect(after).toBeGreaterThan(before);
+      expect((await profile(page)).loadout.parts.engine).toBe('eng-hybrid');
+      // the cosmetics are not touched
+      expect(await page.evaluate(() => (window as unknown as W).__profile.get().loadout)).toMatchObject({ paint: 'paint-gold', number: 'num-42', helmet: 'hlm-red' });
+      await shot(page, size.name, 'garage-equip-best-after');
+      // again: nothing to change
+      await page.getByTestId('equip-best').click();
+      await expect(page.getByTestId('toast')).toContainText('déjà le meilleur');
+      expect(await power()).toBe(after);
       expect(errors).toEqual([]);
     });
 

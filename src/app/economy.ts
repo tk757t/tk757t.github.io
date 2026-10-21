@@ -1,4 +1,4 @@
-import { SOLO_PAID_PER_HOUR, equip, openSlot, skipSlot, unequipCosmetic, unequipSlot, upgradePart, type OpenedChest, type RaceRewards } from '../data/profile/ops';
+import { SOLO_PAID_PER_HOUR, bestParts, equip, openSlot, skipSlot, unequipCosmetic, unequipSlot, upgradePart, type OpenedChest, type RaceRewards } from '../data/profile/ops';
 import { claimPassTier, type PassReward } from '../data/pass';
 import { claimGift, claimWelcome, type GiftReward, type WelcomeReward } from '../data/gift';
 import type { Profile } from '../data/profile/profile';
@@ -100,6 +100,22 @@ export async function skipChest(index: number, ctx: AppContext): Promise<boolean
 export async function equipItem(itemId: string): Promise<boolean> {
   if (await server()) return (await ask((p) => equip(p, itemId), () => serverAction('equip', { id: itemId }))) !== null;
   return updateProfile((p) => equip(p, itemId));
+}
+
+/**
+ * Equips, slot by slot, the parts that give the most Power (bestParts). One equip request per slot that changes (an account's server
+ * decides each of them). Returns how many slots changed, or null when a request was refused.
+ */
+export async function equipBestParts(): Promise<number | null> {
+  const best = bestParts(getProfile());
+  let changed = 0;
+  for (const slot of Object.keys(best) as Slot[]) {
+    const id = best[slot];
+    if (!id || getProfile().loadout.parts[slot] === id) continue;
+    if (!(await equipItem(id))) return null;
+    changed++;
+  }
+  return changed;
 }
 
 export type UnequipTarget = { type: 'slot'; slot: Slot } | { type: 'cosmetic'; kind: 'paint' | 'number' | 'helmet' };

@@ -182,7 +182,7 @@ classé du serveur ; « Rejouer » relance la recherche. Migration : `2026102214
 - **COURSE !** (gros bouton) lance la mise en relation **classée** (§ 4.13). Sans compte avec pseudo, un message l'explique.
 - **Course non classée** : le joueur rejoint la salle ouverte qui a encore de la place, ou en crée une (il en est l'hôte). Les joueurs suivants la remplissent
   jusqu'à 4, puis le suivant en crée une nouvelle (une salle reste ouverte 40 s). La course part quand la salle est pleine, ou après 20 s avec des IA pour les
-  places libres ; le circuit et les tours sont ceux de l'hôte (réglage de « Course perso »). Rien n'est gagné ni perdu. Serveur : `open_join` et
+  places libres ; l’hôte ajoute ou enlève des IA (− et +, dans la limite des places libres) et peut démarrer quand il veut ; le circuit et les tours sont ceux de l’hôte (réglage de « Course perso »). Rien n'est gagné ni perdu. Serveur : `open_join` et
   `open_close` (migration `20261022150000_open_rooms.sql`, tables `open_rooms`).
 - **Course perso** : la fenêtre de réglage de course (joueurs humains ou IA, circuit, tours, équipement) pour jouer en local ou contre des IA, hors ligne.
 - Un petit bouton **Jouer avec des amis** garde les salons à code (§ 4.4 : code ou lien à envoyer).

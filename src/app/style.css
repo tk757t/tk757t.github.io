@@ -244,6 +244,9 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 .ranked__up { color: var(--success); font-weight: 700; }
 .ranked__down { color: var(--danger); font-weight: 700; }
 .ranked .kit-progress { margin-top: 6px; }
+.open-room__ais { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 10px 0; }
+.open-room__ais .kit-btn { min-width: 64px; flex: 0 0 auto; }
+.open-room__count { min-width: 96px; text-align: center; font-size: 18px; font-weight: 700; }
 .chat__place { margin: 0 0 8px; font-size: 14px; color: var(--gold); }
 .chat__meta .kit-badge { transform: scale(0.85); transform-origin: left center; }
 .chat__rules { margin: 0 0 8px; font-size: 13px; }

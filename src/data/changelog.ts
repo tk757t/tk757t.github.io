@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.4',
+    date: '2026-10-22',
+    notes: [
+      'Course non classée : l’hôte de la salle ajoute ou enlève des IA avec − et +, et peut démarrer la course quand il veut.',
+    ],
+  },
+  {
     version: '0.3.3',
     date: '2026-10-22',
     notes: [

@@ -250,7 +250,24 @@ test.describe('course non classée : salles ouvertes', () => {
     await expect(pages[2].getByTestId('open-room-players')).toContainText('Alice_01');
     await expect(pages[2].getByTestId('open-room-players')).toContainText('Cleo_03');
     await pages[2].screenshot({ path: 'e2e/screenshots/open-room-mobile-waiting.png' });
-    // the host leaves the waiting to the timer: the empty seat is an AI; everyone races, nothing is paid
+    // the host adds an AI (one free seat only, so no more), the others see it; then removes it and adds it again
+    const host = pages[0];
+    await expect(host.getByTestId('open-room-ai-count')).toHaveText('Aucune IA');
+    await expect(host.getByTestId('open-room-ai-minus')).toBeDisabled();
+    await host.getByTestId('open-room-ai-plus').click();
+    await expect(host.getByTestId('open-room-ai-count')).toHaveText('1 IA');
+    await expect(host.getByTestId('open-room-ai-plus')).toBeDisabled();
+    await expect(pages[2].getByTestId('open-room-ai-count')).toHaveText('1 IA');
+    await expect(pages[2].getByTestId('open-room-start')).toHaveCount(0); // only the host starts
+    await host.getByTestId('open-room-ai-minus').click();
+    await expect(pages[1].getByTestId('open-room-ai-count')).toHaveText('Sans IA');
+    await host.getByTestId('open-room-ai-plus').click();
+    await expect(pages[1].getByTestId('open-room-ai-count')).toHaveText('1 IA');
+    await audit(host, 'salle ouverte avec IA');
+    await host.screenshot({ path: 'e2e/screenshots/open-room-desktop-ai.png' });
+    await pages[1].screenshot({ path: 'e2e/screenshots/open-room-mobile-ai.png' });
+    // the host starts: three humans and the AI race, nothing is paid
+    await host.getByTestId('open-room-start').click();
     for (const p of pages) await p.waitForFunction(() => '__game' in window, undefined, { timeout: 40_000 });
     for (const p of pages) await expect(p.getByTestId('turn-chip')).toBeVisible();
     expect(server.rooms[0].closed).toBe(true);

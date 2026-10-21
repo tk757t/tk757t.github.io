@@ -8,7 +8,7 @@ import { trackName } from '../data/tracks';
 import { Badge, Button, Modal, type ModalHandle } from '../ui/kit';
 import { el } from '../ui/dom';
 
-/** The host starts with whoever is there after this wait (the room is completed with AIs), a guest gives up after the longer one. */
+/** The host's race starts by itself after this wait (with the AIs they chose, at least one if they are alone); a guest gives up after the longer one. */
 const HOST_WAIT_MS = 20_000;
 const GUEST_WAIT_MS = 45_000;
 
@@ -19,7 +19,8 @@ export interface OpenRoomOptions {
 
 /**
  * "Course non classée": the player joins the open room that still has a seat, or creates one. The room is the one of the friends'
- * games; the race starts when it is full, or after a short wait with AIs for the empty seats. Nothing is won or lost.
+ * games; the host adds or removes AIs for the free seats, and the race starts when the room is full, when the host says so, or after a short wait.
+ * Nothing is won or lost.
  */
 export function openOpenRoom(options: OpenRoomOptions, onSession: (s: Session) => void): ModalHandle {
   let alive = true;
@@ -50,26 +51,46 @@ export function openOpenRoom(options: OpenRoomOptions, onSession: (s: Session) =
     );
   }
 
+  /** The AIs the host asked for, within the free seats. */
+  const freeSeats = (s: Session): number => Math.max(0, MAX_CARS - s.players.length);
+  const aisOf = (s: Session): number => Math.min(s.settings.ais, freeSeats(s));
+
   function drawRoom(s: Session, host: boolean): void {
     const humans = s.players.length;
+    const ais = aisOf(s);
+    const setAis = (n: number): void => s.setSettings({ ...s.settings, ais: Math.max(0, Math.min(n, freeSeats(s))) });
+    const aiRow = host
+      ? el(
+          'div',
+          { class: 'open-room__ais', 'data-testid': 'open-room-ais' },
+          Button({ text: '−', variant: 'blue', disabled: ais <= 0, attrs: { 'data-testid': 'open-room-ai-minus', 'aria-label': 'Enlever une IA' }, onClick: () => setAis(ais - 1) }),
+          el('output', { class: 'open-room__count', 'aria-live': 'polite', 'data-testid': 'open-room-ai-count', text: ais ? `${ais} IA` : 'Aucune IA' }),
+          Button({ text: '+', variant: 'blue', disabled: ais >= freeSeats(s), attrs: { 'data-testid': 'open-room-ai-plus', 'aria-label': 'Ajouter une IA' }, onClick: () => setAis(ais + 1) }),
+        )
+      : el('p', { class: 'muted', 'data-testid': 'open-room-ai-count', text: ais ? `${ais} IA` : 'Sans IA' });
     body.replaceChildren(
       el('p', { class: 'ranked-queue__status', role: 'status', 'data-testid': 'open-room-status', text: humans >= MAX_CARS ? 'Salle complète !' : `Salle ouverte : ${humans}/${MAX_CARS} joueurs` }),
       el(
         'ul',
         { class: 'online__players', 'data-testid': 'open-room-players' },
         ...s.players.map((p, i) => el('li', {}, el('span', { text: p.name }), ...(i === 0 ? [Badge({ text: 'hôte', tone: 'gold' })] : []), ...(p.id === s.id ? [Badge({ text: 'vous', tone: 'blue' })] : []))),
+        ...Array.from({ length: ais }, (_, i) => el('li', {}, el('span', { text: `IA ${i + 1}` }), Badge({ text: 'IA', tone: 'gold' }))),
       ),
+      aiRow,
       el('p', { class: 'muted', 'data-testid': 'open-room-track', text: `${trackName(options.trackId)} · ${options.laps} tour${options.laps > 1 ? 's' : ''}` }),
-      el('p', { class: 'muted', text: host ? 'La course part quand la salle est pleine (ou dans un instant, avec des IA pour les places libres).' : 'En attente du départ…' }),
+      el('p', { class: 'muted', text: host ? 'La course part quand la salle est pleine, quand vous le décidez, ou dans un instant.' : 'En attente du départ…' }),
+      ...(host ? [Button({ text: 'Démarrer maintenant', variant: 'yellow', size: 'lg', block: true, attrs: { 'data-testid': 'open-room-start' }, onClick: () => launch(s) })] : []),
       Button({ text: 'Quitter', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-room-leave' }, onClick: () => modal.close() }),
     );
   }
 
+  let launching = false;
   function launch(s: Session): void {
-    if (s.status === 'racing' || !alive) return;
+    if (s.status === 'racing' || !alive || launching) return;
+    launching = true; // setSettings below redraws the lobby, which must not start the race a second time
     if (roomCode) void closeOpenRoom(roomCode).catch(() => undefined);
-    // the empty seats are driven by AIs, so a race of one is possible
-    s.setSettings({ ...s.settings, ais: Math.max(0, MAX_CARS - s.players.length) });
+    // the AIs the host chose; alone, at least one, so that there is a race
+    s.setSettings({ ...s.settings, ais: Math.max(aisOf(s), 2 - s.players.length) });
     s.launch((Date.now() % 900_000) + 1);
   }
 

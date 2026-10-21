@@ -219,3 +219,19 @@ describe('modifiers of other cars', () => {
     expect(moves(s, 2, 'car4')[0]).toMatchObject({ cellId: 'c0', missing: 2 });
   });
 });
+
+describe('§5 passing on the side on a real circuit', () => {
+  it('a car in the way of the roll is passed through the next lane, from any cell of a straight', () => {
+    const track = toTrack(TRACKS.anneau);
+    for (const slot of [4, 5, 6, 7, 8]) {
+      const s0 = inRace(track, {}, 2);
+      const from = `L1S${slot}`;
+      const s = place(place(s0, 'car1', from), 'car2', `L1S${slot + 3}`);
+      const options = moves(s, 9);
+      const free = options.filter((o) => o.blocked === null && o.bodyLoss === 0);
+      expect(free.length, `from ${from}`).toBeGreaterThan(0);
+      expect(free.every((o) => track.cells[o.cellId].row > track.cells[`L1S${slot + 3}`].row)).toBe(true); // every free end is past the blocker
+      expect(options.some((o) => o.blocked === 'car' && o.bodyLoss > 0)).toBe(true);
+    }
+  });
+});

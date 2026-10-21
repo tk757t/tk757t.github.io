@@ -20,6 +20,7 @@ import { levelProgress, loadoutMods, type RaceRewards } from '../data/profile/op
 import { EMPTY_STATS, LEVELS, goalText, opponentLook, opponentMods, starsFor, trackStats, type CampaignLevel, type RaceStats } from '../data/campaign';
 import { assets, type IconName } from '../data/assets';
 import { CAR_COLORS, RaceRenderer, type CarStyle } from '../render';
+import { MARK_STYLE, markOf, type Mark } from '../render/cells';
 import { lookOf } from './carSvg';
 import { toast } from './toast';
 import { equippedParts, effectSources, type EffectSources } from '../data/parts/effects';
@@ -713,15 +714,15 @@ export class RaceScreen {
   // ------------------------------------------------------------------- drawing
 
   /** The cells to highlight: where the chosen gear could take the car, or the destinations after the roll. */
-  private marks(): Map<string, 'free' | 'costly' | 'crash'> {
+  private marks(): Map<string, Mark> {
     const s = this.state;
-    const out = new Map<string, 'free' | 'costly' | 'crash'>();
+    const out = new Map<string, Mark>();
     if (s.status !== 'racing') return out;
     if (s.phase === 'gear' && this.isHumanTurn()) {
       const car = currentCar(s)!;
-      if (car.started) for (const id of potentialCells({ ...s, cars: s.cars.map((c) => (c === car ? { ...c } : c)) }, this.pendingGear).keys()) out.set(id, 'free');
+      if (car.started) for (const id of potentialCells({ ...s, cars: s.cars.map((c) => (c === car ? { ...c } : c)) }, this.pendingGear).keys()) out.set(id, { kind: 'reach' });
     } else if (s.phase === 'adjust') {
-      for (const o of enumerateMoves(s)) if (o.playable) out.set(o.cellId, o.crash ? 'crash' : o.cost > 0 ? 'costly' : 'free');
+      for (const o of enumerateMoves(s)) if (o.playable) out.set(o.cellId, markOf(o));
     }
     return out;
   }
@@ -827,8 +828,8 @@ export class RaceScreen {
       this.act.disabled = true;
       if (human) {
         const options = enumerateMoves(s).filter((o) => o.playable);
-        if (options.some((o) => !o.crash && o.cost > 0)) msgs.push('Jaune : la case coûte de la carrosserie, des freins ou des pneus.');
-        if (options.some((o) => o.crash)) msgs.push('Rouge : le mur, la voiture abandonne.');
+        const kinds = new Set(options.map((o) => markOf(o).kind));
+        for (const k of ['body', 'brakes', 'tires', 'crash'] as const) if (kinds.has(k)) msgs.push(MARK_STYLE[k].legend);
       }
     } else if (s.phase === 'pit') {
       setButtonText(this.act, human ? 'Au stand…' : other ? `${other} est au stand…` : 'IA : au stand…');

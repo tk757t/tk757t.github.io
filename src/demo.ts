@@ -2,6 +2,7 @@ import { DEFAULT_TRACK, loadTrack, toTrack } from './data/tracks';
 import { allowedGears, createGame, currentCar, enumerateMoves, reducer } from './engine';
 import type { Action, GameEvent, RaceState } from './engine';
 import { RaceRenderer } from './render';
+import { markOf } from './render/cells';
 import { loadDevOrigin } from './devOrigin';
 
 await loadDevOrigin();
@@ -28,7 +29,7 @@ function describe(e: GameEvent): string {
 }
 
 let pendingGear = 1;
-const marks = () => new Map(state.phase === 'adjust' ? enumerateMoves(state).filter((o) => o.playable).map((o) => [o.cellId, o.crash ? 'crash' : o.cost > 0 ? 'costly' : 'free'] as const) : []);
+const marks = () => new Map(state.phase === 'adjust' ? enumerateMoves(state).filter((o) => o.playable).map((o) => [o.cellId, markOf(o)] as const) : []);
 
 function refresh(): void {
   renderer.update(state, marks());

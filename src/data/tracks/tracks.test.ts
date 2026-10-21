@@ -103,6 +103,18 @@ describe('oval', () => {
     expect(forks.every((c) => c.type === 0)).toBe(true);
   });
 
+  it('lets cars pass on the side at every step of a straight, towards both neighbouring lanes', () => {
+    for (const def of [oval, TRACKS.anneau, TRACKS.lac, TRACKS.epingles]) {
+      const plain = (c: (typeof oval.cells)[number]) => c.type === 0 && !c.corner && c.lane < 3;
+      const steps = def.cells.filter((c) => plain(c) && c.link && plain(cell(def, c.link)));
+      expect(steps.length, def.id).toBeGreaterThan(0);
+      for (const c of steps) {
+        const lanes = new Set(c.next.map((n) => cell(def, n).lane));
+        for (const l of [c.lane - 1, c.lane + 1]) if (l >= 0 && l <= 2) expect(lanes.has(l), `${def.id} ${c.id} -> lane ${l}`).toBe(true);
+      }
+    }
+  });
+
   it('has symmetric neighbours and a link straight ahead in the same lane', () => {
     for (const c of oval.cells) {
       for (const s of c.side) expect(cell(oval, s).side).toContain(c.id);

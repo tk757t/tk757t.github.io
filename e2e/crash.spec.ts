@@ -84,7 +84,7 @@ for (const size of sizes) {
       expect(errors).toEqual([]);
     });
 
-    test('une voiture barre la route : case jaune, la carrosserie baisse de 1, ni freins ni pneus', async ({ page }) => {
+    test('une voiture barre la route : case rose, la carrosserie baisse de 1, ni freins ni pneus', async ({ page }) => {
       const errors = errorsOf(page);
       await start(page, 2);
       await stage(page, { blockerAhead: 4, roll: 7 });
@@ -93,7 +93,7 @@ for (const size of sizes) {
       const hit = options.find((o) => o.blocked === 'car' && o.playable);
       expect(hit, 'une destination derrière la voiture').toBeDefined();
       expect(hit).toMatchObject({ bodyLoss: 1, brakesLoss: 0, tiresLoss: 0, crash: false });
-      await expect(page.getByTestId('message')).toContainText('Jaune : la case coûte de la carrosserie');
+      await expect(page.getByTestId('message')).toContainText('Rose (C) : une voiture barre la route');
       await expectUsableLayout(page, 'contact');
       await expectNoHorizontalOverflow(page, 'contact');
       await page.screenshot({ path: `e2e/screenshots/crash-${size.name}-car-choice.png` });

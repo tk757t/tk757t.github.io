@@ -65,7 +65,7 @@ export function buildOval(options: Partial<OvalOptions> = {}): TrackDef {
   ];
   const zoneOf = (slot: number) => zones.find((z) => slot >= z.from && slot <= z.to);
   const straightSlot = (slot: number) => slot < o.straight || (slot >= o.straight + o.turn && slot < 2 * o.straight + o.turn);
-  const isGate = (slot: number) => slot % 4 === 1 && !zoneOf(slot) && !zoneOf((slot + 1) % total) && straightSlot(slot);
+  const isGate = (slot: number) => !zoneOf(slot) && !zoneOf((slot + 1) % total) && straightSlot(slot);
 
   // pit lane: slots PIT_FROM..PIT_TO, boxes of teams 0..4 on the odd slots
   const PIT_FROM = 2;

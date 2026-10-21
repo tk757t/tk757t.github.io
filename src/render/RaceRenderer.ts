@@ -6,24 +6,16 @@ import { currentCar } from '../engine/reducer';
 import type { RaceState } from '../engine/types';
 import { Camera, type Bounds } from './camera';
 import { attachInput } from './input';
-import { CELL_STYLE, cellKind, pickCell, roundedRectPoints } from './cells';
+import { CELL_STYLE, MARK_STYLE, cellKind, cellSizes, pickCell, roundedRectPoints, type CellSize, type Mark } from './cells';
 import { drawScenery, sceneryPlan } from './scenery';
 
-/** Half side of a cell, in cell radii: playable cells are rounded squares. */
-const CELL_HALF = 0.92;
-
 export const CELL_RADIUS = 15;
-const TOKEN_RATIO = 11 / 15; // token radius / cell radius
+const TOKEN_RATIO = 13 / 15; // token radius / cell radius
 
 const COLORS = {
   background: 0x0c1d4d,
   link: 0x3a4454,
   corner: { 1: 0xf2c94c, 2: 0xf2994a, 3: 0xeb5757 } as Record<number, number>,
-  // destinations: cyan when free, yellow when they cost bodywork, brakes or tires (orange is kept for the wear cells),
-  // red when they end against the wall
-  reach: 0x5fdcff,
-  costly: 0xffe14d,
-  crash: 0xff4d4d,
   ring: 0xffffff,
 };
 export const CAR_COLORS = [0xe53935, 0x1e88e5, 0x43a047, 0xab47bc, 0xfb8c00, 0x00acc1];
@@ -92,6 +84,10 @@ export class RaceRenderer {
   /** Darkens the cells that cannot be chosen while destinations are shown. */
   private dimLayer = new Graphics();
   private cellPoly = new Map<string, number[]>();
+  /** How big every cell is drawn and the frame a tap is measured in (see cellSizes). */
+  private sizes: Map<string, CellSize>;
+  private pickables: { id: string; x: number; y: number; rot: number; hl: number; hw: number }[] = [];
+  private markLabels = new Container();
   private carsLayer = new Container();
   private ring = new Graphics();
   private tokens = new Map<string, Token>();
@@ -117,6 +113,7 @@ export class RaceRenderer {
     this.textures = textures;
     this.r = def.cellRadius ?? CELL_RADIUS;
     for (const c of def.cells) this.cellById.set(c.id, c);
+    this.sizes = cellSizes(def.cells, this.r);
     const xs = def.cells.map((c) => c.x);
     const ys = def.cells.map((c) => c.y);
     const u = this.r / CELL_RADIUS;
@@ -148,7 +145,7 @@ export class RaceRenderer {
     // nothing but the cells (and the cars) ever receives a pointer: the decor is a picture
     this.world.eventMode = 'none';
     this.drawTrack();
-    this.world.addChild(this.reachLayer, this.carsLayer, this.debugLayer);
+    this.world.addChild(this.reachLayer, this.markLabels, this.carsLayer, this.debugLayer);
     this.carsLayer.addChild(this.ring);
     this.app.stage.addChild(this.world);
 
@@ -206,10 +203,10 @@ export class RaceRenderer {
 
   /** Redraws everything that depends on the race state. Does not modify it. */
   /**
-   * Redraws what depends on the race state. `marks` are the cells to highlight: 'free' destinations in cyan,
-   * 'costly' ones (they lose bodywork, brakes or tires) in yellow, 'crash' ones (the wall: the car is out) in red.
+   * Redraws what depends on the race state. `marks` are the cells to highlight, each in the colour of what landing there does
+   * (see MarkKind) with a short label when it costs something.
    */
-  update(state: RaceState, marks: Map<string, 'free' | 'costly' | 'crash'> = new Map()): void {
+  update(state: RaceState, marks: Map<string, Mark> = new Map()): void {
     this.dirty = true;
     this.reachLayer.clear();
     this.dimLayer.clear();
@@ -219,15 +216,26 @@ export class RaceRenderer {
       // the cells that cannot be chosen fade, the destinations get a bright halo and a white edge
       for (const [id, pts] of this.cellPoly) if (!marks.has(id)) this.dimLayer.poly(pts).fill({ color: 0x0c1d4d, alpha: 0.38 });
     }
-    for (const [id, kind] of marks) {
+    this.markLabels.removeChildren().forEach((l) => l.destroy({ children: true }));
+    for (const [id, mark] of marks) {
       const c = this.cellById.get(id);
       const pts = this.cellPoly.get(id);
       if (!c || !pts) continue;
-      const color = kind === 'free' ? COLORS.reach : kind === 'costly' ? COLORS.costly : COLORS.crash;
+      const { color, ink } = MARK_STYLE[mark.kind];
       const grow = (k: number) => pts.map((v, i) => (i % 2 === 0 ? c.x + (v - c.x) * k : c.y + (v - c.y) * k));
-      this.reachLayer.poly(grow(1.3)).fill({ color, alpha: 0.4 });
-      this.reachLayer.poly(grow(1.3)).stroke({ width: 3 * u, color });
+      this.reachLayer.poly(grow(1.08)).fill({ color, alpha: 0.62 });
+      this.reachLayer.poly(grow(1.08)).stroke({ width: 3 * u, color });
       this.reachLayer.poly(pts).stroke({ width: 3 * u, color: 0xffffff });
+      if (mark.label) {
+        const plate = new Container();
+        const text = new Text({ text: mark.label, style: { fontFamily: 'system-ui, sans-serif', fontSize: 13 * u, fontWeight: '800', fill: ink } });
+        text.anchor.set(0.5);
+        const bg = new Graphics();
+        bg.roundRect(-text.width / 2 - 3 * u, -text.height / 2 - 1 * u, text.width + 6 * u, text.height + 2 * u, 4 * u).fill({ color, alpha: 0.95 });
+        plate.addChild(bg, text);
+        plate.position.set(c.x, c.y);
+        this.markLabels.addChild(plate);
+      }
     }
 
     state.cars.forEach((car, i) => {
@@ -338,7 +346,7 @@ export class RaceRenderer {
     const fitZoom = Math.min((w - 32) / (this.bounds.maxX - this.bounds.minX), (h - 32) / (this.bounds.maxY - this.bounds.minY));
     this.camera.minZoom = Math.max(0.05, fitZoom * 0.9);
     this.camera.maxZoom = Math.max(3, this.followZoom * 2.2);
-    this.followZoom = (w < 600 ? 1.1 : 1) * (CELL_RADIUS / this.r);
+    this.followZoom = (w < 600 ? 1.15 : h > 800 ? 1.45 : 1.2) * (CELL_RADIUS / this.r);
     if (first) this.camera.zoom = this.followZoom;
     this.camera.zoom = Math.max(this.camera.zoom, this.camera.minZoom);
     this.applyCamera();
@@ -346,7 +354,7 @@ export class RaceRenderer {
 
   private tap(sx: number, sy: number): void {
     if (!this.onCellTap) return;
-    const best = pickCell(this.def.cells, this.marked, this.camera.screenToWorld(sx, sy), this.r);
+    const best = pickCell(this.pickables, this.marked, this.camera.screenToWorld(sx, sy), this.r);
     if (best) this.onCellTap(best);
   }
 
@@ -477,12 +485,14 @@ export class RaceRenderer {
       // on a board picture the cells stay a little see-through, so the road below can still be read
       const alpha = onBoard ? 0.88 : 1;
       const rot = this.headingAt(c);
-      const pts = roundedRectPoints(c.x, c.y, this.r * CELL_HALF, this.r * CELL_HALF, rot, this.r * 0.28);
+      const size = this.sizes.get(c.id)!;
+      const pts = roundedRectPoints(c.x, c.y, size.hl, size.hw, rot, this.r * 0.28);
       this.cellPoly.set(c.id, pts);
+      this.pickables.push({ id: c.id, x: c.x, y: c.y, rot, hl: size.hl, hw: size.hw });
       cells.poly(pts).fill({ color: st.fill, alpha });
       cells.poly(pts).stroke({ width: 2 * u, color: st.edge });
       // shapes that say the effect without colour: stripes = wear, cross = break
-      const h = this.r * CELL_HALF * 0.62;
+      const h = Math.min(size.hl, size.hw) * 0.62;
       const cos = Math.cos(rot);
       const sin = Math.sin(rot);
       const p = (x: number, y: number): [number, number] => [c.x + x * cos - y * sin, c.y + x * sin + y * cos];
@@ -493,7 +503,7 @@ export class RaceRenderer {
           const b = p(k * h + h * 0.5, -h);
           symbols.moveTo(a[0], a[1]).lineTo(b[0], b[1]);
         }
-        symbols.stroke({ width: 2.2 * u, color: st.ink, alpha: 0.4 });
+        symbols.stroke({ width: 2.2 * u, color: st.ink, alpha: 0.22 });
       } else if (kind === 'break') {
         for (const [a, b] of [
           [p(-h, -h), p(h, h)],
@@ -514,7 +524,7 @@ export class RaceRenderer {
       if (text) {
         const t = new Text({
           text,
-          style: { fontFamily: 'system-ui, sans-serif', fontSize: (stops ? 16 : 15) * u, fontWeight: '800', fill: st.ink, stroke: stops ? { color: st.fill, width: 3 * u } : undefined },
+          style: { fontFamily: 'system-ui, sans-serif', fontSize: (stops ? 19 : 15) * u, fontWeight: '800', fill: st.ink, stroke: stops ? { color: st.fill, width: 3 * u } : undefined },
         });
         t.anchor.set(0.5);
         t.position.set(c.x, c.y);

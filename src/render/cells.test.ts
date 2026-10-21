@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TRACKS } from '../data/tracks';
 import { contrast } from '../ui/kit/tokens';
-import { CELL_STYLE, cellKind, pickCell, roundedRectPoints } from './cells';
+import { CELL_STYLE, MARK_STYLE, cellKind, cellSizes, markOf, pickCell, roundedRectPoints } from './cells';
 import { drawScenery, sceneryPlan } from './scenery';
 
 describe('cellKind', () => {
@@ -58,5 +58,54 @@ describe('scenery', () => {
     const root = drawScenery(plan!, 15);
     expect(root.eventMode).toBe('none');
     for (const c of root.children) expect(c.eventMode).toBe('none');
+  });
+});
+
+describe('markOf', () => {
+  const none = { crash: false, bodyLoss: 0, brakesLoss: 0, tiresLoss: 0 };
+  it('names what landing on a destination costs, the worst first', () => {
+    expect(markOf(none)).toEqual({ kind: 'free' });
+    expect(markOf({ ...none, tiresLoss: 2 })).toEqual({ kind: 'tires', label: '-2 P' });
+    expect(markOf({ ...none, tiresLoss: 2, brakesLoss: 1 })).toEqual({ kind: 'brakes', label: '-1 F' });
+    expect(markOf({ ...none, brakesLoss: 1, bodyLoss: 1 })).toEqual({ kind: 'body', label: '-1 C' });
+    expect(markOf({ ...none, bodyLoss: 1, crash: true })).toEqual({ kind: 'crash', label: 'MUR' });
+  });
+  it('gives every kind its own colour, and the ones that cost something a legend', () => {
+    const kinds = Object.keys(MARK_STYLE) as (keyof typeof MARK_STYLE)[];
+    expect(new Set(kinds.map((k) => MARK_STYLE[k].color)).size).toBe(kinds.length);
+    for (const k of kinds.filter((k) => k !== 'reach')) expect(MARK_STYLE[k].legend.length).toBeGreaterThan(0);
+  });
+});
+
+describe('cellSizes', () => {
+  it('fills the room between neighbours on every circuit, within bounds, so the cells of a lane touch', () => {
+    for (const [id, def] of Object.entries(TRACKS)) {
+      const r = def.cellRadius ?? 15;
+      const sizes = cellSizes(def.cells, r);
+      expect(sizes.size, id).toBe(def.cells.length);
+      for (const s of sizes.values()) {
+        expect(s.hl).toBeGreaterThanOrEqual(0.7 * r - 1e-9);
+        expect(s.hl).toBeLessThanOrEqual(1.3 * r + 1e-9);
+        expect(s.hw).toBeGreaterThanOrEqual(0.7 * r - 1e-9);
+        expect(s.hw).toBeLessThanOrEqual(1.3 * r + 1e-9);
+      }
+    }
+  });
+  it('makes a straight cell of the oval wider than the old square of 0.92 radii', () => {
+    const def = TRACKS.anneau;
+    const s = cellSizes(def.cells, 15).get('L1S5')!;
+    expect(s.hl).toBeGreaterThan(0.92 * 15);
+    expect(s.hw).toBeGreaterThan(0.92 * 15);
+  });
+});
+
+describe('pickCell in the frame of a wide cell', () => {
+  const wide = [
+    { id: 'a', x: 0, y: 0, rot: 0, hl: 20, hw: 20 },
+    { id: 'b', x: 41, y: 0, rot: 0, hl: 20, hw: 20 },
+  ];
+  it('selects the cell under the finger up to its edge, and nothing far outside', () => {
+    expect(pickCell(wide, new Set(), { x: 19, y: 18 }, 15)).toBe('a');
+    expect(pickCell(wide, new Set(), { x: 200, y: 0 }, 15)).toBeNull();
   });
 });

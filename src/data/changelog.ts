@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.7',
+    date: '2026-10-22',
+    notes: [
+      'Circuits : des cases larges qui se touchent comme sur un plateau, faciles à toucher au doigt.',
+      'Chaque case d’arrivée a sa couleur : vert (rien perdu), jaune (pneus), violet (freins), rose (une voiture barre la route : carrosserie), rouge (le mur), avec ce que ça coûte écrit dessus.',
+      'Dépassements sur les côtés : on peut changer de voie à chaque case des lignes droites pour doubler une voiture qui barre la route.',
+    ],
+  },
+  {
     version: '0.3.6',
     date: '2026-10-22',
     notes: [

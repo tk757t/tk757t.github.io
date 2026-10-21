@@ -141,6 +141,8 @@ export interface RaceStart {
   players: number;
   bots: number;
   level?: number;
+  /** A ranked race: its result moves the trophies (the server decides if it is allowed). */
+  ranked?: boolean;
 }
 
 export interface RaceEnd {
@@ -160,7 +162,7 @@ export interface RaceEnd {
  */
 export async function beginRace(start: RaceStart): Promise<RaceToken | null | undefined> {
   if (!(await server())) return undefined;
-  const r = await serverAction('start_race', start.level !== undefined ? { level: start.level } : { trackId: start.trackId, laps: start.laps, players: start.players, bots: start.bots });
+  const r = await serverAction('start_race', start.level !== undefined ? { level: start.level } : { trackId: start.trackId, laps: start.laps, players: start.players, bots: start.bots, ...(start.ranked ? { ranked: true } : {}) });
   return r ? r.race : null;
 }
 
@@ -193,5 +195,5 @@ export function finishRace(token: RaceToken | null | undefined, end: RaceEnd, lo
     retired: end.retired,
     clean: end.clean,
     ...(token.level !== null ? { stats: { tireLoss: end.stats.tireLoss, partBroken: end.stats.partBroken, cornerOvertakes: end.stats.cornerOvertakes } } : {}),
-  }).then((r) => (r ? r.rewards : null));
+  }).then((r) => (r ? { ...r.rewards, ...(r.ranked ? { ranked: r.ranked } : {}) } : null));
 }

@@ -13,6 +13,7 @@ import { beginRace, finishRace } from './economy';
 import { serverNow } from './serverGame';
 import { RaceScreen } from './RaceScreen';
 import { openOnlineLobby, setJoinParam } from './online';
+import { openRankedQueue } from './rankedLobby';
 import { toast } from './toast';
 import type { Session, StartInfo } from '../net/session';
 import type { Action } from '../engine';
@@ -29,6 +30,8 @@ function defaultConfig(): RaceConfig {
     laps: 2,
     seed: Number.isFinite(seed) && seed > 0 ? seed : (Date.now() % 900_000) + 1,
     useGear: true,
+    // development only (?ranked=1): the next race is a ranked one, to try the screens without the matchmaking
+    ...(devParam('ranked') === '1' ? { ranked: true, laps: 1 } : {}),
   };
 }
 
@@ -61,6 +64,7 @@ export class App {
       goTab: (tab) => this.shell?.setTab(tab),
       openSetup: () => this.openSetup(),
       openOnline: (code) => this.openOnline(code),
+      openRanked: () => this.openRanked(),
       onConfigChange: (fn) => {
         this.configListeners.add(fn);
         return () => this.configListeners.delete(fn);
@@ -106,6 +110,10 @@ export class App {
     this.race = null;
   }
 
+  openRanked(): void {
+    const lobby = openRankedQueue((s) => this.follow(s, () => lobby.close()));
+  }
+
   openOnline(joinCode?: string): void {
     const lobby = openOnlineLobby((s) => this.follow(s, () => lobby.close()), joinCode);
   }
@@ -141,6 +149,12 @@ export class App {
   }
 
   private async startOnlineRace(session: Session, start: StartInfo, log: Action[]): Promise<void> {
+    // a ranked room: the server issues a token for this player's race (it pays and moves the trophies at the end); friends' rooms pay nothing
+    let token: Awaited<ReturnType<typeof beginRace>> = null;
+    if (session.ranked) {
+      const bots = start.seats.filter((x) => x.ai).length;
+      token = await beginRace({ trackId: start.trackId, laps: start.laps, players: start.seats.length, bots, ranked: true });
+    }
     this.leave();
     const rawDelay = devParam('aiDelay');
     const delay = Number(rawDelay);
@@ -158,18 +172,25 @@ export class App {
       this.root,
       cfg,
       {
-        onReplay: () => session.launch((Date.now() % 900_000) + 1),
+        onReplay: () => {
+          if (!session.ranked) return void session.launch((Date.now() % 900_000) + 1);
+          // ranked: another opponent, so the matchmaking again
+          this.leaveSession();
+          this.showShell('race');
+          this.openRanked();
+        },
         onMenu: () => {
           this.leaveSession();
           setJoinParam(null);
           this.showShell('race');
         },
-        // no reward online until the server validates races (docs/audit-securite.md H4)
-        onFinished: () => null,
+        // friends' rooms pay nothing (docs/audit-securite.md H4); a ranked race is paid by the server with its token
+        onFinished: (info) => (session.ranked ? finishRace(token, info, { now: Date.now() }) : null),
       },
       {
         mySeat: session.mySeat(),
         host: session.host,
+        ranked: session.ranked,
         names: start.seats.map((s) => s.name),
         log,
         send: (seq, action) => session.sendAction(seq, action),
@@ -194,7 +215,7 @@ export class App {
     try {
       // accounts: the server issues the race token (and its seed) before the race starts
       const bots = cfg.controllers.slice(0, cfg.players).filter((c) => c !== 'human').length;
-      token = await beginRace({ trackId: cfg.trackId, laps: cfg.laps, players: cfg.players, bots, level: cfg.level });
+      token = await beginRace({ trackId: cfg.trackId, laps: cfg.laps, players: cfg.players, bots, level: cfg.level, ranked: cfg.ranked });
     } finally {
       this.starting = false;
     }

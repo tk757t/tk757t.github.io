@@ -223,5 +223,36 @@ for (const size of sizes) {
       expect(server.store.logs.filter((l) => l.action === 'import_save')).toHaveLength(1);
       expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
     });
+
+    test('course classée : le serveur donne les trophées, l’écran de fin et le profil montrent le rang', async ({ page }) => {
+      const errors = watchConsole(page);
+      await page.setViewportSize({ width: size.width, height: size.height });
+      const server = await fakeSupabase(page);
+      await injectSave(page, localSave);
+      await page.goto('/?account=1&ranked=1');
+      await page.getByTestId('account-pseudo').fill('Max_07');
+      await page.getByTestId('account-guest').click();
+      await onServer(page);
+      await goTab(page, 'race');
+      await page.getByTestId('start-race').click();
+      await page.waitForFunction(() => '__game' in window);
+      expect(server.state().race).toMatchObject({ ranked: true });
+      server.advance(10 * 60_000);
+      await page.evaluate(() => (window as unknown as W).__game.autoplay('hard'));
+      await expect(page.getByTestId('ranked-result')).toBeVisible();
+      const s = server.state();
+      expect(s.profile.ranked.races).toBe(1);
+      await expect(page.getByTestId('ranked-total')).toContainText(`${s.profile.ranked.trophies} trophées`);
+      await expect(page.getByTestId('ranked-change')).toContainText('trophées');
+      await audit(page, `ranked-race-end-${size.name}`);
+      await page.screenshot({ path: `e2e/screenshots/ranked-${size.name}-race-end.png` });
+      await page.getByRole('button', { name: 'Menu' }).click();
+      // the profile shows the league and the trophies
+      await page.getByTestId('avatar').click();
+      await expect(page.getByTestId('profile-modal')).toContainText('Ligue');
+      await expect(page.getByTestId('profile-modal')).toContainText('Trophées');
+      await page.screenshot({ path: `e2e/screenshots/ranked-${size.name}-profile.png` });
+      expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
+    });
   });
 }

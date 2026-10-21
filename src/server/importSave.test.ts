@@ -19,6 +19,12 @@ describe('one-time import of the local save', () => {
     expect(state.race).toBeNull();
   });
 
+  it('drops the trophies of a local save: they are earned on the server only', () => {
+    const forged = { ...newProfile(42), ranked: { trophies: 4000, peak: 4500, races: 99, wins: 90, season: 3 } };
+    const { state } = importSave(serializeProfile(forged), T0, random);
+    expect(state.profile.ranked).toEqual({ trophies: 0, peak: 0, races: 0, wins: 0, season: 0 });
+  });
+
   it('migrates an old save format', () => {
     const v3 = { version: 3, packs: 0, slots: [null, null, null, null], fragments: 0, gold: 500, gems: 20, xp: 0, owned: {}, loadout: { parts: {} }, rng: 5, races: 2, wins: 1, packsOpened: 0, upgrades: 0, campaign: 1, claimed: [] };
     const { state } = importSave(JSON.stringify(v3), T0, random);

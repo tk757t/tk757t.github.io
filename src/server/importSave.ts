@@ -133,5 +133,7 @@ export function importSave(text: unknown, now: number, random: () => number): { 
   const { profile, report } = boundProfile(parsed.profile, now);
   // the chest rng of the device is never kept (it could have been chosen to draw a legendary card)
   profile.rng = rngFrom(random);
-  return { state: { v: STATE_VERSION, profile, race: null, finishes: [], soloFinishes: [], importedAt: now, createdAt: now }, report };
+  // trophies are earned on the server only: whatever the device says is dropped
+  profile.ranked = { trophies: 0, peak: 0, races: 0, wins: 0, season: 0 };
+  return { state: { v: STATE_VERSION, profile, race: null, finishes: [], soloFinishes: [], rankedFinishes: [], importedAt: now, createdAt: now }, report };
 }

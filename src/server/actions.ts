@@ -10,6 +10,7 @@ import { QUESTS, isClaimed, isClaimable } from '../data/quests';
 import { PASS_TIERS, claimPassTier, type PassReward } from '../data/pass';
 import { claimGift, claimWelcome, type GiftReward, type WelcomeReward } from '../data/gift';
 import { buyOffer, canAfford, findOffer } from '../data/shop';
+import { applyRaceTrophies, leagueOf, rankedSeasonOf, seasonReset, type RankedOutcome } from '../data/ranked';
 import { levelStatus } from '../storage/campaign';
 import { fail } from './errors';
 import { asParams, bool, id, int, only, record, type Params } from './params';
@@ -33,6 +34,8 @@ export interface ActionContext {
   rules?: RaceRules;
 }
 
+export type { RankedOutcome };
+
 export interface OpenedResult {
   tier: ChestTier;
   cards: Card[];
@@ -44,7 +47,7 @@ export interface OpenedResult {
 export type ActionResult =
   | { action: 'sync' }
   | { action: 'start_race'; race: RaceToken }
-  | { action: 'finish_race'; rewards: RaceRewards; /** Always false for now: the rank is declared by the browser. */ verified: false }
+  | { action: 'finish_race'; rewards: RaceRewards; /** What a ranked race did to the trophies (only for a ranked token). */ ranked?: RankedOutcome; /** Always false for now: the rank is declared by the browser. */ verified: false }
   | { action: 'open_slot'; opened: OpenedResult }
   | { action: 'skip_slot'; cost: number }
   | { action: 'buy_offer'; offer: string }
@@ -66,6 +69,8 @@ export interface Applied {
 }
 
 const HOUR = 3_600_000;
+/** Ranked races that may move the trophies in one hour: a limit while the rank is declared by the browser and not replayed (race.ts). */
+export const RANKED_PER_HOUR = 12;
 const COSMETIC_KINDS = ['paint', 'number', 'helmet'] as const;
 
 /** The profile with its chest rng redrawn from the server's randomness. */
@@ -87,11 +92,20 @@ function startRace(state: ServerState, p: Params, ctx: ActionContext): Applied {
     const def = LEVELS[level];
     token = { ...base, trackId: def.trackId, laps: def.laps, players: 1 + def.opponents.length, bots: def.opponents.length, level };
   } else {
-    only(p, ['trackId', 'laps', 'players', 'bots']);
+    only(p, ['trackId', 'laps', 'players', 'bots', 'ranked']);
     const trackId = id(p, 'trackId');
     if (LAP_LENGTH[trackId] === undefined) fail('Circuit inconnu.', 'not_found');
     const players = int(p, 'players', 1, MAX_PLAYERS);
-    token = { ...base, trackId, laps: int(p, 'laps', 1, MAX_LAPS), players, bots: int(p, 'bots', 0, players - 1), level: null };
+    const laps = int(p, 'laps', 1, MAX_LAPS);
+    const bots = int(p, 'bots', 0, players - 1);
+    const ranked = bool(p, 'ranked', false);
+    if (ranked) {
+      // a ranked race: 2 to 4 cars, one lap (§ 4.3), AIs only to complete a race of the Paddock league
+      if (players < 2) fail('Une course classée réunit 2 à 4 voitures.', 'invalid');
+      if (laps !== 1) fail('Une course classée dure un tour.', 'invalid');
+      if (bots > 0 && leagueOf(state.profile.ranked.trophies).id !== 'paddock') fail('Les IA ne complètent une course classée qu’en ligue Paddock.', 'refused');
+    }
+    token = { ...base, trackId, laps, players, bots, level: null, ...(ranked ? { ranked: true } : {}) };
   }
   // one active token: a new start replaces an unfinished race
   return { state: { ...state, race: token }, result: { action: 'start_race', race: token }, changed: true };
@@ -113,6 +127,8 @@ function finishRace(state: ServerState, p: Params, ctx: ActionContext): Applied 
   if (elapsed < minRaceMs(token, retired, rules)) fail('Course terminée trop vite : aucune récompense.', 'race');
   const recent = state.finishes.filter((t) => ctx.now - t < HOUR && t <= ctx.now);
   if (recent.length >= rules.maxPerHour) fail('Trop de courses récompensées cette heure-ci : réessayez plus tard.', 'too_many', 429);
+  const rankedRecent = state.rankedFinishes.filter((t) => ctx.now - t < HOUR && t <= ctx.now);
+  if (token.ranked && rankedRecent.length >= RANKED_PER_HOUR) fail('Trop de courses classées cette heure-ci : réessayez plus tard.', 'too_many', 429);
   let campaign: { level: number; stars: number } | undefined;
   if (token.level !== null) {
     const s = record(p, 'stats');
@@ -125,12 +141,23 @@ function finishRace(state: ServerState, p: Params, ctx: ActionContext): Applied 
   const soloRecent = state.soloFinishes.filter((t) => ctx.now - t < HOUR && t <= ctx.now);
   const soloPaid = soloRecent.length < SOLO_PAID_PER_HOUR;
   const r = awardRaceWithPass(reseed(state.profile, ctx), { rank, retired, clean, players: token.players, vsBots: token.bots > 0, now: ctx.now, campaign, soloVsAi, soloPaid });
+  let profile = r.profile;
+  let ranked: RankedOutcome | undefined;
+  if (token.ranked) {
+    // an abandon counts as the last place; the figures of an older season first go through the end of the season
+    const place = retired ? token.players : rank;
+    const season = rankedSeasonOf(ctx.now);
+    const held = profile.ranked.season === season ? { trophies: profile.ranked.trophies, peak: profile.ranked.peak } : seasonReset(profile.ranked);
+    const change = applyRaceTrophies(held, token.players, place);
+    profile = { ...profile, ranked: { trophies: change.trophies, peak: change.peak, races: profile.ranked.races + 1, wins: profile.ranked.wins + (place === 1 ? 1 : 0), season } };
+    ranked = { delta: change.delta, before: held.trophies, trophies: change.trophies, league: change.league.id, promoted: change.promoted, demoted: change.demoted, season };
+  }
   const soloFinishes = soloVsAi && soloPaid && !retired ? [...soloRecent, ctx.now] : soloRecent;
   return {
-    state: { ...state, profile: r.profile, race: null, finishes: [...recent, ctx.now], soloFinishes },
-    result: { action: 'finish_race', rewards: r.rewards, verified: false },
+    state: { ...state, profile, race: null, finishes: [...recent, ctx.now], soloFinishes, rankedFinishes: token.ranked ? [...rankedRecent, ctx.now] : rankedRecent },
+    result: { action: 'finish_race', rewards: r.rewards, ...(ranked ? { ranked } : {}), verified: false },
     changed: true,
-    log: { token: token.id, seed: token.seed, trackId: token.trackId, laps: token.laps, players: token.players, bots: token.bots, level: token.level, elapsedMs: elapsed, rank, retired, clean, stars: campaign?.stars ?? null, verified: false },
+    log: { token: token.id, seed: token.seed, trackId: token.trackId, laps: token.laps, players: token.players, bots: token.bots, level: token.level, elapsedMs: elapsed, rank, retired, clean, stars: campaign?.stars ?? null, ranked: ranked ? { delta: ranked.delta, trophies: ranked.trophies } : null, verified: false },
   };
 }
 

@@ -24,6 +24,8 @@ export interface RaceConfig {
   useGear: boolean;
   /** Campaign level being played (index in LEVELS): its opponents, equipment and objectives apply. */
   level?: number;
+  /** A ranked race (2 to 4 cars, one lap): the server moves the trophies at its end. Set by the matchmaking, never by the setup window. */
+  ranked?: boolean;
   /** Weather of the race: drawn from the circuit by default. */
   weather?: 'random' | 'sun' | 'cloud' | 'rain';
 }

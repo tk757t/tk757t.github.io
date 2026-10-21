@@ -110,6 +110,8 @@ export interface SessionOptions {
   name: string;
   host: boolean;
   settings?: RoomSettings;
+  /** Host: the order of the grid (the ranked matchmaking puts the fewest trophies in pole); by default the order of arrival. */
+  order?: (players: Player[]) => Player[];
   now?: () => number;
 }
 
@@ -128,9 +130,12 @@ export class Session {
   log: Action[] = [];
   /** Why the room closed, for the screen. */
   closedReason: string | null = null;
+  /** A ranked room (made by the matchmaking): the race pays and moves the trophies through a server token. */
+  ranked = false;
 
   private transport: Transport;
   private now: () => number;
+  private order: (players: Player[]) => Player[];
   private seen = new Map<string, number>();
   private pending = new Map<number, Action>();
   private off: () => void;
@@ -150,6 +155,7 @@ export class Session {
     this.name = o.name;
     this.host = o.host;
     this.now = o.now ?? Date.now;
+    this.order = o.order ?? ((p) => p);
     this.settings = o.settings ?? { trackId: 'oval', laps: 1, ais: 0 };
     if (this.host) this.players = [{ id: this.id, name: this.name }];
     this.off = this.transport.onMessage((m) => this.receive(m));
@@ -163,6 +169,8 @@ export class Session {
     else this.send({ t: 'hello', name: this.name });
     if (timers) {
       this.timer = setInterval(() => {
+        // a guest the host does not list yet (it came before the host was listening: the matchmaking opens the room for everyone at once) says hello again
+        if (!this.host && this.status !== 'racing' && !this.players.some((p) => p.id === this.id)) this.send({ t: 'hello', name: this.name });
         this.send({ t: 'ping' });
         this.checkPeers();
       }, PING_EVERY_MS);
@@ -214,7 +222,7 @@ export class Session {
   /** Host: starts a race with everyone in the room (also used by "Rejouer"). */
   launch(seed: number): StartInfo | null {
     if (!this.host || this.players.length < 1) return null;
-    const start: StartInfo = { game: (this.start?.game ?? 0) + 1, seed, trackId: this.settings.trackId, laps: this.settings.laps, seats: seatsFor(this.players, this.settings) };
+    const start: StartInfo = { game: (this.start?.game ?? 0) + 1, seed, trackId: this.settings.trackId, laps: this.settings.laps, seats: seatsFor(this.order(this.players), this.settings) };
     this.begin(start, []);
     this.send({ t: 'start', start });
     return start;

@@ -14,6 +14,9 @@ import { CHANGELOG } from '../data/changelog';
 import { currentBuild } from './updater';
 import { getAccount, linkDiscord, accountError } from './account';
 import { toast } from './toast';
+import { openChat } from './chatScreen';
+import { openLeaderboard } from './leaderboardScreen';
+import { currentRanked } from '../data/ranked';
 import { onSoundChange, playSound, setSoundEnabled, soundEnabled } from './sound';
 
 const TAB_INFO: Record<TabId, { label: string; icon: string }> = {
@@ -53,12 +56,18 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
     if (on) playSound('confirm');
   } });
   soundBtn.classList.add('topbar__sound');
+  // the ranking and the chat are read on the server: they need an account with a pseudo; the ranking sits right of the gems
+  const boardBtn = Button({ text: '🏆', variant: 'ghost', silent: true, attrs: { 'data-testid': 'board-open', 'aria-label': 'Classement' }, onClick: () => void openLeaderboard() });
+  boardBtn.classList.add('topbar__sound');
+  // the chat needs an account with a pseudo (the server decides who writes): without one the button is hidden
+  const chatBtn = Button({ text: '💬', variant: 'ghost', silent: true, attrs: { 'data-testid': 'chat-open', 'aria-label': 'Chat' }, onClick: () => void openChat() });
+  chatBtn.classList.add('topbar__sound');
 
   const top = el(
     'header',
     { class: 'topbar-ui' },
     el('div', { class: 'avatar-wrap' }, avatar, levelBadge),
-    el('div', { class: 'topbar-ui__right' }, el('div', { class: 'topbar-ui__pills' }, goldPill, gemPill, soundBtn), el('div', { class: 'topbar-ui__xp' }, levelText, xpBar)),
+    el('div', { class: 'topbar-ui__right' }, el('div', { class: 'topbar-ui__pills' }, goldPill, gemPill, boardBtn, chatBtn, soundBtn), el('div', { class: 'topbar-ui__xp' }, levelText, xpBar)),
   );
 
   function drawTop(): void {
@@ -70,6 +79,7 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
     gemPill.querySelector('.kit-badge__text')!.textContent = String(p.gems);
     levelText.textContent = `Niv. ${lp.level}`;
     setProgress(xpBar, lp.into, lp.span, `${lp.into} / ${lp.span} XP`);
+    chatBtn.hidden = boardBtn.hidden = !getAccount()?.pseudo;
     const on = soundEnabled();
     soundBtn.textContent = on ? '🔊' : '🔇';
     soundBtn.setAttribute('aria-label', on ? 'Son activé' : 'Son coupé');
@@ -90,9 +100,11 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
     const p = getProfile();
     const lp = levelProgress(p.xp);
     const account = getAccount();
+    const ranked = currentRanked(p.ranked, Date.now());
     const rows: [string, string][] = [
       ...(account?.pseudo ? ([['Pseudo', account.pseudo]] as [string, string][]) : []),
       ['Niveau', String(lp.level)],
+      ...(account?.pseudo ? ([['Ligue', ranked.league.label], ['Trophées', String(ranked.trophies)]] as [string, string][]) : []),
       ['Courses', String(p.races)],
       ['Victoires', String(p.wins)],
       ['Paquets ouverts', String(p.packsOpened)],

@@ -1,3 +1,4 @@
+import { getAccount } from '../account';
 import { skipCost, slotState, unlockMsOf } from '../../data/profile/ops';
 import { CHESTS, PITY_CHESTS } from '../../data/chests';
 import { Badge, Button, Modal, Panel, ProgressBar, RarityFrame, setProgress } from '../../ui/kit';
@@ -30,6 +31,9 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
   const start = Button({ text: 'COURSE !', variant: 'yellow', size: 'xl', block: true, attrs: { 'data-testid': 'start-race' }, onClick: () => ctx.startRace(ctx.config()) });
   const setup = Button({ text: 'Régler la course', variant: 'blue', block: true, attrs: { 'data-testid': 'open-setup' }, onClick: () => ctx.openSetup() });
   const online = Button({ text: 'Jouer en ligne', variant: 'green', block: true, attrs: { 'data-testid': 'open-online' }, onClick: () => ctx.openOnline() });
+  // the ranked queue is on the server: it needs an account with a pseudo
+  const ranked = Button({ text: '🏆 Course classée', variant: 'yellow', block: true, attrs: { 'data-testid': 'open-ranked' }, onClick: () => ctx.openRanked() });
+  ranked.hidden = !getAccount()?.pseudo;
   const arena = Panel({
     tone: 'blue',
     className: 'arena',
@@ -38,6 +42,7 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
       summary,
       start,
       setup,
+      ranked,
       online,
     ],
   });

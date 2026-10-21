@@ -17,6 +17,8 @@ export interface AppContext {
   openSetup(): void;
   /** The "Jouer en ligne" window (create or join a room). */
   openOnline(joinCode?: string): void;
+  /** The ranked matchmaking window. */
+  openRanked(): void;
   /** Subscribe to changes of the race settings (the Course tab shows a summary). */
   onConfigChange(fn: () => void): () => void;
   /** Subscribe to the 1 s tick that refreshes countdowns. */

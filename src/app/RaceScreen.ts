@@ -23,6 +23,7 @@ import { CAR_COLORS, RaceRenderer, type CarStyle } from '../render';
 import { lookOf } from './carSvg';
 import { toast } from './toast';
 import { equippedParts, effectSources, type EffectSources } from '../data/parts/effects';
+import { RANK_LEAGUES, type RankedOutcome } from '../data/ranked';
 import { Badge, Button, LevelBadge, Modal, ProgressBar, setButtonText, setProgress, type ModalHandle } from '../ui/kit';
 import { getProfile } from './profile';
 import { onSoundChange, playSound, setSoundEnabled, soundEnabled } from './sound';
@@ -65,6 +66,8 @@ export interface RaceScreenHandlers {
 export interface OnlineLink {
   mySeat: number;
   host: boolean;
+  /** A ranked room: everyone can search for another race ("Rejouer" goes back to the matchmaking), nobody restarts the room. */
+  ranked?: boolean;
   /** The name of each seat. */
   names: string[];
   /** Actions already played, replayed at once (a player coming back). */
@@ -1004,6 +1007,7 @@ export class RaceScreen {
         }),
       ),
       ...this.campaignResult(r),
+      ...(r?.ranked ? [this.rankedBlock(r.ranked)] : []),
       ...this.partsSummary(),
       el(
         'ul',
@@ -1015,12 +1019,29 @@ export class RaceScreen {
         'div',
         { class: 'row' },
         // online, the host starts the next race for everyone
-        this.online && !this.online.host
+        this.online && !this.online.host && !this.online.ranked
           ? el('p', { class: 'muted', text: 'L’hôte peut relancer une course.' })
           : Button({ text: 'Rejouer', variant: 'green', size: 'lg', onClick: () => this.handlers.onReplay({ ...this.cfg, seed: this.cfg.seed + 1 }) }),
         Button({ text: this.lvl ? 'Carte' : 'Menu', variant: 'blue', size: 'lg', onClick: () => this.handlers.onMenu() }),
       ),
     );
+  }
+
+  /** The ranked result: the trophies won or lost, the league, a promotion, and the way to the next league. */
+  private rankedBlock(o: RankedOutcome): HTMLElement {
+    const league = RANK_LEAGUES.find((l) => l.id === o.league) ?? RANK_LEAGUES[0];
+    const next = RANK_LEAGUES[RANK_LEAGUES.indexOf(league) + 1];
+    const change = o.trophies - o.before;
+    const sign = change > 0 ? '+' : change < 0 ? '−' : '±';
+    const held = change !== o.delta && o.delta < 0;
+    const lines: HTMLElement[] = [
+      el('p', { class: 'ranked__change', 'data-testid': 'ranked-change', text: `🏆 ${sign}${Math.abs(change)} trophées${held ? ' (palier protégé)' : ''}` }),
+      el('p', { class: 'ranked__total', 'data-testid': 'ranked-total', text: `${o.trophies} trophées · ligue ${league.label}` }),
+    ];
+    if (o.promoted) lines.push(el('p', { class: 'ranked__up', 'data-testid': 'ranked-promoted', text: `Montée en ligue ${league.label} !` }));
+    if (o.demoted) lines.push(el('p', { class: 'ranked__down', 'data-testid': 'ranked-demoted', text: `Descente en ligue ${league.label}.` }));
+    if (next) lines.push(ProgressBar({ value: o.trophies - league.from, max: next.from - league.from, tone: 'gold', label: `Vers la ligue ${next.label}`, text: `${next.from - o.trophies} trophées avant ${next.label}`, attrs: { 'data-testid': 'ranked-progress' } }));
+    return el('div', { class: 'ranked', 'data-testid': 'ranked-result' }, ...lines);
   }
 
   /** "Vos pièces ont servi": what the equipment gave during this race, when it gave something. */

@@ -6,6 +6,7 @@ import { LEVELS } from '../campaign/levels';
 import { recordResult } from '../../storage/campaign';
 import { MAX_LEVEL, type Loadout, type Slot } from '../parts/types';
 import type { CarMods } from '../../engine/types';
+import type { RankedOutcome } from '../ranked';
 import { nextFloat } from '../../engine/rng';
 import { levelFromXp, raceXp, xpForLevel } from '../xp';
 import { SLOT_COUNT, type Profile } from './profile';
@@ -171,6 +172,8 @@ export interface RaceRewards {
   pass?: number;
   /** Campaign level finished for the first time by this race. */
   stageCleared: boolean;
+  /** What a ranked race did to the trophies (set by the server only). */
+  ranked?: RankedOutcome;
   /** Set when the race was a campaign level. */
   campaign?: {
     level: number;

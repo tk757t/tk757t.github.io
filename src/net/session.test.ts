@@ -53,6 +53,17 @@ describe('lobby', () => {
     expect(guests[0].settings).toEqual({ trackId: 'lac', laps: 2, ais: 1 });
   });
 
+  it('the host can order the grid: the matchmaking puts the fewest trophies in pole', async () => {
+    const hub = memoryHub();
+    const trophies: Record<string, number> = { h: 900, g0: 100, g1: 500 };
+    const order = (players: { id: string; name: string }[]) => [...players].sort((a, b) => trophies[a.id] - trophies[b.id]);
+    const host = new Session({ transport: hub.create('ABCDE'), code: 'ABCDE', id: 'h', name: 'Hôte', host: true, settings: SETTINGS, order });
+    await host.connect(false);
+    for (const [i, name] of ['Bob', 'Cléo'].entries()) await new Session({ transport: hub.create('ABCDE'), code: 'ABCDE', id: `g${i}`, name, host: false }).connect(false);
+    const start = host.launch(7)!;
+    expect(start.seats.map((x) => x.id)).toEqual(['g0', 'g1', 'h']);
+  });
+
   it('a room holds four players; the fifth is told it is full', async () => {
     const { host, guests } = await room(['B', 'C', 'D', 'E']);
     expect(host.players).toHaveLength(MAX_HUMANS);

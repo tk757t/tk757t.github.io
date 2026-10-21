@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.2',
+    date: '2026-10-22',
+    notes: [
+      'Chat : un canal général pour discuter, avec signalement, blocage et silence des joueurs gênants. Bouton 💬 en haut.',
+      'Classement : le bouton 🏆 (à droite des gemmes) montre les meilleurs de la saison ; ta ligue s’affiche aussi dans le chat.',
+      'Course classée : trophées, ligues (de Paddock à Légende) et saisons de 4 semaines. À la fin d’une course, tu vois ce que tu gagnes ou perds, et ta ligue est dans ton profil.',
+      'Mise en relation : le bouton 🏆 Course classée te trouve des adversaires de ton niveau, avec une grille inversée (le moins classé en pole).',
+    ],
+  },
+  {
     version: '0.3.1',
     date: '2026-10-22',
     notes: [

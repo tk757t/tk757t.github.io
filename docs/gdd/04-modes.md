@@ -84,6 +84,12 @@ Trophées par course selon la place (abandon = dernière place) :
 | 4 | +40 | +15 | −5 | −20 |
 
 - On ne redescend jamais sous le seuil d'une ligue atteinte (paliers protégés), sauf en Légende.
+- **Règles réalisées** (`src/data/ranked.ts`, testées) : la ligue d'un nombre de trophées, les trophées par place (abandon = dernière place),
+  le plancher protégé, la fin de saison, la fenêtre de mise en relation, l'ordre de la grille. Deux précisions que le texte ci-dessus ne donnait pas :
+  - **Le plancher suit le meilleur total de la saison** (le « pic »), pas le total du moment : à 1 005 trophées après être monté à 1 010, on ne
+    descend pas sous 1 000.
+  - **Légende** : on peut en sortir, mais **pas redescendre sous le seuil de Turbo** (2 800).
+  - À la fin de saison le pic repart du total ramené (4 000 + la moitié de l'excédent).
 - **Route des trophées** : 40 paliers de récompenses (coffres, or, cartes, pilotes, cosmétiques), réclamés une seule fois.
 - **Fin de saison** (toutes les 4 semaines) : au-delà de 4 000, les trophées sont ramenés à 4 000 + la moitié de l'excédent ;
   récompense de fin de saison selon le meilleur palier atteint.
@@ -119,3 +125,54 @@ Trophées par course selon la place (abandon = dernière place) :
 
 Le mode actuel « plusieurs joueurs sur un téléphone » (écran de passage entre joueurs) reste disponible dans la course rapide,
 sans récompense.
+
+## 4.10 Chat (réalisé)
+
+Un **canal général** ouvert depuis le bouton 💬 de la barre du haut, réservé aux comptes qui ont un pseudo. Pas de messages privés pour l'instant
+(le public est probablement mineur : modération d'abord). Les règles sont **imposées par le serveur** (migration `20261022100000_chat.sql`) ; le
+navigateur ne lit ni n'écrit les tables directement.
+
+| Règle | Valeur |
+|---|---|
+| Longueur | 1 à 200 caractères, espaces réduits |
+| Débit | 1 message par seconde, 10 par 30 secondes |
+| Doublons | le même message est refusé pendant 60 secondes |
+| Liens | refusés (adresses web et noms de domaine courants) |
+| Filtre de mots | insultes et mots haineux refusés, argot et accents compris (« c0nnard ») ; liste modifiable sans redéploiement |
+| Pseudo | imposé par le serveur (celui du compte) |
+| Compte suspendu ou réduit au silence | écriture refusée |
+| Signalement | 4 motifs (insulte, spam, harcèlement, autre) ; **3 joueurs différents** masquent le message en attendant la modération ; 10 signalements par heure au plus |
+| Blocage | chacun masque les messages des joueurs qu'il bloque ; liste et déblocage dans la fenêtre du chat |
+| Conservation | les messages de plus de 30 jours sont supprimés ; supprimer son compte supprime ses messages |
+| Affichage | **texte seulement** (jamais du balisage) : un message qui ressemble à du code reste du texte |
+
+La lecture se fait par interrogation toutes les 3 secondes, uniquement fenêtre ouverte et page visible. La modération (silence, masquage) passe par des
+fonctions réservées au service, jamais au navigateur. Reste à faire : écran d'administration (étape 10), messages privés et amis (plus tard).
+
+## 4.11 Classement de la saison (réalisé)
+
+Le bouton **🏆** de la barre du haut, à droite des gemmes (comptes avec pseudo), ouvre le classement des trophées de la saison classée en cours : les
+50 meilleurs (rang, pseudo, ligue, trophées, victoires et courses), votre place et le nombre de jours avant la fin de saison. À égalité de trophées, le
+même rang. Ne figurent que les joueurs qui ont **un pseudo**, ne sont **pas suspendus** et ont joué **au moins une course classée dans la saison** ; les
+trophées d'une saison passée ne comptent plus tant que le joueur n'a pas rejoué. La **ligue** de chaque auteur s'affiche aussi dans le chat, et votre rang
+en haut de la fenêtre du chat. Lecture par des fonctions serveur (`leaderboard_top`, `leaderboard_me`, migration `20261022120000_leaderboard.sql`) ; la
+saison est calculée comme `rankedSeasonOf` (`src/data/ranked.ts`, début le lundi 19 octobre 2026, 4 semaines).
+
+## 4.12 Le rang montré au joueur (réalisé)
+
+À la fin d'une course classée, l'écran de classement de la course affiche les **trophées gagnés ou perdus** (avec la mention « palier protégé » quand le
+plancher de la ligue retient une perte), le total, la **ligue**, une **montée ou descente de ligue** le cas échéant, et la progression vers la ligue
+suivante. Le profil montre la **ligue** et les **trophées** (comptes avec pseudo) ; les trophées d'une saison passée y sont déjà ramenés par la fin de
+saison (`currentRanked`). Le serveur fournit le résultat (`finish_race` → `ranked`) : l'écran n'invente rien. En développement, `?ranked=1` rend la
+prochaine course classée (un tour) pour essayer ces écrans sans la mise en relation (4d).
+
+## 4.13 Mise en relation des courses classées (réalisé, SQL à éprouver)
+
+Le bouton **🏆 Course classée** (onglet Course, comptes avec pseudo) ouvre la file d'attente : le joueur est placé dans la file du serveur
+(`queue_join`, trophées plafonnés à ce que le serveur connaît), puis la relève toutes les 2 s (`queue_poll`). Le serveur forme les groupes de 2 à 4 joueurs
+dont l'écart de trophées tient dans la fenêtre (±100, +50 toutes les 5 s, 20 s au plus), à partir de 5 s d'attente (tout de suite à 4) ; après 20 s, un groupe de
+la ligue Paddock est complété par des IA jusqu'à 4 voitures, les autres ligues attendent. Il donne un code de salon et désigne l'hôte (le plus ancien dans la
+file). Le salon est celui des parties entre amis (canal temps réel) : circuit de la semaine (`rankedTrack`), 1 tour, météo aléatoire, **grille inversée**
+(le moins de trophées en pole), départ automatique. Un invité que l'hôte n'a pas encore listé redit bonjour toutes les 3 s. Chaque joueur obtient un jeton
+classé du serveur ; « Rejouer » relance la recherche. Migration : `20261022140000_ranked_queue.sql` (appliquée en production à la main ; ses fonctions restent à
+éprouver sur de faux joueurs en transactions annulées).

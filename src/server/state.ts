@@ -23,6 +23,8 @@ export interface RaceToken {
   bots: number;
   /** Campaign level, or null for a free race. */
   level: number | null;
+  /** A ranked race: its result moves the trophies (src/data/ranked.ts). Absent on a token stored before the ranked mode. */
+  ranked?: boolean;
 }
 
 export interface ServerState {
@@ -34,6 +36,8 @@ export interface ServerState {
   finishes: number[];
   /** Server times of the paid solo races (against AIs only) during the last hour. */
   soloFinishes: number[];
+  /** Server times of the ranked races that moved the trophies during the last hour (rate limit, while the results are not verified). */
+  rankedFinishes: number[];
   /** When the local save of the device was imported (once), or null. */
   importedAt: number | null;
   createdAt: number;
@@ -51,7 +55,7 @@ export const rngFrom = (random: () => number): number => random() >>> 0 || 1;
 export function freshState(now: number, random: () => number): ServerState {
   // the welcome pack is on offer for 72 hours from the creation of the account
   const profile = { ...newProfile(rngFrom(random)), welcomeUntil: now + WELCOME_MS };
-  return { v: STATE_VERSION, profile, race: null, finishes: [], soloFinishes: [], importedAt: null, createdAt: now };
+  return { v: STATE_VERSION, profile, race: null, finishes: [], soloFinishes: [], rankedFinishes: [], importedAt: null, createdAt: now };
 }
 
 const isRecord = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -68,8 +72,9 @@ function readToken(x: unknown): RaceToken | null {
     isInt(x.laps, 1, 10) &&
     isInt(x.players, 1, 4) &&
     isInt(x.bots, 0, 3) &&
-    (x.level === null || isInt(x.level, 0, 100));
-  return ok ? { id: x.id as string, seed: x.seed as number, startedAt: x.startedAt as number, trackId: x.trackId as string, laps: x.laps as number, players: x.players as number, bots: x.bots as number, level: x.level as number | null } : null;
+    (x.level === null || isInt(x.level, 0, 100)) &&
+    (x.ranked === undefined || typeof x.ranked === 'boolean');
+  return ok ? { id: x.id as string, seed: x.seed as number, startedAt: x.startedAt as number, trackId: x.trackId as string, laps: x.laps as number, players: x.players as number, bots: x.bots as number, level: x.level as number | null, ...(x.ranked === true ? { ranked: true } : {}) } : null;
 }
 
 /**
@@ -82,12 +87,14 @@ export function readState(raw: unknown): ServerState {
   if (!parsed || parsed.migrated) return fail('Partie illisible sur le serveur. Contactez un administrateur.', 'corrupt', 409);
   const finishes = Array.isArray(raw.finishes) ? raw.finishes.filter((t): t is number => isInt(t, 0, Number.MAX_SAFE_INTEGER)).slice(-200) : [];
   const soloFinishes = Array.isArray(raw.soloFinishes) ? raw.soloFinishes.filter((t): t is number => isInt(t, 0, Number.MAX_SAFE_INTEGER)).slice(-50) : [];
+  const rankedFinishes = Array.isArray(raw.rankedFinishes) ? raw.rankedFinishes.filter((t): t is number => isInt(t, 0, Number.MAX_SAFE_INTEGER)).slice(-50) : [];
   return {
     v: STATE_VERSION,
     profile: parsed.profile,
     race: readToken(raw.race),
     finishes,
     soloFinishes,
+    rankedFinishes,
     importedAt: isInt(raw.importedAt, 0, Number.MAX_SAFE_INTEGER) ? raw.importedAt : null,
     createdAt: isInt(raw.createdAt, 0, Number.MAX_SAFE_INTEGER) ? raw.createdAt : 0,
   };

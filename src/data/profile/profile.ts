@@ -52,6 +52,8 @@ export interface Profile {
   welcomeUntil: number;
   /** Season pass: the season of these points, the points, and the free tiers collected (see src/data/pass.ts). */
   pass: { season: number; points: number; claimed: number[] };
+  /** Ranked mode (src/data/ranked.ts): trophies, the season's peak (it decides the protected floor), races and wins, and the season of these figures. Set by the server. */
+  ranked: { trophies: number; peak: number; races: number; wins: number; season: number };
 }
 
 /** The subset of the Web Storage API the save needs (so tests can use a plain object). */
@@ -85,6 +87,7 @@ export function newProfile(seed: number): Profile {
     gift: { day: '', streak: 0 },
     welcomeUntil: 0,
     pass: { season: 0, points: 0, claimed: [] },
+    ranked: { trophies: 0, peak: 0, races: 0, wins: 0, season: 0 },
   };
 }
 
@@ -186,6 +189,15 @@ function sanitizePass(x: unknown): Profile['pass'] {
   return { season: Math.min(count(s.season), 10_000), points: Math.min(count(s.points), PASS_TIERS * TIER_POINTS), claimed };
 }
 
+const RANKED_MAX = 1_000_000;
+
+/** The ranked figures; a save written before the ranked mode has none, which is the same as a player who never raced ranked. */
+function sanitizeRanked(x: unknown): Profile['ranked'] {
+  const r = isRecord(x) ? x : {};
+  const trophies = Math.min(count(r.trophies), RANKED_MAX);
+  return { trophies, peak: Math.max(trophies, Math.min(count(r.peak), RANKED_MAX)), races: Math.min(count(r.races), RANKED_MAX), wins: Math.min(count(r.wins), RANKED_MAX), season: Math.min(count(r.season), 10_000) };
+}
+
 /** Cleans the current-version object: drops unknown items, clamps numbers, repairs the loadout. */
 function sanitize(raw: Record<string, unknown>): Profile {
   const owned: Record<string, number> = {};
@@ -232,6 +244,7 @@ function sanitize(raw: Record<string, unknown>): Profile {
     gift: sanitizeGift(raw.gift),
     welcomeUntil: count(raw.welcomeUntil),
     pass: sanitizePass(raw.pass),
+    ranked: sanitizeRanked(raw.ranked),
   };
 }
 

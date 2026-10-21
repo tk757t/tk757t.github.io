@@ -225,6 +225,46 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 .slot-level { font-size: 12px; color: var(--gold); white-space: nowrap; }
 .cos-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .cos-btn { min-height: 66px; }
+.board__season { margin: 0 0 6px; font-size: 13px; }
+.board__mine { margin: 0 0 8px; padding: 8px 10px; background: var(--panel-dark); border-radius: 10px; font-size: 15px; }
+.board__list { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 6px; max-height: min(48vh, 420px); overflow-y: auto; background: var(--panel-dark); border: 3px solid var(--line); border-radius: var(--radius); }
+.board__list:empty { display: none; }
+.board__row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 6px 8px; background: var(--panel); border-radius: 10px; }
+.board__row--me { background: var(--blue); }
+.board__row--me .board__rank, .board__row--me .board__who small { color: var(--text); }
+.board__rank { font-weight: 700; color: var(--gold); }
+.board__who { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.board__who small { color: var(--text-muted); font-size: 12px; }
+.board__trophies { white-space: nowrap; font-size: 14px; }
+.board__status { margin: 8px 0; min-height: 20px; }
+.ranked { margin: 8px 0; padding: 10px; background: var(--panel-dark); border: 3px solid var(--gold); border-radius: var(--radius); text-align: center; }
+.ranked p { margin: 0 0 4px; }
+.ranked__change { font-size: 22px; color: var(--gold); }
+.ranked__total { font-size: 15px; }
+.ranked__up { color: var(--success); font-weight: 700; }
+.ranked__down { color: var(--danger); font-weight: 700; }
+.ranked .kit-progress { margin-top: 6px; }
+.chat__place { margin: 0 0 8px; font-size: 14px; color: var(--gold); }
+.chat__meta .kit-badge { transform: scale(0.85); transform-origin: left center; }
+.chat__rules { margin: 0 0 8px; font-size: 13px; }
+.chat__list { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 8px; height: min(46vh, 380px); overflow-y: auto; background: var(--panel-dark); border: 3px solid var(--line); border-radius: var(--radius); }
+.chat__msg { position: relative; padding: 6px 44px 6px 10px; background: var(--panel); border-radius: 10px; overflow-wrap: anywhere; }
+.chat__msg--mine { background: var(--blue); }
+.chat__meta { display: flex; gap: 8px; align-items: baseline; font-size: 13px; }
+.chat__who { color: var(--gold); }
+.chat__meta small { color: var(--text-muted); }
+.chat__body { margin: 2px 0 0; font-size: 15px; }
+.chat__msg .kit-btn { position: absolute; top: 2px; right: 2px; min-width: 44px; min-height: 44px; padding: 0; }
+.chat__empty { padding: 12px; text-align: center; }
+.chat__status { min-height: 20px; margin: 6px 0 0; font-size: 14px; color: var(--danger); }
+.chat__form { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; margin-top: 4px; }
+.chat__form input { min-width: 0; min-height: 44px; padding: 0 10px; font-size: 16px; border-radius: 10px; border: 3px solid var(--line-light); background: var(--text); color: var(--cell-ink); }
+.chat__count { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+.chat__quote { margin: 0 0 10px; padding: 8px 10px; background: var(--panel-dark); border-radius: 10px; overflow-wrap: anywhere; }
+.chat__h { margin: 12px 0 6px; font-size: 15px; color: var(--text-muted); }
+.chat__reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chat__blocked { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.chat__blocked li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .stat-sheet { display: flex; flex-direction: column; gap: 8px; }
 .stat-power { margin: 0; display: flex; align-items: baseline; gap: 6px; font-size: 18px; }
 .stat-power b { font-size: 30px; color: var(--gold); line-height: 1; }

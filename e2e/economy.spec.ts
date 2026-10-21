@@ -163,6 +163,7 @@ test.describe('son', () => {
     await expect(toggle).toHaveAttribute('aria-label', 'Son activé');
     const before = await played();
     await page.getByTestId('open-setup').click();
+    await page.getByTestId('offline-race').click();
     expect(await played()).toBeGreaterThan(before);
     await page.getByRole('button', { name: 'Fermer' }).click();
 
@@ -171,6 +172,7 @@ test.describe('son', () => {
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
     const muted = await played();
     await page.getByTestId('open-setup').click();
+    await page.getByTestId('offline-race').click();
     await page.getByRole('button', { name: 'Fermer' }).click();
     await goTab(page, 'shop');
     expect(await played()).toBe(muted);

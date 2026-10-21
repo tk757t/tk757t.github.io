@@ -28,6 +28,7 @@ async function shot(page: Page, size: string, label: string) {
 /** Opens the race settings and sets one human player on one lap. */
 async function soloSetup(page: Page) {
   await page.getByTestId('open-setup').click();
+  await page.getByTestId('offline-race').click();
   await page.getByRole('button', { name: '1 joueur', exact: true }).click();
 }
 

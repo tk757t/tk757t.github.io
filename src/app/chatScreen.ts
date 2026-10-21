@@ -14,6 +14,7 @@ import {
   type ChatMessage,
 } from '../net/chat';
 import { fetchMyPlace, ordinal } from '../net/leaderboard';
+import { LOBBY_STATS_MS, fetchLobbyStats, onlineLabel } from '../net/lobby';
 import { Badge, Button, Modal, type ModalHandle } from '../ui/kit';
 import { el } from '../ui/dom';
 import { toast } from './toast';
@@ -33,6 +34,7 @@ export function openChat(): ModalHandle {
 
   const list = el('ul', { class: 'chat__list', role: 'log', 'aria-live': 'polite', 'aria-label': 'Messages du chat', 'data-testid': 'chat-list' });
   const place = el('p', { class: 'chat__place', 'data-testid': 'chat-place' });
+  const online = el('p', { class: 'chat__online muted', role: 'status', 'data-testid': 'chat-online' });
   const status = el('p', { class: 'chat__status', role: 'status', 'data-testid': 'chat-status' });
   const input = el('input', { type: 'text', maxlength: MAX_CHAT_CHARS, autocomplete: 'off', 'aria-label': 'Votre message', placeholder: 'Votre message', 'data-testid': 'chat-input' });
   const count = el('small', { class: 'chat__count', 'aria-hidden': 'true', text: `0/${MAX_CHAT_CHARS}` });
@@ -45,11 +47,13 @@ export function openChat(): ModalHandle {
     variant: 'sheet',
     onClose: () => {
       closed = true;
+      clearInterval(onlineTimer);
       if (timer) clearTimeout(timer);
       document.removeEventListener('visibilitychange', onVisible);
     },
     children: [
       el('p', { class: 'muted chat__rules', text: 'Soyez respectueux : ni insultes ni liens. Les messages de plus de 30 jours sont effacés.' }),
+      online,
       place,
       list,
       status,
@@ -118,6 +122,16 @@ export function openChat(): ModalHandle {
       schedule();
     }, CHAT_POLL_MS);
   }
+  /** The number of players online, read again every few seconds while the window is open; nothing is shown when the server does not answer. */
+  async function refreshOnline(): Promise<void> {
+    const stats = await fetchLobbyStats();
+    if (closed) return;
+    online.textContent = stats ? `● ${onlineLabel(stats.online)}` : '';
+  }
+  void refreshOnline();
+  const onlineTimer = setInterval(() => {
+    if (!document.hidden) void refreshOnline();
+  }, LOBBY_STATS_MS);
   const onVisible = (): void => {
     if (!document.hidden) void refresh();
   };

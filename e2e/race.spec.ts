@@ -17,6 +17,7 @@ const snap = (page: Page) => page.evaluate(() => (window as unknown as W).__game
 /** Opens "Régler la course" and sets the players (everyone human unless told otherwise) and one lap. */
 async function configure(page: Page, players: number, types: string[] = []) {
   await page.getByTestId('open-setup').click();
+  await page.getByTestId('offline-race').click();
   await expect(page.getByTestId('setup')).toBeVisible();
   await page.getByRole('button', { name: `${players} joueur${players > 1 ? 's' : ''}`, exact: true }).click();
   for (let i = 0; i < players; i++) {

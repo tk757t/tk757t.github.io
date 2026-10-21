@@ -98,6 +98,8 @@ function fakeServer() {
         if (row && !row.room) queue.delete(uid);
         return route.fulfill({ status: 204, headers: CORS });
       }
+      if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
+      if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: pseudos.size, ranked_waiting: [...queue.values()].filter((r) => !r.room).length, open_waiting: rooms.filter((r) => !r.closed).reduce((n, r) => n + r.seats, 0) }] });
       return route.fulfill({ status: 404, headers: CORS, json: {} });
     });
   }

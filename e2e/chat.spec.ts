@@ -74,6 +74,8 @@ async function fakeSupabase(page: Page) {
       const names: Record<string, string> = { l1: 'Leo_9', z1: 'Zoe_12' };
       return route.fulfill({ headers: CORS, json: [...state.blocked].map((id) => ({ user_id: id, pseudo: names[id] ?? '?' })) });
     }
+    if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
+    if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 3, ranked_waiting: 1, open_waiting: 2 }] });
     return route.fulfill({ status: 404, headers: CORS, json: {} });
   });
   return state;
@@ -108,6 +110,7 @@ for (const size of sizes) {
       await expect(list.locator('li[data-msg="1"] [data-league="chicane"]')).toHaveText('Chicane');
       await expect(list.locator('li[data-msg="2"] .kit-badge')).toHaveCount(0);
       await expect(page.getByTestId('chat-place')).toContainText('12e sur 40 · ligue Bitume');
+      await expect(page.getByTestId('chat-online')).toHaveText('● 3 joueurs en ligne');
       await expectUsableLayout(page, 'chat');
       await expectNoHorizontalOverflow(page, 'chat');
       await expectContrast(page, 'chat');

@@ -9,6 +9,7 @@ import { loadDevOrigin } from './devOrigin';
 import { devParam } from './app/devParams';
 import { ensureAccount } from './app/accountScreen';
 import { connectServerGame } from './app/serverGame';
+import { startPresence } from './app/presence';
 
 await loadDevOrigin();
 applyTokens();
@@ -23,8 +24,9 @@ const root = document.getElementById('app') as HTMLElement;
 await ensureAccount();
 // a signed-in account plays against the game server (its economy is decided there); the menu shows meanwhile
 void connectServerGame();
-// the circuit editor: development only for now (the branch and its chunk are left out of production builds)
-if (import.meta.env.DEV && /^\/editor\/?$/.test(location.pathname)) {
+startPresence();
+// the circuit editor, opened from the Course tab (?editor=1), or at /editor on the development server (loaded on demand)
+if (params.has('editor') || (import.meta.env.DEV && /^\/editor\/?$/.test(location.pathname))) {
   const { mountEditor } = await import('./editor/EditorScreen');
   await mountEditor(root);
 } else {

@@ -19,6 +19,7 @@ import { toast } from './toast';
 import type { Session, StartInfo } from '../net/session';
 import type { Action } from '../engine';
 import { openSetup, type RaceConfig } from './setup';
+import { openLobbies } from './lobbiesScreen';
 
 function defaultConfig(): RaceConfig {
   const seed = Number(devParam('seed'));
@@ -64,6 +65,7 @@ export class App {
       startRace: (cfg) => void this.startRace(cfg),
       goTab: (tab) => this.shell?.setTab(tab),
       openSetup: () => this.openSetup(),
+      openLobbies: () => this.openLobbies(),
       openOnline: (code) => this.openOnline(code),
       openRanked: () => this.openRanked(),
       openOpenRoom: () => this.openOpenRoom(),
@@ -110,6 +112,17 @@ export class App {
     this.shell = null;
     this.race?.destroy();
     this.race = null;
+  }
+
+  openLobbies(): void {
+    openLobbies({
+      trackId: this.config.trackId,
+      laps: this.config.laps,
+      offline: () => this.openSetup(),
+      enter: (options, source) => {
+        const lobby = openOpenRoom(options, (s) => this.follow(s, () => lobby.close()), source);
+      },
+    });
   }
 
   openOpenRoom(): void {

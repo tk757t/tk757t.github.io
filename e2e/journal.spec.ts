@@ -19,6 +19,7 @@ for (const size of sizes) {
       await page.setViewportSize({ width: size.width, height: size.height });
       await page.goto('/?seed=5&aiDelay=0');
       await page.getByTestId('open-setup').click();
+      await page.getByTestId('offline-race').click();
       await page.getByTestId('start-from-setup').click();
       await page.waitForFunction(() => '__game' in window);
 

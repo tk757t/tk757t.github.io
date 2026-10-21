@@ -89,6 +89,7 @@ test.describe('légende des cases', () => {
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto('/?seed=5');
     await page.getByTestId('open-setup').click();
+    await page.getByTestId('offline-race').click();
     await page.getByRole('button', { name: 'Démarrer la course' }).click();
     await page.getByTestId('race-settings').click();
     await expect(page.getByTestId('cell-legend')).toBeVisible();

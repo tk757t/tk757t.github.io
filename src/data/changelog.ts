@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.8',
+    date: '2026-10-22',
+    notes: [
+      'Course perso : une page avec les parties déjà créées par les autres joueurs (Rejoindre) et un bouton Créer une partie (circuit, tours, places). Hors ligne, la course avec des amis sur le même écran ou contre des IA reste disponible.',
+      'Le chat indique combien de joueurs sont en ligne, et la page Course combien attendent en course classée et non classée.',
+      'L’éditeur de circuits est ouvert à tous : bouton « Éditeur de circuits » sous « Jouer avec des amis ».',
+    ],
+  },
+  {
     version: '0.3.7',
     date: '2026-10-22',
     notes: [

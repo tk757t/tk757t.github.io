@@ -3,6 +3,7 @@ import { TRACKS, TRACK_FORMAT, THEMES, type Theme, type TrackDef } from '../data
 import { Badge, Button, Modal, Panel, ProgressBar, setProgress, type ModalHandle } from '../ui/kit';
 import { el } from '../ui/dom';
 import { RaceScreen } from '../app/RaceScreen';
+import { devParam } from '../app/devParams';
 import type { RaceConfig } from '../app/setup';
 import { checkCircuit, hasErrors, type Check } from './checks';
 import { CELL_LENGTH, GRID_SIZE, THEME_LABELS, cloneDoc, newDoc, parseDoc, type EditorDoc } from './doc';
@@ -63,7 +64,7 @@ export function docFromFile(text: string): EditorDoc {
   throw new Error('Ce fichier n’est pas un circuit.');
 }
 
-/** The circuit editor (route /editor, development only for now). */
+/** The circuit editor: opened from the Course tab (?editor=1), or at /editor on the development server. */
 export async function mountEditor(root: HTMLElement): Promise<void> {
   const params = new URLSearchParams(location.search);
   const load = params.get('load');
@@ -141,7 +142,7 @@ class EditorScreen {
       this.undoBtn,
       this.redoBtn,
       Button({ text: '⤢', variant: 'ghost', attrs: { 'aria-label': 'Tout voir' }, onClick: () => this.view.fit() }),
-      Button({ text: 'Jeu', variant: 'ghost', attrs: { 'aria-label': 'Retour au jeu' }, onClick: () => location.assign('/') }),
+      Button({ text: 'Jeu', variant: 'ghost', attrs: { 'aria-label': 'Retour au jeu' }, onClick: () => location.assign(import.meta.env.BASE_URL) }),
     );
     this.root.replaceChildren(el('div', { class: 'editor', 'data-testid': 'editor' }, bar, el('div', { class: 'editor__main' }, this.stage, panel)));
     this.view = await EditorView.create(this.stage);
@@ -785,9 +786,8 @@ class EditorScreen {
   private async race(): Promise<void> {
     if (hasErrors(this.checks)) return;
     TRACKS[RACE_TRACK_ID] = { ...this.gen.def, id: RACE_TRACK_ID };
-    const params = new URLSearchParams(location.search);
-    const delay = Number(params.get('aiDelay') ?? 400);
-    const seed = Number(params.get('seed'));
+    const delay = Number(devParam('aiDelay') ?? 400);
+    const seed = Number(devParam('seed'));
     const cfg: RaceConfig = {
       players: 1 + this.ais,
       trackId: RACE_TRACK_ID,

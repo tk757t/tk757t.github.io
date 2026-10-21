@@ -36,6 +36,7 @@ async function audit(page: Page, where: string) {
 /** Starts the default 4-player race (human + AIs) and plays it to the end. */
 async function finishRace(page: Page) {
   await page.getByTestId('open-setup').click();
+  await page.getByTestId('offline-race').click();
   await page.getByRole('button', { name: 'Démarrer la course' }).click();
   await page.waitForFunction(() => '__game' in window);
   await page.evaluate(() => (window as unknown as W).__game.autoplay('hard'));

@@ -12,6 +12,7 @@ type W = {
 async function stageBlocked(page: Page) {
   await page.goto('/?seed=5');
   await page.getByTestId('open-setup').click();
+  await page.getByTestId('offline-race').click();
   await page.getByRole('button', { name: '2 joueurs', exact: true }).click();
   for (let i = 1; i <= 2; i++) await page.getByLabel(`Type du joueur ${i}`).selectOption({ label: 'Humain' });
   await page.getByRole('button', { name: 'Démarrer la course' }).click();

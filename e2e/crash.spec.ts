@@ -14,6 +14,7 @@ type W = {
 async function start(page: Page, players: number) {
   await page.goto('/?seed=5');
   await page.getByTestId('open-setup').click();
+  await page.getByTestId('offline-race').click();
   await page.getByRole('button', { name: `${players} joueur${players > 1 ? 's' : ''}`, exact: true }).click();
   for (let i = 1; i <= players; i++) await page.getByLabel(`Type du joueur ${i}`).selectOption({ label: 'Humain' });
   await page.getByRole('button', { name: 'Moins de tours' }).click();

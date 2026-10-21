@@ -1,4 +1,5 @@
 import { getAccount } from '../account';
+import { LOBBY_STATS_MS, fetchLobbyStats, waitingLabel } from '../../net/lobby';
 import { skipCost, slotState, unlockMsOf } from '../../data/profile/ops';
 import { CHESTS, PITY_CHESTS } from '../../data/chests';
 import { Badge, Button, Modal, Panel, ProgressBar, RarityFrame, setProgress } from '../../ui/kit';
@@ -27,6 +28,9 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
   page.append(root);
 
   const summary = el('p', { class: 'muted', 'data-testid': 'race-summary' });
+  // who is waiting in the ranked queue and the open rooms: read from the server every few seconds, nothing shown without an account or an answer
+  const waiting = el('p', { class: 'muted arena__waiting', role: 'status', 'data-testid': 'queue-stats' });
+  waiting.hidden = true;
   const trackName = el('h2', { class: 'arena__name' });
   // the ranked queue and the open rooms are on the server: they need an account with a pseudo
   const needAccount = (): boolean => {
@@ -36,8 +40,9 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
   };
   const start = Button({ text: 'COURSE !', variant: 'yellow', size: 'xl', block: true, attrs: { 'data-testid': 'start-ranked' }, onClick: () => needAccount() || ctx.openRanked() });
   const open = Button({ text: 'Course non classée', variant: 'green', block: true, attrs: { 'data-testid': 'open-room' }, onClick: () => needAccount() || ctx.openOpenRoom() });
-  const setup = Button({ text: 'Course perso', variant: 'blue', block: true, attrs: { 'data-testid': 'open-setup' }, onClick: () => ctx.openSetup() });
+  const setup = Button({ text: 'Course perso', variant: 'blue', block: true, attrs: { 'data-testid': 'open-setup' }, onClick: () => ctx.openLobbies() });
   const online = Button({ text: 'Jouer avec des amis', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-online' }, onClick: () => ctx.openOnline() });
+  const editor = Button({ text: 'Éditeur de circuits', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-editor' }, onClick: () => location.assign(`${import.meta.env.BASE_URL}?editor=1`) });
   const arena = Panel({
     tone: 'blue',
     className: 'arena',
@@ -45,9 +50,11 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
       el('div', { class: 'arena__banner' }, el('span', { class: 'arena__flag', 'aria-hidden': 'true', text: '🏁' }), el('div', {}, el('p', { class: 'arena__label', text: 'Arène 1' }), trackName)),
       start,
       open,
+      waiting,
       summary,
       setup,
       online,
+      editor,
     ],
   });
 
@@ -150,6 +157,8 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
 
   /** Once a second: refresh the countdowns, or redraw when a timer ran out. */
   function tick(): void {
+    statsAge += 1000;
+    if (statsAge >= LOBBY_STATS_MS) void refreshStats();
     const p = getProfile();
     const now = ctx.now();
     let stale = false;
@@ -164,6 +173,23 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
     });
     if (stale) draw();
   }
+
+  let statsAge = Infinity;
+  let statsBusy = false;
+  async function refreshStats(): Promise<void> {
+    if (statsBusy || !getAccount()?.pseudo || document.hidden) return;
+    statsBusy = true;
+    try {
+      const stats = await fetchLobbyStats();
+      statsAge = 0;
+      if (!root.isConnected) return;
+      waiting.hidden = stats === null;
+      if (stats) waiting.textContent = waitingLabel(stats);
+    } finally {
+      statsBusy = false;
+    }
+  }
+  void refreshStats();
 
   draw();
   const offProfile = onProfileChange(draw);

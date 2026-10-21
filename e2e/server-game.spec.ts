@@ -39,6 +39,8 @@ async function fakeSupabase(page: Page) {
       return route.fulfill({ headers: CORS, json: auth.pseudo });
     }
     if (url.pathname === '/rest/v1/profiles') return route.fulfill({ headers: CORS, json: [{ pseudo: auth.pseudo }] });
+    if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
+    if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 3, ranked_waiting: 1, open_waiting: 2 }] });
     return route.fulfill({ status: 404, headers: CORS, json: {} });
   });
   return {
@@ -192,6 +194,7 @@ for (const size of sizes) {
       // a race: token from the server before the start, rewards from the server at the end
       await goTab(page, 'race');
       await page.getByTestId('open-setup').click();
+      await page.getByTestId('offline-race').click();
       await page.getByTestId('start-from-setup').click();
       await page.waitForFunction(() => '__game' in window);
       expect(server.state().race).not.toBeNull();
@@ -236,6 +239,7 @@ for (const size of sizes) {
       await onServer(page);
       await goTab(page, 'race');
       await page.getByTestId('open-setup').click();
+      await page.getByTestId('offline-race').click();
       await page.getByTestId('start-from-setup').click();
       await page.waitForFunction(() => '__game' in window);
       expect(server.state().race).toMatchObject({ ranked: true });

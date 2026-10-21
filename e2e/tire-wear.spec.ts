@@ -13,6 +13,7 @@ type W = {
 async function solo(page: Page) {
   await page.goto('/?seed=5');
   await page.getByTestId('open-setup').click();
+  await page.getByTestId('offline-race').click();
   await page.getByRole('button', { name: '1 joueur', exact: true }).click();
   await page.getByLabel('Type du joueur 1').selectOption({ label: 'Humain' });
   await page.getByRole('button', { name: 'Démarrer la course' }).click();

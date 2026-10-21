@@ -14,7 +14,10 @@ export interface AppContext {
   setConfig(cfg: RaceConfig): void;
   startRace(cfg: RaceConfig): void;
   goTab(tab: TabId): void;
+  /** The offline race settings window. */
   openSetup(): void;
+  /** « Course perso »: the public games to join, create one, or play offline. */
+  openLobbies(): void;
   /** The "Jouer en ligne" window (create or join a room). */
   openOnline(joinCode?: string): void;
   /** The ranked matchmaking window. */

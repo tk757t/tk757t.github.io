@@ -67,6 +67,7 @@ for (const w of widths) {
       await page.goto('/?seed=5');
 
       await page.getByTestId('open-setup').click();
+      await page.getByTestId('offline-race').click();
       await expect(page.getByTestId('setup')).toBeVisible();
       await audit(page, `setup @${w.name}`);
       await shot(page, `${w.name}-setup`);
@@ -117,6 +118,7 @@ for (const w of widths) {
       await injectSave(page, richSave());
       await page.goto('/?seed=5&aiDelay=0');
       await page.getByTestId('open-setup').click();
+      await page.getByTestId('offline-race').click();
       await page.getByTestId('start-from-setup').click();
       await page.waitForFunction(() => '__game' in window);
       await expect(page.locator('canvas')).toBeVisible();

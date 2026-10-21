@@ -116,7 +116,8 @@ for (const w of widths) {
       const errors = watchConsole(page);
       await injectSave(page, richSave());
       await page.goto('/?seed=5&aiDelay=0');
-      await page.getByTestId('start-race').click();
+      await page.getByTestId('open-setup').click();
+      await page.getByTestId('start-from-setup').click();
       await page.waitForFunction(() => '__game' in window);
       await expect(page.locator('canvas')).toBeVisible();
       const canvas = await page.locator('canvas').boundingBox();

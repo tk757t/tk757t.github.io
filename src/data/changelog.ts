@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.3',
+    date: '2026-10-22',
+    notes: [
+      'Le gros bouton COURSE ! lance une course classée contre des joueurs de ton niveau.',
+      'Course non classée : tu rejoins une salle ouverte (ou tu en crées une), elle se remplit jusqu’à 4 joueurs puis la course part. Rien n’est gagné ni perdu.',
+      'Course perso : les réglages de course (joueurs, IA, circuit, tours) pour jouer seul, hors ligne ou contre des IA.',
+      'Jouer avec des amis : les salons à code restent disponibles en dessous.',
+    ],
+  },
+  {
     version: '0.3.2',
     date: '2026-10-22',
     notes: [

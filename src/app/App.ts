@@ -14,6 +14,7 @@ import { serverNow } from './serverGame';
 import { RaceScreen } from './RaceScreen';
 import { openOnlineLobby, setJoinParam } from './online';
 import { openRankedQueue } from './rankedLobby';
+import { openOpenRoom } from './openRoomLobby';
 import { toast } from './toast';
 import type { Session, StartInfo } from '../net/session';
 import type { Action } from '../engine';
@@ -65,6 +66,7 @@ export class App {
       openSetup: () => this.openSetup(),
       openOnline: (code) => this.openOnline(code),
       openRanked: () => this.openRanked(),
+      openOpenRoom: () => this.openOpenRoom(),
       onConfigChange: (fn) => {
         this.configListeners.add(fn);
         return () => this.configListeners.delete(fn);
@@ -108,6 +110,10 @@ export class App {
     this.shell = null;
     this.race?.destroy();
     this.race = null;
+  }
+
+  openOpenRoom(): void {
+    const lobby = openOpenRoom({ trackId: this.config.trackId, laps: this.config.laps }, (s) => this.follow(s, () => lobby.close()));
   }
 
   openRanked(): void {

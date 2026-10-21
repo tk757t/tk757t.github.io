@@ -28,21 +28,25 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
 
   const summary = el('p', { class: 'muted', 'data-testid': 'race-summary' });
   const trackName = el('h2', { class: 'arena__name' });
-  const start = Button({ text: 'COURSE !', variant: 'yellow', size: 'xl', block: true, attrs: { 'data-testid': 'start-race' }, onClick: () => ctx.startRace(ctx.config()) });
-  const setup = Button({ text: 'Régler la course', variant: 'blue', block: true, attrs: { 'data-testid': 'open-setup' }, onClick: () => ctx.openSetup() });
-  const online = Button({ text: 'Jouer en ligne', variant: 'green', block: true, attrs: { 'data-testid': 'open-online' }, onClick: () => ctx.openOnline() });
-  // the ranked queue is on the server: it needs an account with a pseudo
-  const ranked = Button({ text: '🏆 Course classée', variant: 'yellow', block: true, attrs: { 'data-testid': 'open-ranked' }, onClick: () => ctx.openRanked() });
-  ranked.hidden = !getAccount()?.pseudo;
+  // the ranked queue and the open rooms are on the server: they need an account with a pseudo
+  const needAccount = (): boolean => {
+    if (getAccount()?.pseudo) return false;
+    toast('Il faut un compte avec un pseudo (et une connexion) pour jouer en ligne. « Course perso » se joue hors ligne.', 'bad');
+    return true;
+  };
+  const start = Button({ text: 'COURSE !', variant: 'yellow', size: 'xl', block: true, attrs: { 'data-testid': 'start-ranked' }, onClick: () => needAccount() || ctx.openRanked() });
+  const open = Button({ text: 'Course non classée', variant: 'green', block: true, attrs: { 'data-testid': 'open-room' }, onClick: () => needAccount() || ctx.openOpenRoom() });
+  const setup = Button({ text: 'Course perso', variant: 'blue', block: true, attrs: { 'data-testid': 'open-setup' }, onClick: () => ctx.openSetup() });
+  const online = Button({ text: 'Jouer avec des amis', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-online' }, onClick: () => ctx.openOnline() });
   const arena = Panel({
     tone: 'blue',
     className: 'arena',
     children: [
       el('div', { class: 'arena__banner' }, el('span', { class: 'arena__flag', 'aria-hidden': 'true', text: '🏁' }), el('div', {}, el('p', { class: 'arena__label', text: 'Arène 1' }), trackName)),
-      summary,
       start,
+      open,
+      summary,
       setup,
-      ranked,
       online,
     ],
   });

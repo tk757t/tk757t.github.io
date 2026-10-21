@@ -176,3 +176,13 @@ file). Le salon est celui des parties entre amis (canal temps réel) : circuit d
 (le moins de trophées en pole), départ automatique. Un invité que l'hôte n'a pas encore listé redit bonjour toutes les 3 s. Chaque joueur obtient un jeton
 classé du serveur ; « Rejouer » relance la recherche. Migration : `20261022140000_ranked_queue.sql` (appliquée en production à la main ; ses fonctions restent à
 éprouver sur de faux joueurs en transactions annulées).
+
+## 4.14 L'onglet Course : trois façons de jouer (réalisé)
+
+- **COURSE !** (gros bouton) lance la mise en relation **classée** (§ 4.13). Sans compte avec pseudo, un message l'explique.
+- **Course non classée** : le joueur rejoint la salle ouverte qui a encore de la place, ou en crée une (il en est l'hôte). Les joueurs suivants la remplissent
+  jusqu'à 4, puis le suivant en crée une nouvelle (une salle reste ouverte 40 s). La course part quand la salle est pleine, ou après 20 s avec des IA pour les
+  places libres ; le circuit et les tours sont ceux de l'hôte (réglage de « Course perso »). Rien n'est gagné ni perdu. Serveur : `open_join` et
+  `open_close` (migration `20261022150000_open_rooms.sql`, tables `open_rooms`).
+- **Course perso** : la fenêtre de réglage de course (joueurs humains ou IA, circuit, tours, équipement) pour jouer en local ou contre des IA, hors ligne.
+- Un petit bouton **Jouer avec des amis** garde les salons à code (§ 4.4 : code ou lien à envoyer).

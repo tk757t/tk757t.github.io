@@ -19,6 +19,8 @@ export interface AppContext {
   openOnline(joinCode?: string): void;
   /** The ranked matchmaking window. */
   openRanked(): void;
+  /** The open rooms of the unranked race. */
+  openOpenRoom(): void;
   /** Subscribe to changes of the race settings (the Course tab shows a summary). */
   onConfigChange(fn: () => void): () => void;
   /** Subscribe to the 1 s tick that refreshes countdowns. */

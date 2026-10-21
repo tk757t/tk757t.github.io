@@ -273,7 +273,7 @@ test.describe('sauvegarde', () => {
     const errors = watchConsole(page);
     await injectSave(page, '{ceci n’est pas du json');
     await page.goto('/');
-    await expect(page.locator('[data-testid="start-race"]')).toBeVisible();
+    await expect(page.locator('[data-testid="start-ranked"]')).toBeVisible();
     expect(await page.evaluate(() => (window as unknown as W).__profile.status())).toBe('recovered');
     expect(await page.evaluate(() => localStorage.getItem('4mules.save.backup'))).toBe('{ceci n’est pas du json');
     await expect(page.locator('[data-slot-index][data-state="ready"]')).toHaveCount(3);

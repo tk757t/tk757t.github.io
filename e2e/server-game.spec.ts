@@ -191,7 +191,8 @@ for (const size of sizes) {
 
       // a race: token from the server before the start, rewards from the server at the end
       await goTab(page, 'race');
-      await page.getByTestId('start-race').click();
+      await page.getByTestId('open-setup').click();
+      await page.getByTestId('start-from-setup').click();
       await page.waitForFunction(() => '__game' in window);
       expect(server.state().race).not.toBeNull();
       server.advance(10 * 60_000); // the race took ten minutes on the server's clock
@@ -234,7 +235,8 @@ for (const size of sizes) {
       await page.getByTestId('account-guest').click();
       await onServer(page);
       await goTab(page, 'race');
-      await page.getByTestId('start-race').click();
+      await page.getByTestId('open-setup').click();
+      await page.getByTestId('start-from-setup').click();
       await page.waitForFunction(() => '__game' in window);
       expect(server.state().race).toMatchObject({ ranked: true });
       server.advance(10 * 60_000);

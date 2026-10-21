@@ -1,4 +1,5 @@
 import { getAccount } from '../account';
+import { openGuide } from '../guideScreen';
 import { LOBBY_STATS_MS, fetchLobbyStats, waitingLabel } from '../../net/lobby';
 import { skipCost, slotState, unlockMsOf } from '../../data/profile/ops';
 import { CHESTS, PITY_CHESTS } from '../../data/chests';
@@ -43,6 +44,7 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
   const setup = Button({ text: 'Course perso', variant: 'blue', block: true, attrs: { 'data-testid': 'open-setup' }, onClick: () => ctx.openLobbies() });
   const online = Button({ text: 'Jouer avec des amis', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-online' }, onClick: () => ctx.openOnline() });
   const editor = Button({ text: 'Éditeur de circuits', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-editor' }, onClick: () => location.assign(`${import.meta.env.BASE_URL}?editor=1`) });
+  const guide = Button({ text: '❓ Guide du jeu', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-guide' }, onClick: () => openGuide() });
   const arena = Panel({
     tone: 'blue',
     className: 'arena',
@@ -55,6 +57,7 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
       setup,
       online,
       editor,
+      guide,
     ],
   });
 

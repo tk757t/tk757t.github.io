@@ -520,6 +520,8 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
   .topbar { gap: 4px; }
   .topbar .kit-btn { padding: 0 9px; }
   .topbar .chip { padding: 0 9px; gap: 6px; }
+  .topbar .who2 small { font-size: 12px; }
+  .topbar .chip-car { width: 26px; height: 15px; }
 }
 
 /* online count in the chat, players waiting on the Course tab, the public games of « Course perso » */
@@ -614,3 +616,48 @@ body.has-dock .chat-notice { right: calc(var(--dock-w) + 12px); top: 14px; }
 .tester__item { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
 .tester__item select { min-width: 0; }
 @media (max-width: 520px) { .tester__item { grid-template-columns: 1fr 1fr; } .tester__item select:first-child { grid-column: 1 / -1; } }
+
+/* The dice of the gears in the race HUD: one die per gear, each with its own shape and colour */
+.gear-row { display: flex; flex-direction: column; gap: 4px; }
+.dice-row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.dice-row[hidden], .dice-row--start[hidden] { display: none; }
+.dice-row--start { grid-template-columns: minmax(0, 120px); justify-content: center; }
+.gdie { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 44px; min-height: 76px; padding: 2px 0 4px; font: inherit; color: var(--text); background: transparent; border: 0; border-radius: 14px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.gdie__face { position: relative; display: block; width: 100%; max-width: 56px; }
+.gdie__shape { display: block; width: 100%; height: auto; aspect-ratio: 1; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); transition: transform 0.12s ease, filter 0.12s ease; }
+.gdie__n { font-family: var(--font); fill: var(--dice-ink); pointer-events: none; }
+.gdie__range { margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.gdie__cost { position: absolute; top: 0; right: 2px; display: none; min-width: 18px; padding: 0 4px; font-size: 11px; line-height: 18px; color: #fff; background: var(--red); border: 2px solid var(--line); border-radius: 9px; }
+.gdie.is-costly .gdie__cost { display: block; }
+.gdie:hover:not([aria-disabled='true']) .gdie__shape { transform: translateY(-2px); }
+.gdie.is-selected .gdie__shape { transform: translateY(-3px); filter: drop-shadow(0 0 5px var(--gold)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }
+.gdie.is-selected .gdie__fill { stroke: #fff; stroke-width: 4; }
+.gdie.is-selected .gdie__range { color: var(--gold); }
+.gdie.is-selected::after { content: ''; position: absolute; left: 22%; right: 22%; bottom: 0; height: 4px; background: var(--gold); border-radius: 2px; }
+.gdie.is-off .gdie__fill { fill: var(--panel-dark); stroke: var(--text-muted); }
+.gdie.is-off .gdie__n { fill: var(--text-muted); }
+.gdie.is-off .gdie__range { color: var(--text-muted); }
+.gdie[aria-disabled='true'] { cursor: default; }
+.gdie:focus-visible { outline: 3px solid var(--gem); outline-offset: 1px; }
+.gear { text-align: center; line-height: 1.15; }
+.gear-hint { margin: 0; min-height: 1.2em; text-align: center; font-size: 13px; color: var(--text-muted); }
+.chip-car { width: 30px; height: 17px; object-fit: contain; flex: none; }
+
+/* The guide of the game */
+.kit-modal[data-testid='guide'] { max-width: min(640px, 100%); }
+.guide__select { width: 100%; min-height: 48px; }
+.guide__nav { display: flex; gap: 8px; }
+.guide__nav .kit-btn { flex: 1; margin: 0; }
+.guide__page { min-height: 220px; max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.guide__title { margin: 0 0 8px; font-size: 18px; color: var(--gold); }
+.guide__p { margin: 0 0 10px; line-height: 1.45; }
+.guide__step { margin: 0 0 8px; padding: 8px 10px; line-height: 1.4; background: var(--panel-dark); border-left: 4px solid var(--gold); border-radius: 8px; }
+.guide__list { margin: 0 0 10px; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; line-height: 1.4; }
+.guide__list--quick { list-style: none; padding-left: 0; }
+.guide__list--quick li { padding: 8px 10px; background: var(--panel-dark); border-radius: 10px; }
+.guide__now { margin: 0 0 10px; padding: 10px 12px; font-size: 16px; font-weight: 700; color: var(--text); background: var(--blue); border: 3px solid var(--gold); border-radius: 12px; }
+.stat-row[tabindex]:focus-visible { outline: 3px solid var(--gem); outline-offset: 2px; border-radius: 8px; }
+.gauge:focus-visible { outline: 3px solid var(--gem); outline-offset: 2px; border-radius: 8px; }
+.status-row { display: flex; align-items: center; gap: 8px; }
+.status-row .status-line { flex: 1; min-width: 0; margin: 0; }
+.status-row .kit-btn { flex: none; margin: 0; min-width: 44px; padding: 0 10px; }

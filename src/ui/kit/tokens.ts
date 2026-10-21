@@ -41,6 +41,15 @@ export const COLORS = {
   /** Plain playable cell and its ink. */
   cell: '#dfe5f1',
   cellInk: '#10151c',
+  /** The six dice of the gears (one colour and one shape each) and the d20 of the start, with their ink. */
+  dice1: '#4ade80',
+  dice2: '#5fdcff',
+  dice3: '#ffd23f',
+  dice4: '#ff9f43',
+  dice5: '#ff7ab8',
+  dice6: '#b388ff',
+  diceStart: '#e8edf7',
+  diceInk: '#10151c',
 } as const;
 
 export type ColorName = keyof typeof COLORS;
@@ -96,4 +105,11 @@ export const TEXT_PAIRS: [text: ColorName, surface: ColorName][] = [
   ['wearInk', 'wear'],
   ['crashInk', 'crash'],
   ['cellInk', 'cell'],
+  ['diceInk', 'dice1'],
+  ['diceInk', 'dice2'],
+  ['diceInk', 'dice3'],
+  ['diceInk', 'dice4'],
+  ['diceInk', 'dice5'],
+  ['diceInk', 'dice6'],
+  ['diceInk', 'diceStart'],
 ];

@@ -49,6 +49,7 @@ Les plages se recouvrent peu : passer de la 4e à la 5e, c'est accepter un écar
 - Un rapport qu'on ne peut pas payer n'est pas proposé. Exception : pour descendre de 4 crans ou plus, il faut **au moins 2**
   points de Moteur (on ne peut pas casser son moteur volontairement en rétrogradant).
 - Le jeu affiche, pour chaque rapport proposé, sa plage de cases et les cases du circuit qu'il peut atteindre.
+- Interface : les six dés sont alignés (formes et couleurs différentes, nombre de cases dessous). Un toucher choisit le dé, un second toucher sur le même dé lance. Les dés interdits sont grisés avec la raison. Le guide du jeu (hors course et en course) reprend ces règles ; une bulle explique chaque jauge et caractéristique.
 
 > **Exemple.** Vous êtes en 5e à l'approche d'un virage. Passer en 2e (3 crans) coûte 1 Boîte et 1 Freins ; passer en 3e
 > (2 crans) coûte 1 Boîte ; passer en 4e est gratuit. En 4e, vous ferez de 7 à 12 cases.

@@ -23,11 +23,14 @@ import { CAR_COLORS, RaceRenderer, type CarStyle } from '../render';
 import { MARK_STYLE, markOf, type Mark } from '../render/cells';
 import { canTest } from '../net/staff';
 import { testerDebugOn } from './testerScreen';
-import { lookOf } from './carSvg';
+import { DEFAULT_HELMET, carSpriteUrl, lookOf } from './carSvg';
+import { attachDiceKeys, createDiceRow, createStartDie } from './diceRow';
+import { GAUGES } from '../data/glossary';
+import { openGuide, type GuidePhase } from './guideScreen';
 import { toast } from './toast';
 import { equippedParts, effectSources, type EffectSources } from '../data/parts/effects';
 import { RANK_LEAGUES, type RankedOutcome } from '../data/ranked';
-import { Badge, Button, LevelBadge, Modal, ProgressBar, setButtonText, setProgress, type ModalHandle } from '../ui/kit';
+import { Badge, Button, LevelBadge, Modal, ProgressBar, attachTooltip, setButtonText, setProgress, type ModalHandle, type TipContent } from '../ui/kit';
 import { getProfile } from './profile';
 import { onSoundChange, playSound, setSoundEnabled, soundEnabled } from './sound';
 import { explosionFor, playRaceEvents } from './raceSounds';
@@ -42,6 +45,7 @@ import {
   cornerStatus,
   describeEvent,
   downshiftWarning,
+  gearDice,
   gearLabel,
   plural,
   playerName,
@@ -132,8 +136,11 @@ export class RaceScreen {
   private message = el('p', { class: 'msg', role: 'status', 'aria-live': 'polite', 'data-testid': 'message' });
   private gearTitle = el('b');
   private gearDetail = el('span');
-  private gearDown = Button({ text: '−', variant: 'ghost', size: 'lg', attrs: { 'aria-label': 'Rapport inférieur' }, onClick: () => this.stepGear(-1) });
-  private gearUp = Button({ text: '+', variant: 'ghost', size: 'lg', attrs: { 'aria-label': 'Rapport supérieur' }, onClick: () => this.stepGear(1) });
+  private lastDiceState: ReturnType<typeof gearDice> = [];
+  private gearHint = el('p', { class: 'gear-hint', 'data-testid': 'gear-hint' });
+  /** The six dice of the gears, one to touch (the gear is chosen, a second touch rolls), and the d20 of the start. */
+  private diceRow = createDiceRow((gear) => this.pickGear(gear));
+  private startDie = createStartDie(() => void this.onAct());
   private gearRow = el('div', { class: 'gear-row' });
   // adjustments after the roll (§3, §13)
   private brakesValue = el('output', { 'data-testid': 'brakes-used', 'aria-live': 'polite' });
@@ -171,6 +178,13 @@ export class RaceScreen {
     for (let i = 0; i < cfg.players; i++) {
       const sprite = assets.carSprite(this.seatCar(i));
       if (sprite) this.carStyles[`p${i + 1}`] = { ...this.carStyles[`p${i + 1}`], sprite, nose: assets.carNose };
+      else {
+        // no picture in the registry: the car is drawn with its own skin (the garage cosmetics for player 1, the colour of the seat for the others)
+        const id = `p${i + 1}`;
+        const style = this.carStyles[id] ?? {};
+        const look = i === 0 && geared ? lookOf(profile.loadout) : { paint: style.color ?? CAR_COLORS[i % CAR_COLORS.length], number: i + 1, helmet: DEFAULT_HELMET };
+        this.carStyles[id] = { ...style, color: style.color ?? look.paint, sprite: carSpriteUrl(look), nose: 0 };
+      }
     }
     const mods: Record<string, CarMods> = {};
     if (geared) {
@@ -205,20 +219,24 @@ export class RaceScreen {
     for (const cat of WEAR_ORDER) {
       const value = el('span');
       const bar = ProgressBar({ value: 0, max: 1, tone: 'green', label: WEAR_LABELS[cat], small: true });
-      const box = el('div', { class: 'gauge', 'data-cat': cat }, el('div', { class: 'label', title: WEAR_LABELS[cat] }, el('span', { text: WEAR_SHORT_LABELS[cat] }), value), bar);
+      const box = el('div', { class: 'gauge', 'data-cat': cat }, el('div', { class: 'label' }, el('span', { text: WEAR_SHORT_LABELS[cat] }), value), bar);
+      // what the gauge does and what spends it, on hover, focus or tap
+      attachTooltip(box, () => this.gaugeTip(cat));
       this.gauges.set(cat, { box, bar, value });
       gaugeBox.append(box);
     }
-    this.gearRow.append(this.gearDown, el('div', { class: 'gear' }, this.gearTitle, this.gearDetail), this.gearUp);
+    attachDiceKeys(this.diceRow.el);
+    this.gearRow.append(this.diceRow.el, this.startDie.el, el('div', { class: 'gear' }, this.gearTitle, this.gearDetail), this.gearHint);
     this.adjustPanel.append(
       el('div', { class: 'adjust__row' }, el('span', { class: 'adjust__label', text: 'Freins' }), el('div', { class: 'stepper' }, this.brakesLess, this.brakesValue, this.brakesMore), this.boostBtn, this.slipBtn),
     );
+    const guideBtn = Button({ text: '❓', variant: 'ghost', attrs: { 'data-testid': 'race-guide-open', 'aria-label': 'Aide de course' }, onClick: () => openGuide({ race: { phase: this.guidePhase() } }) });
     const fitBtn = Button({ text: 'Voir', variant: 'ghost', attrs: { 'aria-label': 'Tout voir' }, onClick: () => this.renderer.fitAll() });
     const followBtn = Button({ text: 'Suivre', variant: 'ghost', onClick: () => this.renderer.follow() });
     const hud = (this.hud = el(
       'section',
       { class: 'hud', 'aria-label': 'Commandes' },
-      this.statusText,
+      el('div', { class: 'status-row' }, this.statusText, guideBtn),
       this.message,
       this.gearRow,
       this.adjustPanel,
@@ -660,6 +678,9 @@ export class RaceScreen {
     if (car && this.state.phase === 'gear' && car.id !== this.turnCar) {
       this.turnCar = car.id;
       this.pendingGear = this.defaultGear(car);
+    } else if (car && this.state.phase === 'gear' && !allowedGears(car, this.state.config).includes(this.pendingGear)) {
+      // the chosen gear is not on offer any more (the car went back to 1st after a wall, a part was lost…)
+      this.pendingGear = this.defaultGear(car);
     }
   }
 
@@ -669,12 +690,32 @@ export class RaceScreen {
     return gears.includes(car.gear) ? car.gear : (gears.filter((g) => g < car.gear).at(-1) ?? gears[0]);
   }
 
-  private stepGear(dir: -1 | 1): void {
+  /** What a gauge of the active car is, for its tooltip. */
+  private gaugeTip(cat: WearCategory): TipContent {
     const car = currentCar(this.state);
-    if (!car || this.rolling || !this.isHumanTurn() || !car.started) return;
-    const gears = allowedGears(car, this.state.config);
-    const next = dir > 0 ? gears.find((g) => g > this.pendingGear) : [...gears].reverse().find((g) => g < this.pendingGear);
-    if (next !== undefined) this.pendingGear = next;
+    const g = GAUGES[cat];
+    return { title: `${g.name}${car ? ` : ${car.wear[cat]}/${car.maxWear[cat]}` : ''}`, lines: [g.role, g.uses], extra: [g.empty] };
+  }
+
+  /** Where the turn stands, for the race guide: what the player has to do now. */
+  private guidePhase(): GuidePhase {
+    const s = this.state;
+    const car = currentCar(s);
+    if (s.status !== 'racing' || !car || !this.isMine(car.id)) return 'other';
+    return s.phase === 'gear' || s.phase === 'adjust' || s.phase === 'pit' ? s.phase : 'other';
+  }
+
+  private lastDice(): ReturnType<typeof gearDice> {
+    return this.lastDiceState;
+  }
+
+  /** A die was touched: it becomes the chosen gear (the cells it can reach light up), and touching the chosen die again rolls it. */
+  private pickGear(gear: number): void {
+    const car = currentCar(this.state);
+    if (!car || this.rolling || !this.isHumanTurn() || !car.started || this.state.phase !== 'gear') return;
+    if (!allowedGears(car, this.state.config).includes(gear)) return;
+    if (gear === this.pendingGear) return void this.onAct();
+    this.pendingGear = gear;
     this.refresh();
   }
 
@@ -752,8 +793,9 @@ export class RaceScreen {
       this.act.disabled = true;
       this.gearRow.hidden = false;
       this.adjustPanel.hidden = true;
-      this.gearDown.disabled = true;
-      this.gearUp.disabled = true;
+      this.diceRow.update({ dice: this.diceRow.el.hidden ? [] : this.lastDice(), locked: true });
+      this.startDie.update(true);
+      this.gearHint.textContent = '';
       this.pitModal?.close();
       this.pitModal = null;
       void this.showEnd();
@@ -766,7 +808,9 @@ export class RaceScreen {
     // online: another player's turn (an AI's has its own wording)
     const other = !human && this.level(car.id) === null ? this.seatName(car.id) : null;
     this.chip.replaceChildren(
-      el('span', { class: 'dot', style: `background:${hex(this.carStyles[car.id]?.color ?? CAR_COLORS[idx % CAR_COLORS.length])}` }),
+      this.carStyles[car.id]?.sprite
+        ? el('img', { class: 'chip-car', src: this.carStyles[car.id].sprite!, alt: '', 'data-testid': 'chip-car' })
+        : el('span', { class: 'dot', style: `background:${hex(this.carStyles[car.id]?.color ?? CAR_COLORS[idx % CAR_COLORS.length])}` }),
       el(
         'span',
         { class: 'who2' },
@@ -784,10 +828,13 @@ export class RaceScreen {
     const label = gearLabel(s.config, car, this.pendingGear);
     this.gearTitle.textContent = car.started ? label.title : 'Départ arrêté';
     this.gearDetail.textContent = car.started ? label.detail : 'd20 : 20 super départ, 1 calage';
-    const gears = allowedGears(car, s.config);
-    const canShift = gearPhase && !this.rolling && human && car.started;
-    this.gearDown.disabled = !canShift || !gears.some((g) => g < this.pendingGear);
-    this.gearUp.disabled = !canShift || !gears.some((g) => g > this.pendingGear);
+    const canShift = gearPhase && !this.rolling && human;
+    this.diceRow.el.hidden = !car.started;
+    this.startDie.el.hidden = car.started;
+    this.lastDiceState = gearDice(s, car, this.pendingGear);
+    this.diceRow.update({ dice: this.lastDiceState, locked: !canShift });
+    this.startDie.update(!canShift);
+    this.gearHint.textContent = canShift ? (car.started ? 'Touchez un dé pour le choisir, touchez-le encore pour lancer.' : 'Touchez le dé pour partir.') : '';
     (this.gearTitle.parentElement as HTMLElement).dataset.gear = String(this.pendingGear);
 
     // adjustments
@@ -1158,6 +1205,7 @@ export class RaceScreen {
         setState: (s: RaceState) => {
           this.state = s;
           this.turnCar = null;
+          this.syncTurn(); // the gear picker starts on the gear of the car, as at the start of a turn
           this.refresh();
         },
         isHumanTurn: () => this.isHumanTurn(),

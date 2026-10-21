@@ -1,4 +1,5 @@
-import { currentCar, distanceRange, downshiftCost, effectiveDrop, isRaining, weatherOf } from '../engine';
+import { allowedGears, currentCar, distanceRange, downshiftCost, effectiveDrop, isRaining, weatherOf } from '../engine';
+import type { DieState } from './diceRow';
 import type { EffectSources } from '../data/parts/effects';
 import type { CarState, DnfReason, EngineConfig, GameEvent, RaceState, TireType, Weather, WearCategory } from '../engine';
 
@@ -54,6 +55,25 @@ export function wearLevel(value: number, max: number): WearLevel {
 export function gearLabel(config: EngineConfig, car: CarState, gear: number): { title: string; detail: string } {
   const r = distanceRange(config, car, gear);
   return { title: `Rapport ${gear}`, detail: `${r.min === r.max ? r.min : `${r.min} à ${r.max}`} cases` };
+}
+
+/**
+ * The six dice of the gear picker for the car: the cells each gives (tires and parts included), whether it can be chosen, and what reaching it
+ * costs. `selected` is the gear chosen so far.
+ */
+export function gearDice(state: RaceState, car: CarState, selected: number): DieState[] {
+  const allowed = allowedGears(car, state.config);
+  return state.config.dice.map((_, i) => {
+    const gear = i + 1;
+    const r = distanceRange(state.config, car, gear);
+    const ok = allowed.includes(gear);
+    const cost = gear < car.gear ? downshiftCost(effectiveDrop(car, gear)) : null;
+    const parts = cost ? [cost.gearbox ? 'boîte −1' : '', cost.brakes ? 'freins −1' : '', cost.engine ? 'moteur −1' : ''].filter(Boolean) : [];
+    let note: string | null = null;
+    if (!ok) note = gear > car.gear + 1 ? 'On ne monte que d’un rapport à la fois.' : 'Pas assez de points pour rétrograder jusque-là.';
+    else if (parts.length) note = `Rétrograder de ${car.gear - gear} rapports coûte : ${parts.join(', ')}.`;
+    return { gear, range: r.min === r.max ? String(r.min) : `${r.min}-${r.max}`, allowed: ok, selected: gear === selected, note, costly: parts.length > 0 };
+  });
 }
 
 /** What a downshift to `target` costs, in words, or null when it is free (§3). */

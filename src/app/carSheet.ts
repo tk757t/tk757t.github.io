@@ -1,9 +1,10 @@
 import { capLoadoutMods, LEAGUES, type League } from '../data/parts/caps';
 import { equippedParts, modsForLoadout } from '../data/parts/effects';
-import { carStats, STAT_HINTS, type CarStats } from '../data/parts/stats';
+import { carStats, type CarStats } from '../data/parts/stats';
 import { FAMILIES, FAMILY_LABELS, type Family } from '../data/parts/types';
 import type { Profile } from '../data/profile/profile';
-import { Badge, ProgressBar } from '../ui/kit';
+import { STATS } from '../data/glossary';
+import { Badge, ProgressBar, attachTooltip } from '../ui/kit';
 import { el } from '../ui/dom';
 
 /** The family of each part equipped in the garage, counted (docs/gdd/10-stats-voitures.md § 10.5). */
@@ -34,13 +35,16 @@ export function statSheet(stats: CarStats, opts: { compare?: CarStats; clampedFr
     const cut = opts.clampedFrom?.stats[i];
     const bar = ProgressBar({ value: s.bars, max: 10, tone: 'blue', label: `${s.label} : ${s.bars} sur 10`, text: `${s.bars}/10`, small: true, attrs: { 'data-stat-bar': s.key } });
     const note = other && other.bars !== s.bars ? `${other.bars} → ${s.bars}` : cut && cut.bars !== s.bars ? `${cut.bars} → ${s.bars}` : null;
-    return el(
+    const row = el(
       'li',
-      { class: `stat-row${note ? (cut && !other ? ' clamped' : s.bars > (other?.bars ?? 0) ? ' up' : ' down') : ''}`, title: STAT_HINTS[s.key] },
+      { class: `stat-row${note ? (cut && !other ? ' clamped' : s.bars > (other?.bars ?? 0) ? ' up' : ' down') : ''}`, 'data-stat': s.key },
       el('span', { class: 'stat-row__label', text: s.label }),
       bar,
       el('span', { class: 'stat-row__note', 'data-note': s.key, text: note ?? '' }),
     );
+    // what the stat means and what raises it, on hover, focus or tap
+    attachTooltip(row, () => ({ title: `${s.label} : ${s.bars}/10`, lines: [STATS[s.key].hint], extra: [`Pour la monter : ${STATS[s.key].raise}`] }));
+    return row;
   });
   const powerNote = opts.compare && opts.compare.power !== stats.power ? ` (${opts.compare.power} → ${stats.power})` : opts.clampedFrom && opts.clampedFrom.power !== stats.power ? ` (${opts.clampedFrom.power} → ${stats.power})` : '';
   return el(

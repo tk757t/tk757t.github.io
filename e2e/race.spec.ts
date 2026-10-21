@@ -36,7 +36,6 @@ async function shot(page: Page, size: string, label: string, players: number) {
 /** Clicks the UI like a player until the ranking is on screen. Returns what it saw on the way. */
 async function playRace(page: Page, size: string, players: number) {
   const seen = { corner: false, choice: false, roll: false, pass: false };
-  const gearButton = (name: string) => page.getByRole('button', { name });
   for (let i = 0; i < 600; i++) {
     if (await page.getByTestId('ranking').isVisible()) return seen;
     const ready = page.getByRole('button', { name: 'Je suis prêt' });
@@ -54,13 +53,13 @@ async function playRace(page: Page, size: string, players: number) {
       continue;
     }
     if (s.phase === 'gear') {
-      // aim for gear 3, one step at a time when the car has started (the UI only lets us go up by one)
+      // aim for gear 3 by touching the dice, one step at a time when the car has started (the UI only lets us go up by one)
       for (let g = 0; g < 6; g++) {
         const cur = Number(await page.locator('.gear').getAttribute('data-gear'));
         if (cur === 3) break;
-        const btn = gearButton(cur < 3 ? 'Rapport supérieur' : 'Rapport inférieur');
-        if (!(await btn.isEnabled())) break;
-        await btn.click();
+        const die = page.getByTestId(`die-${cur < 3 ? cur + 1 : cur - 1}`);
+        if (!(await die.isVisible()) || (await die.getAttribute('aria-disabled')) === 'true') break;
+        await die.click();
       }
       await humanStep(page);
       if (!seen.roll) {

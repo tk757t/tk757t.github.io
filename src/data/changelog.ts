@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.5.0',
+    date: '2026-10-22',
+    notes: [
+      'Course : plus de + et −. Les six dés des rapports sont alignés, chacun avec sa forme et sa couleur : touchez un dé pour le choisir (les cases atteintes s’allument), touchez-le encore pour lancer.',
+      'Au survol (ou au toucher) d’une caractéristique de la voiture, dans le garage comme en course, une bulle explique son effet.',
+      'Nouveau Guide du jeu, dans l’onglet Course : les règles page par page. En course, le bouton ❓ ouvre une aide courte qui dit quoi faire maintenant.',
+      'Votre voiture, avec ses couleurs et son numéro, est maintenant visible sur la piste et à côté de votre nom.',
+    ],
+  },
+  {
     version: '0.4.1',
     date: '2026-10-22',
     notes: [

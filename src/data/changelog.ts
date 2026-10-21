@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.9',
+    date: '2026-10-22',
+    notes: [
+      'Course non classée : elle fonctionne comme COURSE ! (même file d’attente, groupes de 2 à 4 joueurs, IA pour compléter après 20 secondes) mais sans tenir compte des trophées : tout le monde peut s’affronter, et rien n’est gagné ni perdu.',
+    ],
+  },
+  {
     version: '0.3.8',
     date: '2026-10-22',
     notes: [

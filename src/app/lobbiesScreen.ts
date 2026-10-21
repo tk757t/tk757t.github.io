@@ -20,7 +20,7 @@ const seatsText = (l: Lobby): string => `${l.seats}/${l.maxSeats}`;
 
 /** The room source of a game of the list: the guest takes the seat the server gave, the host owns the code the server created. */
 function sourceOf(join: () => Promise<{ room: string; host: boolean }>): RoomSource {
-  return { title: 'Course perso', testid: 'lobby-room', join, close: closeLobby, touch: touchLobby, auto: false };
+  return { title: 'Course perso', testid: 'lobby-room', join, close: closeLobby, touch: touchLobby };
 }
 
 /**

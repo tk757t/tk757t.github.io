@@ -39,7 +39,7 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
     return true;
   };
   const start = Button({ text: 'COURSE !', variant: 'yellow', size: 'xl', block: true, attrs: { 'data-testid': 'start-ranked' }, onClick: () => needAccount() || ctx.openRanked() });
-  const open = Button({ text: 'Course non classée', variant: 'green', block: true, attrs: { 'data-testid': 'open-room' }, onClick: () => needAccount() || ctx.openOpenRoom() });
+  const open = Button({ text: 'Course non classée', variant: 'green', block: true, attrs: { 'data-testid': 'start-unranked' }, onClick: () => needAccount() || ctx.openUnranked() });
   const setup = Button({ text: 'Course perso', variant: 'blue', block: true, attrs: { 'data-testid': 'open-setup' }, onClick: () => ctx.openLobbies() });
   const online = Button({ text: 'Jouer avec des amis', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-online' }, onClick: () => ctx.openOnline() });
   const editor = Button({ text: 'Éditeur de circuits', variant: 'ghost', block: true, attrs: { 'data-testid': 'open-editor' }, onClick: () => location.assign(`${import.meta.env.BASE_URL}?editor=1`) });

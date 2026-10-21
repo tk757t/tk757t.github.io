@@ -31,9 +31,9 @@ interface PollRow {
   players: { id: string; pseudo: string; trophies: number }[] | null;
 }
 
-/** Enters the queue with these trophies (the server keeps the lower of them and its own count). */
-export async function joinQueue(trophies: number): Promise<void> {
-  const { error } = await authClient().rpc('queue_join', { p_trophies: Math.max(0, Math.floor(trophies)) });
+/** Enters the ranked queue (or, with `ranked` false, the unranked one: no trophies count) with these trophies (the server keeps the lower of them and its own count). */
+export async function joinQueue(trophies: number, ranked = true): Promise<void> {
+  const { error } = await authClient().rpc('queue_join', { p_trophies: Math.max(0, Math.floor(trophies)), p_ranked: ranked });
   if (error) throw error;
 }
 

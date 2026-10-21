@@ -68,7 +68,7 @@ export class App {
       openLobbies: () => this.openLobbies(),
       openOnline: (code) => this.openOnline(code),
       openRanked: () => this.openRanked(),
-      openOpenRoom: () => this.openOpenRoom(),
+      openUnranked: () => this.openUnranked(),
       onConfigChange: (fn) => {
         this.configListeners.add(fn);
         return () => this.configListeners.delete(fn);
@@ -125,8 +125,8 @@ export class App {
     });
   }
 
-  openOpenRoom(): void {
-    const lobby = openOpenRoom({ trackId: this.config.trackId, laps: this.config.laps }, (s) => this.follow(s, () => lobby.close()));
+  openUnranked(): void {
+    const lobby = openRankedQueue((s) => this.follow(s, () => lobby.close()), { ranked: false, trackId: this.config.trackId, laps: this.config.laps });
   }
 
   openRanked(): void {

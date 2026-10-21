@@ -180,11 +180,12 @@ classé du serveur ; « Rejouer » relance la recherche. Migration : `2026102214
 ## 4.14 L'onglet Course : trois façons de jouer (réalisé)
 
 - **COURSE !** (gros bouton) lance la mise en relation **classée** (§ 4.13). Sans compte avec pseudo, un message l'explique.
-- **Course non classée** : le joueur rejoint la salle ouverte qui a encore de la place, ou en crée une (il en est l'hôte). Les joueurs suivants la remplissent
-  jusqu'à 4, puis le suivant en crée une nouvelle (une salle reste ouverte 40 s). La course part quand la salle est pleine, ou après 20 s avec des IA pour les
-  places libres ; l’hôte ajoute ou enlève des IA (− et +, dans la limite des places libres) et peut démarrer quand il veut ; le circuit et les tours sont ceux de l’hôte (réglage de « Course perso »). Rien n'est gagné ni perdu. Serveur : `open_join` et
-  `open_close` (migration `20261022150000_open_rooms.sql`, tables `open_rooms`).
-- **Course perso** : la fenêtre de réglage de course (joueurs humains ou IA, circuit, tours, équipement) pour jouer en local ou contre des IA, hors ligne.
+- **Course non classée** : la même file d'attente que COURSE ! (§ 4.13), **sans tenir compte des trophées** : aucun écart à respecter, les groupes de 2 à 4 se forment comme en classé
+  (dès 2 joueurs après 5 s, tout de suite à 4), et après 20 s seul, n'importe qui est complété par des IA. Les deux files ne se mélangent pas. Le circuit et les tours sont ceux du
+  réglage du joueur (ceux du premier de la file font foi). Rien n'est gagné ni perdu : pas de jeton de course, pas de trophées. Serveur : `queue_join(p_trophies, p_ranked)` et `queue_poll`
+  (migration `20261022180000_unranked_queue.sql`, colonne `ranked` de `ranked_queue`).
+- **Course perso** : une page avec les parties publiques déjà créées par les autres joueurs (Rejoindre) et un bouton **Créer une partie** (circuit, tours, places) ; « Jouer hors ligne » ouvre
+  la fenêtre de réglage de course (joueurs humains ou IA, circuit, tours, équipement). Serveur : table `lobbies` (migration `20261022170000_lobbies.sql`).
 - Un petit bouton **Jouer avec des amis** garde les salons à code (§ 4.4 : code ou lien à envoyer).
 
 ## 4.15 Journal de course (réalisé)

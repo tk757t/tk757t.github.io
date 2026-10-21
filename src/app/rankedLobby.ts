@@ -15,11 +15,14 @@ const ROOM_WAIT_MS = 15_000;
 
 const clock = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
+/** The ranked queue, or the unranked one (same waiting and same groups, but trophies count for nothing and are not moved; the circuit is the one of the player's settings). */
+export type QueueMode = { ranked: true } | { ranked: false; trackId: string; laps: number };
+
 /**
- * "Course classée": the matchmaking window. The player waits in the queue of the server, which forms the group and gives the
+ * "Course classée" and "Course non classée": the matchmaking window. The player waits in the queue of the server, which forms the group and gives the
  * room; the room is then the one of the friends' games, and the race starts at once. `onSession` follows the room into the race.
  */
-export function openRankedQueue(onSession: (s: Session) => void): ModalHandle {
+export function openRankedQueue(onSession: (s: Session) => void, mode: QueueMode = { ranked: true }): ModalHandle {
   let alive = true;
   let session: Session | null = null;
   let poll: ReturnType<typeof setInterval> | null = null;
@@ -35,8 +38,8 @@ export function openRankedQueue(onSession: (s: Session) => void): ModalHandle {
     poll = tick = waitTimer = null;
   };
   const modal = Modal({
-    title: 'Course classée',
-    testid: 'ranked-queue',
+    title: mode.ranked ? 'Course classée' : 'Course non classée',
+    testid: mode.ranked ? 'ranked-queue' : 'unranked-queue',
     children: [body],
     onClose: () => {
       alive = false;
@@ -54,7 +57,7 @@ export function openRankedQueue(onSession: (s: Session) => void): ModalHandle {
 
   function drawSearch(): void {
     body.replaceChildren(
-      el('p', { class: 'ranked-queue__you', 'data-testid': 'ranked-me' }, 'Vous : ', el('b', { text: `${me.trophies} trophées` }), ' · ', Badge({ text: me.league.label, tone: 'blue' })),
+      ...(mode.ranked ? [el('p', { class: 'ranked-queue__you', 'data-testid': 'ranked-me' }, 'Vous : ', el('b', { text: `${me.trophies} trophées` }), ' · ', Badge({ text: me.league.label, tone: 'blue' }))] : []),
       status,
       detail,
       Button({ text: 'Annuler', variant: 'ghost', block: true, attrs: { 'data-testid': 'ranked-cancel' }, onClick: () => modal.close() }),
@@ -77,7 +80,7 @@ export function openRankedQueue(onSession: (s: Session) => void): ModalHandle {
     status.textContent = 'Connexion…';
     startedAt = Date.now();
     try {
-      await joinQueue(me.trophies);
+      await joinQueue(mode.ranked ? me.trophies : 0, mode.ranked);
     } catch (e) {
       return drawError(serverError(e, 'La file d’attente ne répond pas. Réessayez.'));
     }
@@ -93,7 +96,7 @@ export function openRankedQueue(onSession: (s: Session) => void): ModalHandle {
         if (q.status === 'waiting') {
           status.dataset.state = 'waiting';
           status.textContent = q.found > 1 ? `${q.found} joueurs trouvés…` : 'Recherche d’adversaires…';
-          detail.textContent = `Attente : ${clock(q.waitedS)} · écart de trophées accepté : ±${q.gap}`;
+          detail.textContent = mode.ranked ? `Attente : ${clock(q.waitedS)} · écart de trophées accepté : ±${q.gap}` : `Attente : ${clock(q.waitedS)}`;
           return;
         }
         stop();
@@ -118,11 +121,11 @@ export function openRankedQueue(onSession: (s: Session) => void): ModalHandle {
       id,
       name,
       host,
-      settings: { trackId: rankedTrack(TRACK_LIST.map((t) => t.id), serverNow()), laps: 1, ais },
-      // the fewest trophies in pole, to even things out
-      order: (players) => gridOrder(players.map((p) => ({ ...p, trophies: trophiesOf.get(p.id) ?? 0 }))).map(({ id: pid, name: pname }) => ({ id: pid, name: pname })),
+      settings: mode.ranked ? { trackId: rankedTrack(TRACK_LIST.map((t) => t.id), serverNow()), laps: 1, ais } : { trackId: mode.trackId, laps: mode.laps, ais },
+      // ranked: the fewest trophies in pole, to even things out; unranked: the order of arrival
+      ...(mode.ranked ? { order: (players: { id: string; name: string }[]) => gridOrder(players.map((p) => ({ ...p, trophies: trophiesOf.get(p.id) ?? 0 }))).map(({ id: pid, name: pname }) => ({ id: pid, name: pname })) } : {}),
     });
-    s.ranked = true;
+    s.ranked = mode.ranked;
     session = s;
     status.dataset.state = 'room';
     body.replaceChildren(
@@ -130,10 +133,10 @@ export function openRankedQueue(onSession: (s: Session) => void): ModalHandle {
       el(
         'ul',
         { class: 'online__players', 'data-testid': 'ranked-players' },
-        ...group.map((p) => el('li', {}, el('span', { text: p.pseudo }), Badge({ text: p.league.label, tone: 'blue' }), el('small', { class: 'muted', text: `🏆 ${p.trophies}` }))),
+        ...group.map((p) => el('li', {}, el('span', { text: p.pseudo }), ...(mode.ranked ? [Badge({ text: p.league.label, tone: 'blue' }), el('small', { class: 'muted', text: `🏆 ${p.trophies}` })] : []))),
         ...Array.from({ length: ais }, (_, i) => el('li', {}, el('span', { text: `IA ${i + 1}` }), Badge({ text: 'IA', tone: 'gold' }))),
       ),
-      el('p', { class: 'muted', 'data-testid': 'ranked-track', text: `${trackName(s.settings.trackId)} · 1 tour · météo aléatoire` }),
+      el('p', { class: 'muted', 'data-testid': 'ranked-track', text: mode.ranked ? `${trackName(s.settings.trackId)} · 1 tour · météo aléatoire` : `${trackName(s.settings.trackId)} · ${s.settings.laps} tour${s.settings.laps > 1 ? 's' : ''}` }),
       el('p', { class: 'muted', text: 'Départ dans un instant…' }),
     );
     offLobby = s.onLobby(() => {

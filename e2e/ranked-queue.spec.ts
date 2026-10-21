@@ -12,6 +12,7 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers
 
 interface Row {
   uid: string;
+  ranked: boolean;
   pseudo: string;
   trophies: number;
   joined: number;
@@ -29,14 +30,13 @@ function fakeServer() {
   const queue = new Map<string, Row>();
   const pseudos = new Map<string, string>();
   const calls = { join: 0, poll: 0, leave: 0 };
-  /** The open rooms: the same rule as the SQL (fill the oldest room with a seat, up to 4, then make a new one). */
-  const rooms: { code: string; host: string; seats: number; closed: boolean }[] = [];
   /** The same rule as the SQL: a group of 2 to 4 as soon as the first has waited 5 s; here the test makes them wait 0 s, so it forms at once with 2. */
   function poll(uid: string) {
     const me = queue.get(uid);
     if (!me) return [{ status: 'none', room: null, host: false, ais: 0, waited: 0, gap: 0, found: 0, players: null }];
     if (!me.room) {
-      const waiting = [...queue.values()].filter((r) => !r.room).sort((a, b) => a.joined - b.joined);
+      // the two queues never mix, as in the SQL
+      const waiting = [...queue.values()].filter((r) => !r.room && r.ranked === me.ranked).sort((a, b) => a.joined - b.joined);
       if (waiting.length >= 2) {
         const group = waiting.slice(0, 4).map((r) => ({ id: r.uid, pseudo: r.pseudo, trophies: r.trophies }));
         for (const r of waiting.slice(0, 4)) Object.assign(r, { room: 'QRANK', host: r === waiting[0], ais: 0, group });
@@ -67,30 +67,13 @@ function fakeServer() {
       if (url.pathname === '/rest/v1/profiles') return route.fulfill({ headers: CORS, json: [{ pseudo: pseudos.get(uid) ?? null }] });
       if (url.pathname === '/rest/v1/rpc/queue_join') {
         calls.join++;
-        const { p_trophies } = req.postDataJSON() as { p_trophies: number };
-        queue.set(uid, { uid, pseudo: pseudos.get(uid) ?? '?', trophies: p_trophies, joined: Date.now() + calls.join, room: null, host: false, ais: 0, group: null });
+        const { p_trophies, p_ranked } = req.postDataJSON() as { p_trophies: number; p_ranked?: boolean };
+        queue.set(uid, { uid, ranked: p_ranked ?? true, pseudo: pseudos.get(uid) ?? '?', trophies: p_trophies, joined: Date.now() + calls.join, room: null, host: false, ais: 0, group: null });
         return route.fulfill({ status: 204, headers: CORS });
       }
       if (url.pathname === '/rest/v1/rpc/queue_poll') {
         calls.poll++;
         return route.fulfill({ headers: CORS, json: poll(uid) });
-      }
-      if (url.pathname === '/rest/v1/rpc/open_join') {
-        const open = rooms.find((r) => !r.closed && r.seats < 4 && r.host !== uid);
-        if (open) {
-          open.seats++;
-          open.closed = open.seats >= 4;
-          return route.fulfill({ headers: CORS, json: [{ room: open.code, host: false, seats: open.seats }] });
-        }
-        const made = { code: `ROOM${String.fromCharCode(65 + rooms.length)}`, host: uid, seats: 1, closed: false };
-        rooms.push(made);
-        return route.fulfill({ headers: CORS, json: [{ room: made.code, host: true, seats: 1 }] });
-      }
-      if (url.pathname === '/rest/v1/rpc/open_close') {
-        const code = (req.postDataJSON() as { p_room: string }).p_room;
-        const room = rooms.find((r) => r.code === code && r.host === uid);
-        if (room) room.closed = true;
-        return route.fulfill({ status: 204, headers: CORS });
       }
       if (url.pathname === '/rest/v1/rpc/queue_leave') {
         calls.leave++;
@@ -99,11 +82,11 @@ function fakeServer() {
         return route.fulfill({ status: 204, headers: CORS });
       }
       if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
-      if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: pseudos.size, ranked_waiting: [...queue.values()].filter((r) => !r.room).length, open_waiting: rooms.filter((r) => !r.closed).reduce((n, r) => n + r.seats, 0) }] });
+      if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: pseudos.size, ranked_waiting: [...queue.values()].filter((r) => !r.room && r.ranked).length, open_waiting: [...queue.values()].filter((r) => !r.room && !r.ranked).length }] });
       return route.fulfill({ status: 404, headers: CORS, json: {} });
     });
   }
-  return { store, advance: (ms: number) => (skew += ms), attach, calls, queue, rooms, state: (uid: string) => readState(store.rows.get(uid)!.state) };
+  return { store, advance: (ms: number) => (skew += ms), attach, calls, queue, state: (uid: string) => readState(store.rows.get(uid)!.state) };
 }
 
 /** Two tabs of one browser share its storage: each keeps its own sign-in under its own key. */
@@ -212,7 +195,7 @@ test.describe('course classée : mise en relation', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await expect(page.getByTestId('avatar')).toBeVisible();
-    // the ranked race and the open rooms need an account: the button says so instead of doing nothing
+    // the ranked and unranked races need an account: the button says so instead of doing nothing
     await page.getByTestId('start-ranked').click();
     await expect(page.getByTestId('toast')).toContainText('compte');
     await expect(page.getByTestId('ranked-queue')).toHaveCount(0);
@@ -220,11 +203,11 @@ test.describe('course classée : mise en relation', () => {
   });
 });
 
-test.describe('course non classée : salles ouvertes', () => {
+test.describe('course non classée : la même file, sans trophées', () => {
   test.use({ reducedMotion: 'reduce' });
   test.setTimeout(240_000);
 
-  test('trois joueurs cliquent : la première crée la salle, les suivants la remplissent, la course part sans récompense', async ({ context }) => {
+  test('deux joueurs non classés sont groupés quel que soit leur écart, un joueur classé n’est pas mêlé à eux, la course part sans récompense', async ({ context }) => {
     const server = fakeServer();
     const pages = [await context.newPage(), await context.newPage(), await context.newPage()];
     const ids = ['ua', 'ub', 'uc'];
@@ -238,42 +221,31 @@ test.describe('course non classée : salles ouvertes', () => {
       await server.attach(p, ids[i]);
       await signIn(p, names[i]);
     }
-    // the first one creates the room and waits
-    await pages[0].getByTestId('open-room').click();
-    await expect(pages[0].getByTestId('open-room-status')).toContainText('1/4', { timeout: 10_000 });
-    await audit(pages[0], 'salle ouverte');
-    await pages[0].screenshot({ path: 'e2e/screenshots/open-room-desktop-waiting.png' });
-    // the next ones fill it
-    await pages[1].getByTestId('open-room').click();
-    await expect(pages[0].getByTestId('open-room-status')).toContainText('2/4', { timeout: 15_000 });
-    await pages[2].getByTestId('open-room').click();
-    await expect(pages[0].getByTestId('open-room-status')).toContainText('3/4', { timeout: 15_000 });
-    expect(server.rooms).toHaveLength(1);
-    await expect(pages[2].getByTestId('open-room-players')).toContainText('Alice_01');
-    await expect(pages[2].getByTestId('open-room-players')).toContainText('Cleo_03');
-    await pages[2].screenshot({ path: 'e2e/screenshots/open-room-mobile-waiting.png' });
-    // the host adds an AI (one free seat only, so no more), the others see it; then removes it and adds it again
-    const host = pages[0];
-    await expect(host.getByTestId('open-room-ai-count')).toHaveText('Aucune IA');
-    await expect(host.getByTestId('open-room-ai-minus')).toBeDisabled();
-    await host.getByTestId('open-room-ai-plus').click();
-    await expect(host.getByTestId('open-room-ai-count')).toHaveText('1 IA');
-    await expect(host.getByTestId('open-room-ai-plus')).toBeDisabled();
-    await expect(pages[2].getByTestId('open-room-ai-count')).toHaveText('1 IA');
-    await expect(pages[2].getByTestId('open-room-start')).toHaveCount(0); // only the host starts
-    await host.getByTestId('open-room-ai-minus').click();
-    await expect(pages[1].getByTestId('open-room-ai-count')).toHaveText('Sans IA');
-    await host.getByTestId('open-room-ai-plus').click();
-    await expect(pages[1].getByTestId('open-room-ai-count')).toHaveText('1 IA');
-    await audit(host, 'salle ouverte avec IA');
-    await host.screenshot({ path: 'e2e/screenshots/open-room-desktop-ai.png' });
-    await pages[1].screenshot({ path: 'e2e/screenshots/open-room-mobile-ai.png' });
-    // the host starts: three humans and the AI race, nothing is paid
-    await host.getByTestId('open-room-start').click();
-    for (const p of pages) await p.waitForFunction(() => '__game' in window, undefined, { timeout: 40_000 });
-    for (const p of pages) await expect(p.getByTestId('turn-chip')).toBeVisible();
-    expect(server.rooms[0].closed).toBe(true);
-    expect(server.state('ua').race).toBeNull(); // no token: an unranked room pays nothing
+    // Cleo plays ranked and waits alone: the unranked queue is another one
+    await pages[2].getByTestId('start-ranked').click();
+    await expect(pages[2].getByTestId('ranked-status')).toContainText('Recherche', { timeout: 10_000 });
+    // Alice enters the unranked queue: no trophies, no gap, just the wait
+    await pages[0].getByTestId('start-unranked').click();
+    await expect(pages[0].getByTestId('unranked-queue')).toBeVisible();
+    await expect(pages[0].getByTestId('ranked-me')).toHaveCount(0);
+    await expect(pages[0].getByTestId('ranked-status')).toContainText('Recherche', { timeout: 10_000 });
+    await expect(pages[0].getByTestId('ranked-detail')).not.toContainText('trophées');
+    await audit(pages[0], 'file non classée');
+    await pages[0].screenshot({ path: 'e2e/screenshots/unranked-desktop-waiting.png' });
+    // the Course tab of the others counts who waits where
+    await pages[1].getByTestId('start-unranked').click();
+    for (const p of pages.slice(0, 2)) await expect(p.getByTestId('ranked-found')).toBeVisible({ timeout: 20_000 });
+    await expect(pages[0].getByTestId('ranked-players')).toContainText('Bob_02');
+    await expect(pages[0].getByTestId('ranked-track')).toContainText('tour');
+    await audit(pages[1], 'groupe non classé');
+    await pages[1].screenshot({ path: 'e2e/screenshots/unranked-mobile-found.png' });
+    for (const p of pages.slice(0, 2)) await p.waitForFunction(() => '__game' in window, undefined, { timeout: 40_000 });
+    for (const p of pages.slice(0, 2)) await expect(p.getByTestId('turn-chip')).toBeVisible();
+    // the ranked player is still waiting, alone; nothing was paid, no trophy moved
+    await expect(pages[2].getByTestId('ranked-status')).toContainText('Recherche');
+    expect(server.queue.get('uc')?.room ?? null).toBeNull();
+    expect(server.state('ua').race).toBeNull(); // no token: an unranked race pays nothing
+    expect(server.state('ua').profile.ranked.races).toBe(0);
     expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
   });
 });

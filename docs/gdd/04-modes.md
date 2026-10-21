@@ -147,7 +147,7 @@ navigateur ne lit ni n'écrit les tables directement.
 | Affichage | **texte seulement** (jamais du balisage) : un message qui ressemble à du code reste du texte |
 
 La lecture se fait par interrogation toutes les 3 secondes, uniquement fenêtre ouverte et page visible. La modération (silence, masquage) passe par des
-fonctions réservées au service, jamais au navigateur. Reste à faire : écran d'administration (étape 10), messages privés et amis (plus tard).
+fonctions réservées au service, jamais au navigateur. L'écran d'administration est décrit dans [docs/admin.md](../admin.md) ; messages privés et amis : plus tard.
 
 ## 4.11 Classement de la saison (réalisé)
 
@@ -210,3 +210,8 @@ virages). La fenêtre suit la course en direct, sauf si on lit plus haut ; en li
 - **Notifications** : une petite notification à chaque nouveau message du canal général (et du chat de course), partout, **désactivable** par la cloche 🔔 du chat (le choix est gardé dans le navigateur) ;
   elle n'apparaît pas quand ce chat est sous les yeux. Les messages non lus sont comptés sur le bouton, la bulle et l'onglet.
 - Les messages du canal général sont lus par un seul endroit de l'application (toutes les 3 s chat à l'écran, toutes les 8 s sinon) ; la fenêtre, le panneau et les notifications s'y servent.
+
+## 4.17 Menus Admin et Testeur (réalisé)
+
+À côté de la version du jeu, dans la fenêtre du profil : **Testeur** (rôles testeur et admin) et **Admin** (rôle admin). Le serveur vérifie le rôle de chaque action. Admin : chiffres, joueurs (rôle, silence, suspension, dernières actions),
+signalements du chat, mots refusés, journal des actions des administrateurs. Testeur : ressources, coffres, pièces, cases numérotées en course, copie de l'état du compte, remise à zéro du compte. Détail dans [docs/admin.md](../admin.md).

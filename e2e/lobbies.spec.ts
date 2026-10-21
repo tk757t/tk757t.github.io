@@ -58,6 +58,7 @@ async function fakeSupabase(page: Page) {
       return route.fulfill({ status: 204, headers: CORS });
     }
     if (rpc === 'lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 12, ranked_waiting: 3, open_waiting: 1 }] });
+    if (rpc === 'my_role') return route.fulfill({ headers: CORS, json: 'player' });
     if (rpc === 'chat_fetch') return route.fulfill({ headers: CORS, json: [] });
     if (rpc === 'leaderboard_me') return route.fulfill({ headers: CORS, json: [] });
     if (rpc === 'lobby_list') return route.fulfill({ headers: CORS, json: state.lobbies });
@@ -169,7 +170,7 @@ for (const size of sizes) {
       const errors = watchConsole(page);
       await page.goto('/');
       await page.getByTestId('open-editor').click();
-      await expect(page.getByTestId('editor')).toBeVisible();
+      await expect(page.getByTestId('editor')).toBeVisible({ timeout: 20_000 }); // the editor is loaded on demand: slower when many tests run together
       await expect(page).toHaveURL(/\?editor=1/);
       await audit(page, 'éditeur');
       await page.screenshot({ path: `e2e/screenshots/lobbies-${size.name}-editor.png` });

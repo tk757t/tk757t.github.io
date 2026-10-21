@@ -19,6 +19,9 @@ import { openLeaderboard } from './leaderboardScreen';
 import { currentRanked } from '../data/ranked';
 import { onSoundChange, playSound, setSoundEnabled, soundEnabled } from './sound';
 import { chatUnread, onChatChange } from './chatStore';
+import { canAdmin, canTest, refreshRole } from '../net/staff';
+import { openAdmin } from './adminScreen';
+import { openTester } from './testerScreen';
 import { onRaceChatUnread, raceChatUnread } from './chatRace';
 
 const TAB_INFO: Record<TabId, { label: string; icon: string }> = {
@@ -115,6 +118,16 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
     // the driver's portrait, chosen from the race number of the loadout (the same number gives the same driver)
     const face = assets.driverPortrait(profilePortraitIndex(p));
     const portrait = face ? [el('img', { class: 'portrait portrait--big', src: face, alt: 'Pilote', 'data-testid': 'profile-portrait' })] : [];
+    // the staff tools sit next to the version: the buttons of the roles this account has (the server checks the role again for every action)
+    const staffBox = el('span', { class: 'profile-staff', 'data-testid': 'staff-buttons' });
+    const fillStaff = (): void => {
+      staffBox.replaceChildren(
+        ...(canTest() ? [Button({ text: 'Testeur', variant: 'green', attrs: { 'data-testid': 'open-tester' }, onClick: () => void openTester() })] : []),
+        ...(canAdmin() ? [Button({ text: 'Admin', variant: 'red', attrs: { 'data-testid': 'open-admin' }, onClick: () => void openAdmin() })] : []),
+      );
+    };
+    fillStaff();
+    if (account?.pseudo) void refreshRole().then(fillStaff);
     Modal({
       title: 'Profil',
       testid: 'profile-modal',
@@ -141,6 +154,7 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
           { class: 'profile-version' },
           el('span', { class: 'profile-version__text', 'data-testid': 'app-version', text: `Version ${currentBuild().version}` }),
           Button({ text: 'Nouveautés', variant: 'blue', attrs: { 'data-testid': 'open-changelog' }, onClick: openChangelog }),
+          staffBox,
         ),
       ],
     });

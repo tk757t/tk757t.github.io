@@ -59,6 +59,7 @@ function fakeBackend() {
       }
       if (url.pathname === '/rest/v1/rpc/leaderboard_me') return route.fulfill({ headers: CORS, json: [] });
       if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 5, ranked_waiting: 0, open_waiting: 0 }] });
+      if (url.pathname === '/rest/v1/rpc/my_role') return route.fulfill({ headers: CORS, json: 'player' });
       if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
       return route.fulfill({ status: 404, headers: CORS, json: {} });
     });

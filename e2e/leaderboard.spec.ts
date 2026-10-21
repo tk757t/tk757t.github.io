@@ -34,6 +34,7 @@ async function fakeSupabase(page: Page, rows: Row[]) {
     if (url.pathname === '/rest/v1/rpc/chat_fetch') return route.fulfill({ headers: CORS, json: [] });
     if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
     if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 3, ranked_waiting: 1, open_waiting: 2 }] });
+    if (url.pathname === '/rest/v1/rpc/my_role') return route.fulfill({ headers: CORS, json: 'player' });
     return route.fulfill({ status: 404, headers: CORS, json: {} });
   });
 }

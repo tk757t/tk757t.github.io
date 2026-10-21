@@ -4,7 +4,7 @@ import { upgradeCost, type Card } from '../data/parts/packs';
 import { MAX_LEVEL, SLOTS, type Slot } from '../data/parts/types';
 import type { ChestTier } from '../data/chests';
 import { awardRaceWithPass, claimQuestWithPass } from '../data/rewards';
-import { SOLO_PAID_PER_HOUR, equip, openSlot, skipCost, skipSlot, slotState, unequipCosmetic, unequipSlot, upgradePart, type RaceRewards } from '../data/profile/ops';
+import { SOLO_PAID_PER_HOUR, addPacks, addXp, equip, openSlot, skipCost, skipSlot, slotState, unequipCosmetic, unequipSlot, upgradePart, type RaceRewards } from '../data/profile/ops';
 import { SLOT_COUNT, type Profile } from '../data/profile/profile';
 import { QUESTS, isClaimed, isClaimable } from '../data/quests';
 import { PASS_TIERS, claimPassTier, type PassReward } from '../data/pass';
@@ -13,16 +13,16 @@ import { buyOffer, canAfford, findOffer } from '../data/shop';
 import { applyRaceTrophies, leagueOf, rankedSeasonOf, seasonReset, type RankedOutcome } from '../data/ranked';
 import { levelStatus } from '../storage/campaign';
 import { fail } from './errors';
-import { asParams, bool, id, int, only, record, type Params } from './params';
+import { asParams, bool, id, int, only, optInt, record, type Params } from './params';
 import { LAP_LENGTH, MAX_LAPS, MAX_PLAYERS, RACE_RULES, minRaceMs, raceSeed, tokenId, type RaceRules } from './race';
-import { rngFrom, type RaceToken, type ServerState } from './state';
+import { freshState, rngFrom, type RaceToken, type ServerState } from './state';
 
 /**
  * The game rules as the server applies them. Pure: the state, the parameters sent by the browser, the server's clock and
  * the server's randomness go in; the new state and what to show come out. Every rule is the one of src/data (the same
  * code as the offline game), called with `ctx.now` and a fresh `ctx.random` draw, never with values from the browser.
  */
-export const ACTIONS = ['sync', 'start_race', 'finish_race', 'open_slot', 'skip_slot', 'buy_offer', 'claim_gift', 'claim_welcome', 'claim_pass', 'upgrade_part', 'equip', 'unequip', 'claim_quest'] as const;
+export const ACTIONS = ['sync', 'start_race', 'finish_race', 'open_slot', 'skip_slot', 'buy_offer', 'claim_gift', 'claim_welcome', 'claim_pass', 'upgrade_part', 'equip', 'unequip', 'claim_quest', 'tester_grant', 'tester_reset'] as const;
 export type ActionName = (typeof ACTIONS)[number];
 export const isAction = (x: unknown): x is ActionName => typeof x === 'string' && (ACTIONS as readonly string[]).includes(x);
 
@@ -32,6 +32,8 @@ export interface ActionContext {
   /** Server randomness: a uint32 per call (crypto.getRandomValues in the Edge Function). */
   random: () => number;
   rules?: RaceRules;
+  /** The role of the player (profiles.role), read by the handler for the tester actions only. */
+  role?: string;
 }
 
 export type { RankedOutcome };
@@ -57,7 +59,20 @@ export type ActionResult =
   | { action: 'upgrade_part'; id: string; level: number }
   | { action: 'equip'; id: string }
   | { action: 'unequip' }
-  | { action: 'claim_quest'; id: string; levelUp: number | null };
+  | { action: 'claim_quest'; id: string; levelUp: number | null }
+  | { action: 'tester_grant'; granted: TesterGranted }
+  | { action: 'tester_reset' };
+
+/** What a tester gave themselves (zero or null for what they did not ask). */
+export interface TesterGranted {
+  gold: number;
+  gems: number;
+  fragments: number;
+  xp: number;
+  chest: ChestTier | null;
+  item: string | null;
+  levelUp: number | null;
+}
 
 export interface Applied {
   state: ServerState;
@@ -274,6 +289,50 @@ function claim(state: ServerState, p: Params, ctx: ActionContext): Applied {
   return { state: { ...state, profile: r.profile }, result: { action: 'claim_quest', id: questId, levelUp: r.levelUp }, changed: true };
 }
 
+/** The roles that may use the test tools: they only ever act on the account of the tester (never on another player's). */
+export const TESTER_ROLES: readonly string[] = ['tester', 'admin'];
+export const TESTER_MAX = { gold: 100_000, gems: 10_000, fragments: 10_000, xp: 100_000 } as const;
+const CHEST_TIERS: readonly ChestTier[] = ['common', 'rare', 'epic', 'legendary'];
+
+function testerOnly(ctx: ActionContext): void {
+  if (!ctx.role || !TESTER_ROLES.includes(ctx.role)) fail('Réservé aux testeurs.', 'refused', 403);
+}
+
+/** Gives the tester resources, a chest ready to open, or a part (at the level they ask) on their own account. */
+function testerGrant(state: ServerState, p: Params, ctx: ActionContext): Applied {
+  testerOnly(ctx);
+  only(p, ['gold', 'gems', 'fragments', 'xp', 'chest', 'item', 'itemLevel']);
+  const gold = optInt(p, 'gold', 0, TESTER_MAX.gold) ?? 0;
+  const gems = optInt(p, 'gems', 0, TESTER_MAX.gems) ?? 0;
+  const fragments = optInt(p, 'fragments', 0, TESTER_MAX.fragments) ?? 0;
+  const xp = optInt(p, 'xp', 0, TESTER_MAX.xp) ?? 0;
+  const chest = p.chest === undefined ? null : (id(p, 'chest') as ChestTier);
+  if (chest !== null && !CHEST_TIERS.includes(chest)) fail('Qualité de coffre inconnue.', 'not_found');
+  const item = p.item === undefined ? null : id(p, 'item');
+  if (item !== null && !getItem(item)) fail('Objet inconnu.', 'not_found');
+  const itemLevel = optInt(p, 'itemLevel', 1, MAX_LEVEL) ?? 1;
+  if (p.itemLevel !== undefined && item === null) fail('Paramètre invalide.', 'invalid');
+  if (gold + gems + fragments + xp === 0 && chest === null && item === null) fail('Rien à donner : choisissez au moins une ressource.', 'invalid');
+  let profile: Profile = { ...state.profile, gold: state.profile.gold + gold, gems: state.profile.gems + gems, fragments: state.profile.fragments + fragments };
+  if (chest !== null) profile = addPacks(profile, [chest], ctx.now, undefined, true);
+  if (item !== null) {
+    const isPart = getPart(item) !== undefined;
+    profile = { ...profile, owned: { ...profile.owned, [item]: isPart ? Math.max(profile.owned[item] ?? 0, itemLevel) : 1 } };
+  }
+  const leveled = addXp(profile, xp);
+  const granted: TesterGranted = { gold, gems, fragments, xp, chest, item, levelUp: leveled.levelUp };
+  return { state: { ...state, profile: leveled.profile }, result: { action: 'tester_grant', granted }, changed: true, log: { tester: true, ...granted } };
+}
+
+/** Starts the tester's account over (a new player: welcome pack, empty garage). Asks for an explicit confirmation. */
+function testerReset(state: ServerState, p: Params, ctx: ActionContext): Applied {
+  testerOnly(ctx);
+  only(p, ['confirm']);
+  if (!bool(p, 'confirm')) fail('Confirmation manquante.', 'invalid');
+  const fresh = freshState(ctx.now, ctx.random);
+  return { state: { ...fresh, createdAt: state.createdAt, importedAt: state.importedAt }, result: { action: 'tester_reset' }, changed: true, log: { tester: true, reset: true } };
+}
+
 /** Applies one action of the player. Throws a GameError (French message) when the action is malformed or refused. */
 export function applyAction(state: ServerState, action: unknown, rawParams: unknown, ctx: ActionContext): Applied {
   if (!isAction(action)) return fail('Action inconnue.', 'invalid');
@@ -306,5 +365,9 @@ export function applyAction(state: ServerState, action: unknown, rawParams: unkn
       return unequip(state, p);
     case 'claim_quest':
       return claim(state, p, ctx);
+    case 'tester_grant':
+      return testerGrant(state, p, ctx);
+    case 'tester_reset':
+      return testerReset(state, p, ctx);
   }
 }

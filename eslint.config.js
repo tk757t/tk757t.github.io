@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'playwright-report', 'test-results', 'e2e/screenshots', 'exemple', 'docs', '.claude', 'ref-externe', 'supabase/functions/game/index.js'] },
+  { ignores: ['dist', 'node_modules', 'playwright-report', 'test-results', 'e2e/screenshots', 'exemple', 'docs', '.claude', 'ref-externe', 'supabase/functions/game/index.js', 'tools/dev-only/monitor'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

@@ -6,6 +6,8 @@ export interface MemoryStore extends GameStore {
   rows: Map<string, StoredRow>;
   logs: (LogEntry & { uid: string; at: number })[];
   suspended: Map<string, string>;
+  /** User id -> role (player when absent). */
+  roles: Map<string, string>;
   /** Session token -> user id. */
   sessions: Map<string, string>;
   /** Runs once before the next commit (to simulate another request writing in between). */
@@ -20,6 +22,7 @@ export function memoryStore(now: () => number = Date.now): MemoryStore {
     rows,
     logs,
     suspended: new Map(),
+    roles: new Map(),
     sessions: new Map(),
     beforeCommit: null,
     async userOf(token) {
@@ -28,6 +31,9 @@ export function memoryStore(now: () => number = Date.now): MemoryStore {
     },
     async suspension(uid) {
       return store.suspended.get(uid) ?? null;
+    },
+    async roleOf(uid) {
+      return store.roles.get(uid) ?? 'player';
     },
     async recentActions(uid, sinceMs) {
       return logs.filter((l) => l.uid === uid && l.at >= sinceMs).length;

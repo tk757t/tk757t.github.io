@@ -47,6 +47,10 @@ r = await call('start_race', { trackId: 'oval', laps: 2, players: 2, bots: 1 });
 check('jeton de course', r.status === 200 && !!r.j.result?.race?.id);
 r = await call('nope');
 check('action inconnue refusée', r.status === 400);
+r = await call('tester_grant', { gold: 100000 });
+check('outils de test refusés à un joueur (403)', r.status === 403 && /testeurs/.test(String(r.j.error)));
+r = await call('tester_reset', { confirm: true });
+check('remise à zéro refusée à un joueur (403)', r.status === 403);
 
 // forged tokens must be stopped by the gateway (verify_jwt): the function trusts the token payload
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');

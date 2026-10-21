@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.1',
+    date: '2026-10-22',
+    notes: [
+      'Profil : à côté de la version, les menus Admin et Testeur apparaissent pour les comptes qui ont ce rôle.',
+      'Menu Admin : chiffres du jeu, joueurs (rôle, silence, suspension), messages signalés, mots refusés du chat et journal des actions.',
+      'Menu Testeur : ressources, coffres et pièces pour son propre compte, cases numérotées en course, copie de l’état du compte.',
+    ],
+  },
+  {
     version: '0.4.0',
     date: '2026-10-22',
     notes: [

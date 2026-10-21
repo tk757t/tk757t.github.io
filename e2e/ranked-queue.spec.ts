@@ -83,6 +83,7 @@ function fakeServer() {
       }
       if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
       if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: pseudos.size, ranked_waiting: [...queue.values()].filter((r) => !r.room && r.ranked).length, open_waiting: [...queue.values()].filter((r) => !r.room && !r.ranked).length }] });
+      if (url.pathname === '/rest/v1/rpc/my_role') return route.fulfill({ headers: CORS, json: 'player' });
       return route.fulfill({ status: 404, headers: CORS, json: {} });
     });
   }

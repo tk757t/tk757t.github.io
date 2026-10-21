@@ -29,6 +29,8 @@ export interface GameStore {
   suspension(uid: string): Promise<string | null>;
   /** How many actions of this player the log holds since `sinceMs`. */
   recentActions(uid: string, sinceMs: number): Promise<number>;
+  /** The role of the account (profiles.role): player, tester, vip or admin. */
+  roleOf(uid: string): Promise<string>;
   load(uid: string): Promise<StoredRow | null>;
   /** Creates the row at version 0 and logs, in one transaction. False when the row already exists. */
   create(uid: string, state: ServerState, log: LogEntry): Promise<boolean>;
@@ -198,7 +200,9 @@ export function createGameHandler(store: GameStore, opts: HandlerOptions = {}): 
       }
       if (action === 'import_save') fail('Votre partie est déjà sur le serveur : la sauvegarde de cet appareil n’est pas importée.', 'import_refused', 409);
       const state = readState(row.state);
-      const applied = applyAction(state, action, params, { now: t, random, rules: opts.rules });
+      // the role is read only for the actions that need it (the test tools): the other actions cost nothing more
+      const role = action === 'tester_grant' || action === 'tester_reset' ? await store.roleOf(uid) : undefined;
+      const applied = applyAction(state, action, params, { now: t, random, rules: opts.rules, role });
       if (!applied.changed) return json(req, 200, { state: publicState(applied.state), result: applied.result, version: row.version, serverTime: t } satisfies GameResponse);
       const version = await store.commit(uid, row.version, applied.state, { action, params, summary: summary(applied.state, applied.log) });
       if (version === null) continue; // another request wrote in between: read again and replay the rule

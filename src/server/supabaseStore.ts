@@ -19,6 +19,11 @@ export function supabaseStore(db: SupabaseClient): GameStore {
       if (error) throw error;
       return data ? String((data as { reason: unknown }).reason) : null;
     },
+    async roleOf(uid) {
+      const { data, error } = await db.from('profiles').select('role').eq('id', uid).maybeSingle();
+      if (error) throw error;
+      return data ? String((data as { role: unknown }).role) : 'player';
+    },
     async recentActions(uid, sinceMs) {
       const { count, error } = await db.from('action_log').select('id', { count: 'exact', head: true }).eq('user_id', uid).gte('created_at', new Date(sinceMs).toISOString());
       if (error) throw error;

@@ -11,6 +11,8 @@ import { ensureAccount } from './app/accountScreen';
 import { connectServerGame } from './app/serverGame';
 import { startPresence } from './app/presence';
 import { startChatStore } from './app/chatStore';
+import { refreshRole } from './net/staff';
+import { getAccount } from './app/account';
 import { setChatOpener, startChatNotices } from './app/chatNotice';
 import { mountChatDock, showInDock } from './app/chatDock';
 import { mountChatBubble } from './app/chatBubble';
@@ -37,6 +39,8 @@ if (params.has('editor') || (import.meta.env.DEV && /^\/editor\/?$/.test(locatio
 } else {
   // the chat: read once for the whole visit, docked at the right of a large screen, a floating bubble on a narrow one, a small notification per message
   startChatStore();
+  // the role of the account (tester, admin...) shows the staff tools and the numbered cells during the races
+  if (getAccount()?.pseudo) void refreshRole();
   startChatNotices();
   mountChatDock();
   mountChatBubble();

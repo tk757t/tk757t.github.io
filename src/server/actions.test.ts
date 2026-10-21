@@ -432,3 +432,58 @@ describe('stored state', () => {
     for (const item of ITEMS) expect(applyAction(fresh({ owned: { [item.id]: 1 } }), 'equip', { id: item.id }, ctx()).changed).toBe(true);
   });
 });
+
+describe('test tools', () => {
+  const tester = (now = T0): ActionContext => ({ ...ctx(now), role: 'tester' });
+
+  it('are for testers and admins only, and the refusal is a 403', () => {
+    const s = fresh();
+    for (const role of [undefined, 'player', 'vip']) {
+      const e = refused(s, 'tester_grant', { gold: 10 }, { ...ctx(), role });
+      expect([e.code, e.status]).toEqual(['refused', 403]);
+      expect(refused(s, 'tester_reset', { confirm: true }, { ...ctx(), role }).status).toBe(403);
+    }
+    expect(applyAction(s, 'tester_grant', { gold: 10 }, { ...ctx(), role: 'admin' }).changed).toBe(true);
+  });
+
+  it('give resources, experience, a chest ready to open and a part at the asked level, on the tester account', () => {
+    const s = fresh({ gold: 5, gems: 6, fragments: 7, xp: 0 });
+    const a = applyAction(s, 'tester_grant', { gold: 1000, gems: 50, fragments: 200, xp: 500, chest: 'epic', item: part.id, itemLevel: 3 }, tester());
+    const p = a.state.profile;
+    expect([p.gold, p.gems, p.fragments, p.xp]).toEqual([1005, 56, 207, 500]);
+    expect(p.owned[part.id]).toBe(3);
+    expect(p.slots.some((slot) => slot?.tier === 'epic' && slot.readyAt <= T0)).toBe(true);
+    expect(a.result).toMatchObject({ action: 'tester_grant', granted: { gold: 1000, chest: 'epic', item: part.id } });
+    expect(a.log).toMatchObject({ tester: true });
+  });
+
+  it('never lower a part the tester already has, and a cosmetic is simply owned', () => {
+    const cosmetic = COSMETICS[0];
+    const s = fresh({ owned: { [part.id]: 4 } });
+    expect(applyAction(s, 'tester_grant', { item: part.id, itemLevel: 2 }, tester()).state.profile.owned[part.id]).toBe(4);
+    expect(applyAction(s, 'tester_grant', { item: cosmetic.id }, tester()).state.profile.owned[cosmetic.id]).toBe(1);
+  });
+
+  it('refuse empty, oversized, unknown and unexpected requests', () => {
+    const s = fresh();
+    expect(refused(s, 'tester_grant', {}, tester()).code).toBe('invalid');
+    expect(refused(s, 'tester_grant', { gold: 100_001 }, tester()).code).toBe('invalid');
+    expect(refused(s, 'tester_grant', { gold: -5 }, tester()).code).toBe('invalid');
+    expect(refused(s, 'tester_grant', { gold: 1.5 }, tester()).code).toBe('invalid');
+    expect(refused(s, 'tester_grant', { chest: 'mythic' }, tester()).code).toBe('not_found');
+    expect(refused(s, 'tester_grant', { item: 'nope' }, tester()).code).toBe('not_found');
+    expect(refused(s, 'tester_grant', { itemLevel: 3 }, tester()).code).toBe('invalid');
+    expect(refused(s, 'tester_grant', { gold: 1, userId: 'someone-else' }, tester()).code).toBe('invalid');
+  });
+
+  it('start the account over only on an explicit confirmation, keeping its age', () => {
+    const s = { ...fresh({ gold: 9999, races: 12 }), createdAt: T0 - 5 * MIN };
+    expect(refused(s, 'tester_reset', {}, tester()).code).toBe('invalid');
+    expect(refused(s, 'tester_reset', { confirm: false }, tester()).code).toBe('invalid');
+    const a = applyAction(s, 'tester_reset', { confirm: true }, tester());
+    expect(a.state.profile.races).toBe(0);
+    expect(a.state.profile.welcomeUntil).toBeGreaterThan(T0);
+    expect(a.state.createdAt).toBe(T0 - 5 * MIN);
+    expect(a.state.race).toBeNull();
+  });
+});

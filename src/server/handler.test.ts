@@ -205,3 +205,30 @@ describe('game handler', () => {
     expect(b.body.state.profile.gold).toBe(200);
   });
 });
+
+describe('test tools through the handler', () => {
+  it('read the role of the account: a player is refused, a tester is served, and the grant is logged', async () => {
+    const { store, call } = setup();
+    expect((await call('tester_grant', { gold: 500 })).status).toBe(403);
+    store.roles.set('user-a', 'tester');
+    const ok = await call('tester_grant', { gold: 500, chest: 'rare' });
+    expect(ok.status).toBe(200);
+    expect(ok.body.state.profile.gold).toBeGreaterThanOrEqual(500);
+    expect(store.logs.at(-1)).toMatchObject({ uid: 'user-a', action: 'tester_grant' });
+    // a player cannot lend their own role to another account by sending it
+    expect((await call('tester_grant', { gold: 1, role: 'admin' })).body.code).toBe('invalid');
+  });
+
+  it('do not read the role for the other actions', async () => {
+    const { store, call } = setup();
+    let reads = 0;
+    const roleOf = store.roleOf;
+    store.roleOf = async (uid) => {
+      reads++;
+      return roleOf(uid);
+    };
+    await call('sync');
+    await call('claim_gift');
+    expect(reads).toBe(0);
+  });
+});

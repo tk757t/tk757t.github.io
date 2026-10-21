@@ -21,6 +21,8 @@ import { EMPTY_STATS, LEVELS, goalText, opponentLook, opponentMods, starsFor, tr
 import { assets, type IconName } from '../data/assets';
 import { CAR_COLORS, RaceRenderer, type CarStyle } from '../render';
 import { MARK_STYLE, markOf, type Mark } from '../render/cells';
+import { canTest } from '../net/staff';
+import { testerDebugOn } from './testerScreen';
 import { lookOf } from './carSvg';
 import { toast } from './toast';
 import { equippedParts, effectSources, type EffectSources } from '../data/parts/effects';
@@ -226,7 +228,7 @@ export class RaceScreen {
       el('div', { class: 'action-row' }, this.die, this.act),
     ));
     // "debug cases" (?debug=cases): row, grid slot and id written on every cell, to check a circuit against its picture
-    const debugBtn = devParam('debug') !== null
+    const debugBtn = devParam('debug') !== null || (canTest() && testerDebugOn())
       ? [Button({ text: 'Cases', variant: 'ghost', attrs: { 'data-testid': 'debug-cases', 'aria-pressed': 'false' }, onClick: () => this.toggleDebug() })]
       : [];
     this.debugButton = debugBtn[0] ?? null;
@@ -237,7 +239,7 @@ export class RaceScreen {
     this.renderer = await RaceRenderer.create(this.stage, def, Object.values(this.carStyles).flatMap((s) => (s.sprite ? [s.sprite] : [])));
     this.renderer.carStyles = this.carStyles;
     this.renderer.onCellTap = (id) => this.onCellTap(id);
-    if (devParam('debug') === 'cases') this.toggleDebug(true);
+    if (devParam('debug') === 'cases' || (canTest() && testerDebugOn())) this.toggleDebug(true);
     const online = this.online;
     if (online) {
       // the race so far (a player coming back), then the actions of the others as they come

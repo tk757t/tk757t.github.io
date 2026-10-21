@@ -13,8 +13,8 @@ export interface Plan {
 const MAX_BRAKES_TRIED = 4;
 
 /**
- * Every playable (adjustments, destination) pair for the roll in front of the active car. The engine
- * guarantees there is at least one when it is the AI's turn.
+ * Every playable (adjustments, destination) pair for the roll in front of the active car, without the ones that end
+ * in the wall unless there is nothing else. The engine guarantees there is at least one when it is the AI's turn.
  */
 export function plans(state: RaceState, shared?: Walker): Plan[] {
   const car = currentCar(state);
@@ -33,7 +33,9 @@ export function plans(state: RaceState, shared?: Walker): Plan[] {
       }
     }
   }
-  return out;
+  // the wall is never chosen while another way exists
+  const safe = out.filter((p) => !p.option.crash);
+  return safe.length > 0 ? safe : out;
 }
 
 /** True if the action is legal in this state (structural check, no simulation of the move itself). */

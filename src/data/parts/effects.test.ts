@@ -115,11 +115,11 @@ describe('every effect kind, applied by the engine', () => {
     expect(walk(inK(withPart(e, level), 1), 5, 'c11').tiresLoss).toBe(Math.max(0, 3 - v)); // 3 steps left, hard tires
   });
 
-  it.each(levels)('blockBrakeDiscount: fewer brakes lost when blocked (level %i) [§5]', (level) => {
+  it.each(levels)('blockBrakeDiscount: less bodywork lost behind a car (level %i) [§5]', (level) => {
     const e: Effect = { kind: 'blockBrakeDiscount', amount: 1 };
     const v = effectValue(e, level);
     const s = patchCar(inRace(track, cfg, 2, { mods: { car1: withPart(e, level) } }), 'car2', { position: 'c3' });
-    expect(createWalker(s, s.cars[0]).moves(5)[0].brakesLoss).toBe(Math.max(0, 3 - v));
+    expect(createWalker(s, s.cars[0]).moves(5)[0].bodyLoss).toBe(Math.max(0, Math.round(1 - v)));
   });
 
   it.each(levels)('freeStop: missing stops covered for free (level %i) [§6]', (level) => {

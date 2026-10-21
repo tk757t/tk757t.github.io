@@ -17,6 +17,11 @@ async function fakeSupabase(page: Page) {
       const user = { id: 'u1', aud: 'authenticated', role: 'authenticated', is_anonymous: true, app_metadata: {}, user_metadata: {}, created_at: '2026-10-21T00:00:00Z' };
       return route.fulfill({ headers: CORS, json: { access_token: FAKE_TOKEN, token_type: 'bearer', expires_in: 3600, expires_at: 4_102_444_800, refresh_token: 'r', user } });
     }
+    if (url.pathname === '/auth/v1/token') {
+      // the refresh: the guest has been linked to Discord since the session was stored
+      const user = { id: 'u1', aud: 'authenticated', role: 'authenticated', is_anonymous: false, app_metadata: { provider: 'discord' }, user_metadata: {}, created_at: '2026-10-21T00:00:00Z' };
+      return route.fulfill({ headers: CORS, json: { access_token: FAKE_TOKEN, token_type: 'bearer', expires_in: 3600, expires_at: 4_102_444_800, refresh_token: 'r2', user } });
+    }
     if (url.pathname === '/rest/v1/rpc/claim_pseudo') {
       const p = (req.postDataJSON() as { p: string }).p;
       if (p === 'Pris') return route.fulfill({ status: 400, headers: CORS, json: { code: 'P0001', message: 'Ce pseudo est déjà pris.' } });
@@ -79,6 +84,24 @@ for (const size of sizes) {
       expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
     });
 
+    test('un invité lié à Discord ailleurs : le profil ne propose plus de lier le compte', async ({ page }) => {
+      await page.setViewportSize({ width: size.width, height: size.height });
+      const state = await fakeSupabase(page);
+      state.pseudo = 'Max_07';
+      // a session stored by an earlier visit, when the account was still a guest
+      await page.addInitScript((token) => {
+        const user = { id: 'u1', aud: 'authenticated', role: 'authenticated', is_anonymous: true, app_metadata: {}, user_metadata: {}, created_at: '2026-10-21T00:00:00Z' };
+        localStorage.setItem('4mules.auth', JSON.stringify({ access_token: token, token_type: 'bearer', expires_in: 3600, expires_at: 4_102_444_800, refresh_token: 'r', user }));
+      }, FAKE_TOKEN);
+      await page.goto('/?account=1');
+      await expect(page.getByTestId('avatar')).toBeVisible();
+      await expect(async () => {
+        await page.getByTestId('avatar').click();
+        await expect(page.getByTestId('profile-modal')).toContainText('Max_07');
+        await expect(page.getByTestId('link-discord')).toHaveCount(0);
+      }).toPass({ timeout: 8000 });
+    });
+
     test('hors ligne : le jeu reste jouable sans compte', async ({ page }) => {
       await page.setViewportSize({ width: size.width, height: size.height });
       await page.route('https://npaunxotjhkjzoxfpqgq.supabase.co/**', (route) => route.abort());
@@ -89,6 +112,31 @@ for (const size of sizes) {
       await page.getByTestId('account-offline').click();
       await expect(page.getByTestId('account-modal')).toHaveCount(0);
       await expect(page.getByTestId('avatar')).toBeVisible();
+    });
+
+    test('retour de Discord en erreur : le vrai motif s’affiche, l’adresse est nettoyée, le jeu reste jouable', async ({ page }) => {
+      const errors = watchConsole(page);
+      await page.setViewportSize({ width: size.width, height: size.height });
+      await fakeSupabase(page);
+      // the player pressed "Retour" on the Discord page: access_denied, in the query (and the same in the # part)
+      for (const where of ['?account=1&join=ABCD&error=access_denied&error_code=bad_oauth_callback&error_description=The+resource+owner+denied+the+request', '?account=1#error=access_denied&error_description=denied']) {
+        await page.goto(`/${where}`);
+        const message = page.getByTestId('account-message');
+        await expect(message).toContainText('Connexion Discord annulée.');
+        await expect(message).not.toContainText('Une erreur est survenue');
+        expect(page.url()).not.toMatch(/error/);
+        if (where.includes('join=')) expect(page.url()).toContain('join=ABCD');
+        await expectContrast(page, 'discord return error');
+        await page.screenshot({ path: `e2e/screenshots/account-${size.name}-discord-denied.png` });
+      }
+      // another failure of the return: a sentence about the cause, never the raw text
+      await page.goto('/?account=1&error=server_error&error_description=Unable+to+exchange+external+code');
+      await expect(page.getByTestId('account-message')).toContainText('La connexion avec Discord a échoué');
+      // the game stays playable as a guest after the error
+      await page.getByTestId('account-pseudo').fill('Max_07');
+      await page.getByTestId('account-guest').click();
+      await expect(page.getByTestId('account-modal')).toHaveCount(0);
+      expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
     });
   });
 }

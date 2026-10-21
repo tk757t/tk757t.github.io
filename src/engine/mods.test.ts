@@ -83,23 +83,21 @@ describe('car parts: reroll', () => {
   });
 
   it('a roll (or a reroll) with no playable destination takes the car out', () => {
-    // car1 on c0 with no brakes, car2 on c1: a 1 is blocked at once and cannot be paid; a 2 is a free jump... over car2? no: also blocked
-    const cramped = linearTrack(30, { grid: [0, 2] });
+    // a one-car circuit that ends after 3 cells, no brakes: a 1 is a free move, a 3 reaches the end and cannot be paid
+    const dead = linearTrack(3);
     const make = (seed: number) =>
-      asCurrent(patchCar(game(cramped, { dice: [[1, 2]], laps: 3 }, 2, seed, { mods: { car1: { rerolls: 1 } } }), 'car1', { gear: 1, started: true, wear: { brakes: 0 } }), 'car1');
-    // face 1: c1 is free (move of 1 is fine). face 2: c2 is taken: 1 step missing = 1 brake, which the car does not have
+      asCurrent(patchCar(game(dead, { dice: [[1, 3]], laps: 3 }, 1, seed, { mods: { car1: { rerolls: 1 } } }), 'car1', { gear: 1, started: true, wear: { brakes: 0 } }), 'car1');
     let found = 0;
     for (let seed = 1; seed <= 200 && found < 3; seed++) {
       const first = run(make(seed), shift(1));
       if (first.state.cars[0].retired) {
         expect(first.state.cars[0].retired).toBe('no-move');
-        expect(first.state.turn!.carId).toBe('car2');
         continue;
       }
       if (first.state.turn!.face !== 1) continue;
-      // a 1 is playable; reroll until the second roll is a 2: then nothing can be played
+      // a 1 is playable; reroll until the second roll is a 3: then nothing can be played
       const again = reducer(first.state, reroll);
-      if (again.state.turn?.face === 2 || again.state.cars[0].retired) {
+      if (again.state.turn?.face === 3 || again.state.cars[0].retired) {
         found++;
         expect(again.state.cars[0].retired).toBe('no-move');
       }

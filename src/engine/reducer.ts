@@ -285,19 +285,37 @@ export function potentialCells(state: RaceState, gear: number): Map<string, numb
   return out;
 }
 
-/** True when some adjustment lets the car reach a playable destination. */
-function canMove(s: RaceState, car: CarState): boolean {
+/** What the car can do with the roll, over every adjustment: a destination that is not the wall, or only the wall. */
+function scanMoves(s: RaceState, car: CarState): { free: boolean; crash?: MoveOption } {
   const turn = s.turn;
-  if (!turn || turn.roll === null) return true;
+  if (!turn || turn.roll === null) return { free: true };
   const walker = createWalker(s, car);
   const maxBrakes = turn.fixed ? 0 : Math.min(turn.roll, Math.max(0, car.wear.brakes));
+  let crash: MoveOption | undefined;
   for (let b = 0; b <= maxBrakes; b++) {
     for (const boost of turn.fixed || car.wear.gearbox < 1 ? [false] : [false, true]) {
       const movement = movementOf(s.config, { roll: turn.roll, brakes: b, boost, slipstream: false });
-      if (walker.moves(movement, b).some((o) => o.playable)) return true;
+      for (const o of walker.moves(movement, b)) {
+        if (!o.playable) continue;
+        if (!o.crash) return { free: true };
+        crash ??= o;
+      }
     }
   }
-  return false;
+  return { free: false, crash };
+}
+
+/** True when some adjustment lets the car reach a playable destination other than the wall. */
+function canMove(s: RaceState, car: CarState): boolean {
+  return scanMoves(s, car).free;
+}
+
+/** The car has nowhere to go: out against the wall when the only ways left end there (§6), else blocked. */
+function retireStuck(s: RaceState, car: CarState, events: GameEvent[]): void {
+  if (car.retired !== null) return;
+  const { crash } = scanMoves(s, car);
+  if (crash?.overshoot) events.push({ type: 'WALL_CRASH', carId: car.id, corner: crash.overshoot.corner, left: crash.overshoot.left });
+  retire(s, car, crash ? 'crash' : 'no-move', events);
 }
 
 function applyMove(s: RaceState, car: CarState, option: MoveOption, events: GameEvent[]): void {
@@ -306,14 +324,16 @@ function applyMove(s: RaceState, car: CarState, option: MoveOption, events: Game
   // adjustments paid on arrival (§3)
   if (turn.brakes > 0) loseWear(s, car, 'brakes', turn.brakes, 'adjustment', events);
   if (turn.boost) loseWear(s, car, 'gearbox', 1, 'adjustment', events);
-  // blocked or dead end: missing steps (§5)
-  if (option.missing > 0) {
-    events.push({ type: 'BLOCKED', carId: car.id, missing: option.missing, brakes: option.brakesLoss, tires: Math.max(0, option.missing - s.config.brakeLossCap) });
+  // blocked by a car (bodywork) or by the end of the way (brakes, then tires): missing steps (§5)
+  const blockTires = option.blocked === 'end' ? Math.max(0, option.missing - s.config.brakeLossCap) : 0;
+  if (option.blocked) {
+    events.push({ type: 'BLOCKED', carId: car.id, missing: option.missing, brakes: option.brakesLoss, tires: blockTires, body: option.bodyLoss, by: option.blocked });
     loseWear(s, car, 'brakes', option.brakesLoss, 'blocked', events);
-    loseWear(s, car, 'tires', Math.max(0, option.missing - s.config.brakeLossCap), 'blocked', events);
+    loseWear(s, car, 'tires', blockTires, 'blocked', events);
+    loseWear(s, car, 'body', option.bodyLoss, 'blocked', events);
   }
   // leaving a corner zone with stops missing (§6)
-  const overshootTires = option.tiresLoss - Math.max(0, option.missing - s.config.brakeLossCap);
+  const overshootTires = option.tiresLoss - blockTires;
   if (option.overshoot) events.push({ type: 'CORNER_OVERSHOOT', carId: car.id, ...option.overshoot, tires: overshootTires });
   loseWear(s, car, 'tires', overshootTires, 'overshoot', events);
   if (option.freeUsed > 0) {
@@ -325,6 +345,12 @@ function applyMove(s: RaceState, car: CarState, option: MoveOption, events: Game
   car.position = option.cellId;
   car.arrival = ++s.arrivals;
   events.push({ type: 'CAR_MOVED', carId: car.id, from, to: option.cellId, cells: option.movement - option.missing, missing: option.missing });
+  // two stops or more missing when leaving a corner: the car hits the wall and is out (§6)
+  if (option.crash && option.overshoot) {
+    events.push({ type: 'WALL_CRASH', carId: car.id, corner: option.overshoot.corner, left: option.overshoot.left });
+    retire(s, car, 'crash', events);
+    return endTurn(s, events);
+  }
   for (let i = 0; i < option.laps; i++) {
     car.laps++;
     if (car.laps < 1) continue; // crossing the line from the grid only starts the first lap
@@ -431,7 +457,7 @@ function applyPit(s: RaceState, car: CarState, action: Extract<Action, { type: '
       s.turn = { carId: car.id, roll: cells, face: d20, brakes: 0, boost: false, slipstream: false, fixed: true, start: false };
       s.phase = 'adjust';
       if (!canMove(s, car)) {
-        retire(s, car, 'no-move', events);
+        retireStuck(s, car, events);
         endTurn(s, events);
       }
       return null;
@@ -521,7 +547,7 @@ function reduce(state: RaceState, action: Action, forcedFace?: number): ReduceRe
       }
       s.phase = 'adjust';
       if (checkWear(s, car, events) || !canMove(s, car)) {
-        retire(s, car, car.retired ?? 'no-move', events);
+        retireStuck(s, car, events);
         endTurn(s, events);
       }
       return { state: s, events };
@@ -553,7 +579,7 @@ function reduce(state: RaceState, action: Action, forcedFace?: number): ReduceRe
       events.push({ type: 'REROLLED', carId: car.id, left: car.rerolls });
       events.push({ type: 'DICE_ROLLED', carId: car.id, gear: car.gear, face, roll: r.roll, bonus: r.bonus });
       if (!canMove(s, car)) {
-        retire(s, car, 'no-move', events);
+        retireStuck(s, car, events);
         endTurn(s, events);
       }
       return { state: s, events };

@@ -81,10 +81,10 @@ la jauge (les réparations ne vont pas au-delà).
 
 | Jauge | Ce qui la fait baisser |
 |---|---|
-| Pneus | sortir d'un virage trop vite (§ 2.6), être bloqué au-delà de 3 cases (§ 2.5) |
-| Freins | freiner après le jet, être bloqué, rétrograder de 3 crans ou plus |
+| Pneus | sortir d'un virage avec 1 arrêt manquant (§ 2.6) |
+| Freins | freiner après le jet, rétrograder de 3 crans ou plus |
 | Boîte | forcer d'une case, rétrograder de 2 crans ou plus |
-| Carrosserie | les contacts avec les voitures voisines (§ 2.8) |
+| Carrosserie | être arrêté par une voiture (§ 2.5), les contacts avec les voitures voisines (§ 2.8) |
 | Moteur | rouler en 5e ou 6e (jet de casse, § 2.8), rétrograder de 4 crans ou plus |
 | Tenue de route | les cases à risque (§ 2.8) |
 
@@ -98,15 +98,19 @@ la jauge (les réparations ne vont pas au-delà).
   coût. Si plusieurs chemins mènent à la même case, on garde le moins coûteux.
 - Le circuit a **3 voies**. On change de voie **en ligne droite seulement** (jamais dans une zone de virage, où l'on suit sa
   voie) et jamais en passant à travers une voiture qui roule à côté.
-- **Blocage** : une case occupée ne se traverse pas. Si une voiture barre la route, on s'arrête derrière elle ; chaque case
-  qu'on n'a pas pu parcourir coûte 1 point de Freins, **3 au plus**, le reste en Pneus. Une impasse coûte de la même façon.
-- Une destination qu'on ne peut pas payer (Freins ou Pneus insuffisants) est grisée. Si aucune destination n'est jouable,
-  quel que soit l'ajustement, la voiture **abandonne** (elle part dans le décor).
+- **Contact avec une voiture** : une case occupée ne se traverse pas. Si une voiture barre la route, on s'arrête derrière elle
+  et on **perd 1 point de Carrosserie**, quel que soit le nombre de cases manquantes. Les Freins et les Pneus ne sont pas
+  touchés. Certaines pièces (ABS) réduisent cette perte. Une impasse (qui n'existe sur aucun de nos circuits) coûte 1 point de
+  Freins par case manquante, **3 au plus**, le reste en Pneus.
+- **Le mur** : sortir d'un virage avec 2 arrêts manquants ou plus, c'est percuter le mur. La destination est proposée en
+  rouge, mais la voiture qui la choisit **abandonne aussitôt**. Si toutes les destinations mènent au mur, elle y va.
+- Une destination qu'on ne peut pas payer (Freins ou Pneus insuffisants dans une impasse, ou 1 arrêt manquant trop cher en
+  Pneus) est grisée. Si aucune destination n'est jouable, quel que soit l'ajustement, la voiture **abandonne**.
 - La voie des stands ne sert qu'à s'arrêter à son stand ; on ne peut pas l'emprunter comme raccourci.
 
 > **Exemple.** Vous faites 8 ; après 5 cases, une voiture occupe la seule case devant vous. Il vous manque 3 cases :
-> −3 Freins. Avec un jet de 10, il en manquerait 5 : −3 Freins et −2 Pneus. Mieux vaut sans doute changer de voie plus tôt, ou
-> freiner pour s'arrêter ailleurs.
+> −1 Carrosserie. Avec un jet de 10, il en manquerait 5 : toujours −1 Carrosserie. Mieux vaut sans doute changer de voie plus
+> tôt, ou freiner pour s'arrêter ailleurs : la Carrosserie ne se répare qu'au stand.
 
 ## 2.6 Virages à arrêts
 
@@ -117,8 +121,8 @@ zone**.
 - Sortir de la zone avec **1 arrêt manquant** coûte des Pneus : les cases encore à parcourir au moment de sortir (la première
   case hors de la zone comprise), multipliées par le facteur d'usure de la gomme (§ 2.7). Sous la pluie, on perd en plus 3
   Pneus (1 seulement avec des pneus pluie).
-- Sortir avec **2 arrêts manquants ou plus** coûte 3 fois les Pneus de départ : c'est toujours au-delà de ce que la voiture
-  possède, donc cette destination n'est **jamais jouable**.
+- Sortir avec **2 arrêts manquants ou plus**, c'est le **mur** : la voiture abandonne (voir § 2.5). Les Freins peuvent
+  encore sauver la voiture en retirant des cases au jet, avant de choisir la destination.
 - Pneus **à 0 exactement** après un déplacement : la voiture est arrêtée et repasse au point mort ; elle repartira en 1re.
 
 > **Exemple.** Course de 2 tours, pneus durs (6 Pneus). Virage à 1 arrêt de 3 cases, vous êtes à 1 case de l'entrée, en 4e, et

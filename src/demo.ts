@@ -17,7 +17,8 @@ const renderer = await RaceRenderer.create($('host'), def);
 function describe(e: GameEvent): string {
   switch (e.type) {
     case 'DICE_ROLLED': return `dé ${e.face} → ${e.roll} cases`;
-    case 'BLOCKED': return `bloqué : freins −${e.brakes}`;
+    case 'BLOCKED': return e.by === 'car' ? `contact : carrosserie −${e.body}` : `bloqué : freins −${e.brakes}`;
+    case 'WALL_CRASH': return 'mur percuté : abandon';
     case 'CORNER_OVERSHOOT': return 'virage raté : pneus perdus';
     case 'CORNER_STOP': return `arrêt au virage ${e.corner}, encore ${e.left}`;
     case 'CAR_RETIRED': return `${e.carId} abandonne (${e.reason})`;
@@ -27,7 +28,7 @@ function describe(e: GameEvent): string {
 }
 
 let pendingGear = 1;
-const marks = () => new Map(state.phase === 'adjust' ? enumerateMoves(state).filter((o) => o.playable).map((o) => [o.cellId, o.cost > 0 ? 'costly' : 'free'] as const) : []);
+const marks = () => new Map(state.phase === 'adjust' ? enumerateMoves(state).filter((o) => o.playable).map((o) => [o.cellId, o.crash ? 'crash' : o.cost > 0 ? 'costly' : 'free'] as const) : []);
 
 function refresh(): void {
   renderer.update(state, marks());

@@ -36,12 +36,13 @@ describe('§6 the stops counter', () => {
     expect(kinds(third.events, 'CORNER_STOP')).toHaveLength(0);
   });
 
-  it('a turn that ends outside the zone does not count, and the counter is cleared after leaving', () => {
+  it('a roll through the whole zone with 2 stops missing hits the wall: the car is out', () => {
     const s = patchCar(inRace(track, { ...dice, laps: 1 }, 1), 'car1', { position: 'c2', gear: 4 });
     const r = run(s, shift(4), adjust(0), moveTo('c11')); // 9 cells: through the whole zone with 2 stops missing
-    // 2 stops missing -> 3 x starting tires: the option is not playable, so the car cannot even choose it
-    expect(r.events.some((e) => e.type === 'INVALID_ACTION')).toBe(true);
-    expect(r.state.cars[0].position).toBe('c2');
+    expect(r.events).toContainEqual({ type: 'WALL_CRASH', carId: 'car1', corner: 'K', left: 2 });
+    expect(r.state.cars[0].retired).toBe('crash');
+    expect(r.state.cars[0].position).toBeNull();
+    expect(kinds(r.events, 'CAR_RETIRED')).toHaveLength(1);
   });
 
   it('with the counter at 0 leaving the zone costs nothing and clears the zone', () => {
@@ -70,13 +71,16 @@ describe('§6 leaving the zone with stops missing', () => {
     expect(find(s, 7, 'c13')).toMatchObject({ tiresLoss: 5, playable: false, reason: 'tires' });
   });
 
-  it('more than one stop missing: 3 x the starting tires (§6), far more than the car has', () => {
+  it('two stops missing or more: the wall (§6), shown as a crash whatever the tires', () => {
     const s = inZone({ cornerLeft: 2 });
-    expect(find(s, 3, 'c9')).toMatchObject({ tiresLoss: 12, playable: false, reason: 'tires' });
+    expect(find(s, 3, 'c9')).toMatchObject({ crash: true, tiresLoss: 0, playable: true });
+    expect(find(s, 3, 'c9').cost).toBeGreaterThanOrEqual(100);
     const rich = inZone({ cornerLeft: 2 }, { laps: 3 }); // 6 starting tires
-    expect(find(rich, 3, 'c9')).toMatchObject({ tiresLoss: 18, playable: false });
+    expect(find(rich, 3, 'c9')).toMatchObject({ crash: true, playable: true });
     // a car that stops again inside the zone is fine
-    expect(find(s, 2, 'c8')).toMatchObject({ tiresLoss: 0, playable: true });
+    expect(find(s, 2, 'c8')).toMatchObject({ crash: false, tiresLoss: 0, playable: true });
+    // one stop missing is not the wall
+    expect(find(inZone({}), 3, 'c9')).toMatchObject({ crash: false, tiresLoss: 1 });
   });
 
   it('the loss is applied when the car arrives, with the details announced', () => {
@@ -109,19 +113,20 @@ describe('§6 leaving the zone with stops missing', () => {
     expect(run(s, moveTo('c13')).events[0]).toMatchObject({ type: 'INVALID_ACTION' });
   });
 
-  it('if every destination is unplayable the car cannot move at all and is out', () => {
+  it('if every destination ends in the wall the car is out at once, against the wall', () => {
     // 2 stops missing and the roll goes beyond the zone whatever the adjustments: only brakes could save it
     const s = patchCar(inRace(track, { ...fixedDice([2, 3, 9, 9, 15, 25]), laps: 1 }, 1), 'car1', { position: 'c8', gear: 3, cornerId: 'K', cornerLeft: 2, wear: { brakes: 0 } });
     const r = run(s, shift(3));
     expect(r.state.status).toBe('finished');
-    expect(r.state.cars[0].retired).toBe('no-move');
+    expect(r.state.cars[0].retired).toBe('crash');
+    expect(kinds(r.events, 'WALL_CRASH')).toHaveLength(1);
     expect(kinds(r.events, 'CAR_RETIRED')).toHaveLength(1);
   });
 
   it('the brakes can save the car: removing cells keeps it inside the zone', () => {
     const base = patchCar(inRace(track, { ...fixedDice([2, 3, 9, 9, 15, 25]), laps: 1 }, 1), 'car1', { position: 'c4', gear: 3, cornerId: 'K', cornerLeft: 2 });
     // 3 brakes points are not enough to bring a 9 back inside the zone (c8 is 4 cells away): out of the race
-    expect(run(base, shift(3)).state.cars[0].retired).toBe('no-move');
+    expect(run(base, shift(3)).state.cars[0].retired).toBe('crash');
     // with 6 points the roll can be cut to 3: c7, still in the zone
     const strong = patchCar(base, 'car1', { wear: { brakes: 9 } });
     const rolled = run(strong, shift(3));

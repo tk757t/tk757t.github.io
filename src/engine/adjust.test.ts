@@ -89,21 +89,21 @@ describe('§3 adjustments after the roll', () => {
     expect(run(moved, adjust(1)).events[0]).toMatchObject({ reason: 'WRONG_PHASE' });
   });
 
-  it('brakes spent count against the brakes lost by being blocked: both together must fit in the points', () => {
+  it('behind a car the loss is bodywork: the brakes spent on the roll do not change it and it never needs brakes', () => {
     // car1 sits on c8; car2 on c3 rolls 6: c9 is out of reach, the car stops on c7 with 2 steps missing
     const t = linearTrack(300, { grid: [8, 3] });
     const base = patchCar(inRace(t, { ...dice, laps: 3 }, 2), 'car2', { gear: 3 });
     const moving = run(asCurrent(base, 'car2'), shift(3)).state;
     expect(currentCar(moving)!.id).toBe('car2');
-    expect(enumerateMoves(moving).find((o) => o.cellId === 'c7')).toMatchObject({ missing: 2, brakesLoss: 2, playable: true });
-    // adjusting does not change that, but with only 1 brakes point left the option is greyed out
+    expect(enumerateMoves(moving).find((o) => o.cellId === 'c7')).toMatchObject({ missing: 2, bodyLoss: 1, brakesLoss: 0, playable: true });
+    // with a single brakes point left (or none) the option stays playable: the loss is not paid in brakes
     const cut = patchCar(moving, 'car2', { wear: { brakes: 1 } });
-    expect(enumerateMoves(cut).find((o) => o.cellId === 'c7')).toMatchObject({ playable: false, reason: 'brakes' });
-    // spend 1 point on the adjustment: 5 cells now, c8 still blocks, 1 step is missing -> 1 + 1 = 2 points of 3
+    expect(enumerateMoves(cut).find((o) => o.cellId === 'c7')).toMatchObject({ playable: true, bodyLoss: 1 });
+    // spend 1 point on the adjustment: 5 cells now, c8 still blocks, 1 step is missing, the same bodywork is lost
     const exact = run(moving, adjust(1)).state;
-    expect(enumerateMoves(exact).find((o) => o.cellId === 'c7')).toMatchObject({ missing: 1, brakesLoss: 1, playable: true });
-    // with a single point, the spent point plus the lost one do not fit
-    const tight = run(cut, adjust(1)).state;
-    expect(enumerateMoves(tight).find((o) => o.cellId === 'c7')).toMatchObject({ missing: 1, playable: false, reason: 'brakes' });
+    expect(enumerateMoves(exact).find((o) => o.cellId === 'c7')).toMatchObject({ missing: 1, bodyLoss: 1, brakesLoss: 0, playable: true });
+    // and the move costs the bodywork when it is played
+    const done = run(exact, moveTo('c7'));
+    expect(done.events).toContainEqual({ type: 'WEAR_LOST', carId: 'car2', category: 'body', amount: 1, cause: 'blocked' });
   });
 });

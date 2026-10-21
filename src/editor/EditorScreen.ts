@@ -31,6 +31,7 @@ const CAUSES: Record<string, string> = {
   engine: 'moteur',
   handling: 'tenue de route',
   'no-move': 'bloquées (aucune case jouable)',
+  crash: 'mur percuté en sortie de virage',
 };
 
 const pct = (x: number) => `${Math.round(x * 100)} %`;

@@ -9,6 +9,8 @@ export interface LevelRace {
   win: boolean;
   rank: number;
   retired: boolean;
+  /** Why the player's car is out (worn part, wall, no move), when it is. */
+  reason: string | null;
   stars: number;
   rounds: number;
   stats: RaceStats;
@@ -52,7 +54,7 @@ export function runLevel(level: CampaignLevel, seed: number, player: AiLevel = '
   const mine = state.results?.find((r) => r.carId === 'p1');
   const rank = mine?.rank ?? levels.length;
   const retired = mine ? mine.retired !== null : true;
-  return { win: rank === 1 && !retired, rank, retired, stars: starsFor(level, { rank, retired, stats }).stars, rounds: state.round, stats, finished: state.status === 'finished' };
+  return { win: rank === 1 && !retired, rank, retired, reason: mine?.retired ?? null, stars: starsFor(level, { rank, retired, stats }).stars, rounds: state.round, stats, finished: state.status === 'finished' };
 }
 
 export interface LevelBatch {

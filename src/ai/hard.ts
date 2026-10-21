@@ -35,7 +35,7 @@ function planValue(state: RaceState, car: CarState, plan: Plan, gear: number, du
   const o = plan.option;
   const dest = track.cells[o.cellId];
   let v = PROGRESS_WEIGHT * (o.laps * track.lapLength + dest.row - here.row);
-  v -= lose(car, 'tires', o.tiresLoss) + lose(car, 'brakes', o.brakesLoss + plan.brakes) + (plan.boost ? lose(car, 'gearbox', 1) : 0);
+  v -= lose(car, 'tires', o.tiresLoss) + lose(car, 'body', o.bodyLoss) + lose(car, 'brakes', o.brakesLoss + plan.brakes) + (plan.boost ? lose(car, 'gearbox', 1) : 0);
   if (car.wear.tires - o.tiresLoss === 0) v -= STOPPED_PENALTY; // tires at 0: the car stops in neutral
   // the engine roll of fast gears (§8)
   if (gear >= state.config.engineRoll.minGear && dest.type < 2) v -= 0.2 * lose(car, 'engine', 1);

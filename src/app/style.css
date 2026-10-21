@@ -387,6 +387,7 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 .legend__cell--wear { color: var(--wear-ink); background: repeating-linear-gradient(135deg, var(--wear) 0 5px, color-mix(in srgb, var(--wear-ink) 45%, var(--wear)) 5px 8px); }
 .legend__cell--break { background: var(--crash); color: var(--crash-ink); }
 .legend__cell--reach { background: var(--cell); border-color: var(--gem); box-shadow: 0 0 0 2px var(--gem); }
+.legend__cell--wall { background: var(--cell); border-color: var(--crash); box-shadow: 0 0 0 2px var(--crash); }
 
 /* campaign map: a road with a stop per level, each with the thumbnail of its circuit */
 .road { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 22px; position: relative; }

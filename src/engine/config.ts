@@ -34,6 +34,7 @@ export const DEFAULT_CONFIG: EngineConfig = {
   superStartCells: 4,
   // §5
   brakeLossCap: 3,
+  blockBody: 1,
   // §10
   repairPoints: 2,
   fastStopBelow: 11,

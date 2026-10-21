@@ -51,14 +51,14 @@ La grille est tirée au hasard.
 
 - Le moteur énumère tous les chemins possibles dans le graphe des cases pour le résultat du dé ; le joueur choisit sa case d'arrivée.
 - Trois voies de piste. On change de voie en ligne droite seulement, jamais à travers une voiture ; dans un virage on suit sa voie.
-- Une case occupée ne se traverse pas : la voiture s'arrête derrière et chaque case manquante coûte 1 Freins (3 au plus, le reste en Pneus).
-- Plusieurs chemins vers la même case : on garde le moins coûteux. Un chemin que la voiture ne peut pas payer n'est pas jouable.
+- Une case occupée ne se traverse pas : la voiture s'arrête derrière et perd 1 Carrosserie (les pièces peuvent réduire cette perte). Une impasse, absente de nos circuits, coûte 1 Freins par case manquante (3 au plus, le reste en Pneus).
+- Plusieurs chemins vers la même case : on garde le moins coûteux. Un chemin que la voiture ne peut pas payer n'est pas jouable. Un chemin qui sort d'un virage avec 2 arrêts manquants ou plus finit contre le mur : la voiture abandonne (l'IA ne le choisit que s'il n'y a rien d'autre).
 - La voie des stands n'est accessible que pour s'y arrêter ou si on y est déjà.
 
 ## 6. Virages
 
 - Une zone de virage demande un nombre d'arrêts (1 à 3). En y entrant, le compteur d'arrêts restants vaut ce nombre ; chaque tour qui finit dans la zone le diminue de 1.
-- Sortir de la zone avec des arrêts restants coûte des Pneus : les cases parcourues au-delà, multipliées par le facteur d'usure (§7), et davantage s'il restait plus d'un arrêt.
+- Sortir de la zone avec des arrêts restants coûte des Pneus : les cases parcourues au-delà, multipliées par le facteur d'usure (§7), avec 1 arrêt manquant. Avec 2 arrêts manquants ou plus, la voiture percute le mur et abandonne.
   Pneus exactement à 0 : la voiture s'arrête (neutre) ; sous 0 : sortie de piste.
 - Chaque case porte un rapport conseillé selon les arrêts restants, utilisé par l'IA.
 
@@ -114,7 +114,7 @@ peut prendre l'aspiration pour gagner des cases ; le joueur peut la refuser.
 
 - **Rapport** : vise le rapport conseillé de la case selon les arrêts restants ; un cran de moins sous la pluie sans pneus pluie en virage ; plus bas si l'usure
   attendue est trop forte ; ne rétrograde que ce que l'état de la voiture permet.
-- **Case d'arrivée** : minimise pertes de Pneus + 3 × pertes de Freins, en préférant rejoindre son stand quand il le faut, les voies libres, puis la case la plus avancée.
+- **Case d'arrivée** : minimise pertes de Pneus + 3 × pertes de Freins + 6 × pertes de Carrosserie (jamais le mur s'il y a une autre case), en préférant rejoindre son stand quand il le faut, les voies libres, puis la case la plus avancée.
 - **Arrêt au stand** : quand les pneus ne tiendront pas jusqu'à l'arrivée, quand la gomme ne convient plus à la météo, ou quand une autre jauge est trop basse.
 - **Réparations** : Moteur, puis Carrosserie, puis Freins ; Boîte et Tenue de route ensuite.
 

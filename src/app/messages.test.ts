@@ -59,7 +59,9 @@ describe('messages', () => {
     expect(describeEvent({ type: 'DICE_ROLLED', carId: 'car1', gear: 2, face: 4, roll: 5, bonus: 0 }, s)).toBe('Dé : 4 → 5 : 5 cases.'); // soft tires
     expect(describeEvent({ type: 'START_ROLL', carId: 'car1', d20: 20, result: 'super' }, s)).toContain('Super départ');
     expect(describeEvent({ type: 'START_ROLL', carId: 'car1', d20: 1, result: 'stall' }, s)).toContain('Calage');
-    expect(describeEvent({ type: 'BLOCKED', carId: 'car1', missing: 4, brakes: 3, tires: 1 }, s)).toBe('Chemin barré : 4 cases manquantes, freins −3, pneus −1.');
+    expect(describeEvent({ type: 'BLOCKED', carId: 'car1', missing: 4, brakes: 3, tires: 1, body: 0, by: 'end' }, s)).toBe('Chemin barré : 4 cases manquantes, freins −3, pneus −1.');
+    expect(describeEvent({ type: 'BLOCKED', carId: 'car1', missing: 4, brakes: 0, tires: 0, body: 1, by: 'car' }, s)).toBe('Contact : une voiture barre la route (4 cases manquantes), carrosserie −1.');
+    expect(describeEvent({ type: 'WALL_CRASH', carId: 'car1', corner: 'T2', left: 2 }, s)).toBe('Virage T2 : 2 arrêts manquants, la voiture percute le mur et abandonne.');
     expect(describeEvent({ type: 'CORNER_OVERSHOOT', carId: 'car1', corner: 'T2', left: 1, steps: 3, tires: 3 }, s)).toBe('Virage T2 raté (1 arrêt manquant) : pneus −3.');
     expect(describeEvent({ type: 'CORNER_STOP', carId: 'car1', corner: 'T2', left: 1 }, s)).toBe('Arrêt au virage T2 : encore 1 arrêt.');
     expect(describeEvent({ type: 'CORNER_STOP', carId: 'car1', corner: 'T2', left: 0 }, s)).toBe('Virage T2 : tous les arrêts sont faits.');

@@ -282,7 +282,8 @@ export class RaceScreen {
         row('legend__cell--neutral', '', 'Case claire', 'rien de spécial.'),
         row('legend__cell--wear', '', 'Orange rayée', "virage : les pneus s'usent si on n'y fait pas ses arrêts."),
         row('legend__cell--break', '✕', 'Rouge à croix', 'case à risque : un jet peut coûter de la tenue de route, et sous 0 on abandonne.'),
-        row('legend__cell--reach', '', 'Halo bleu ou jaune', 'case où vous pouvez aller (jaune : elle coûte des freins ou des pneus).'),
+        row('legend__cell--reach', '', 'Halo bleu ou jaune', 'case où vous pouvez aller (jaune : elle coûte de la carrosserie, des freins ou des pneus).'),
+        row('legend__cell--wall', '', 'Halo rouge', 'le mur : la voiture qui y va abandonne.'),
       ),
     );
   }
@@ -604,15 +605,15 @@ export class RaceScreen {
   // ------------------------------------------------------------------- drawing
 
   /** The cells to highlight: where the chosen gear could take the car, or the destinations after the roll. */
-  private marks(): Map<string, 'free' | 'costly'> {
+  private marks(): Map<string, 'free' | 'costly' | 'crash'> {
     const s = this.state;
-    const out = new Map<string, 'free' | 'costly'>();
+    const out = new Map<string, 'free' | 'costly' | 'crash'>();
     if (s.status !== 'racing') return out;
     if (s.phase === 'gear' && this.isHumanTurn()) {
       const car = currentCar(s)!;
       if (car.started) for (const id of potentialCells({ ...s, cars: s.cars.map((c) => (c === car ? { ...c } : c)) }, this.pendingGear).keys()) out.set(id, 'free');
     } else if (s.phase === 'adjust') {
-      for (const o of enumerateMoves(s)) if (o.playable) out.set(o.cellId, o.cost > 0 ? 'costly' : 'free');
+      for (const o of enumerateMoves(s)) if (o.playable) out.set(o.cellId, o.crash ? 'crash' : o.cost > 0 ? 'costly' : 'free');
     }
     return out;
   }
@@ -713,7 +714,11 @@ export class RaceScreen {
     if (s.phase === 'adjust') {
       setButtonText(this.act, human ? `${plural(movementOf(s.config, turn), 'case')} : touchez l'arrivée` : other ? `${other} choisit sa case…` : 'IA : choisit sa case…');
       this.act.disabled = true;
-      if (human) msgs.push('Orange : la case coûte des freins ou des pneus.');
+      if (human) {
+        const options = enumerateMoves(s).filter((o) => o.playable);
+        if (options.some((o) => !o.crash && o.cost > 0)) msgs.push('Jaune : la case coûte de la carrosserie, des freins ou des pneus.');
+        if (options.some((o) => o.crash)) msgs.push('Rouge : le mur, la voiture abandonne.');
+      }
     } else if (s.phase === 'pit') {
       setButtonText(this.act, human ? 'Au stand…' : other ? `${other} est au stand…` : 'IA : au stand…');
       this.act.disabled = true;
@@ -1016,6 +1021,8 @@ export class RaceScreen {
         },
         stats: () => this.stats,
         destinations: () => enumerateMoves(this.state).filter((o) => o.playable).map((o) => o.cellId),
+        /** Tests only: every option of the roll, with what it costs (bodywork, brakes, tires) and whether it ends in the wall. */
+        options: () => enumerateMoves(this.state).map((o) => ({ cellId: o.cellId, playable: o.playable, blocked: o.blocked, bodyLoss: o.bodyLoss, brakesLoss: o.brakesLoss, tiresLoss: o.tiresLoss, crash: o.crash })),
       },
       __screen: this,
       __render: {

@@ -21,7 +21,7 @@ export const LEVELS: CampaignLevel[] = [
         car: 3,
         portrait: 4,
         tires: 'soft',
-        parts: {},
+        parts: { wing: { id: 'wng-active', level: 1 } },
       }),
     ],
     goals: [{ kind: 'finish' }, { kind: 'top', n: 2 }, { kind: 'win', condition: 'corner-overtake' }],

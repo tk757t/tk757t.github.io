@@ -79,8 +79,10 @@ export interface EngineConfig {
   superStart: number;
   stall: number;
   superStartCells: number;
-  /** At most this many missing cells cost brakes, the rest costs tires (§5). */
+  /** At most this many missing cells cost brakes, the rest costs tires (§5); only when the way ends (never on our circuits). */
   brakeLossCap: number;
+  /** Bodywork lost when a car blocks the way: the car stops behind it (§5). */
+  blockBody: number;
   /** Repair points a team has for the whole race (§10). */
   repairPoints: number;
   /** Fast stop: a d20 below this value restarts at once (§10). */
@@ -107,7 +109,7 @@ export interface CarMods {
   downshiftDiscount: number;
   /** Tires saved when a corner overshoot costs tires (§6). */
   overshootTireDiscount: number;
-  /** Brakes saved when the way is blocked (§5). */
+  /** Bodywork saved when a car blocks the way (§5). */
   blockBrakeDiscount: number;
   /** Lowers the d20 threshold of the engine roll, per category (only `engine` is used, §8). */
   rollWearDiscount: Partial<Record<WearCategory, number>>;
@@ -126,7 +128,7 @@ export const NO_MODS: CarMods = {
   moveBonus: [],
 };
 
-export type DnfReason = WearCategory | 'no-move';
+export type DnfReason = WearCategory | 'no-move' | 'crash';
 
 export interface CarState {
   id: string;
@@ -238,7 +240,9 @@ export type GameEvent =
   | { type: 'REROLLED'; carId: string; left: number }
   | { type: 'ADJUSTED'; carId: string; brakes: number; boost: boolean; slipstream: boolean; movement: number }
   | { type: 'CAR_MOVED'; carId: string; from: string; to: string; cells: number; missing: number }
-  | { type: 'BLOCKED'; carId: string; missing: number; brakes: number; tires: number }
+  | { type: 'BLOCKED'; carId: string; missing: number; brakes: number; tires: number; body: number; by: 'car' | 'end' }
+  /** Leaving a corner zone with two stops or more missing: the car hits the wall and is out (§6). */
+  | { type: 'WALL_CRASH'; carId: string; corner: string; left: number }
   | { type: 'CORNER_STOP'; carId: string; corner: string; left: number }
   | { type: 'CORNER_OVERSHOOT'; carId: string; corner: string; left: number; steps: number; tires: number }
   | { type: 'FREE_STOP_USED'; carId: string; corner: string; used: number }
@@ -267,11 +271,17 @@ export interface MoveOption {
   movement: number;
   /** Steps that could not be taken (blocked or dead end). */
   missing: number;
-  /** Brakes lost because of the missing steps (max 3, parts may reduce it). */
+  /** What stopped the car: another car (costs bodywork), the end of the way (costs brakes then tires), or nothing. */
+  blocked: 'car' | 'end' | null;
+  /** Bodywork lost behind a car that blocks the way (parts may reduce it). */
+  bodyLoss: number;
+  /** True when the path leaves a corner with two stops or more missing: the car crashes into the wall and is out (§6). */
+  crash: boolean;
+  /** Brakes lost because the way ends (max 3, parts may reduce it); none behind a car. */
   brakesLoss: number;
-  /** Tires lost: corner overshoots plus missing steps beyond the brakes cap. */
+  /** Tires lost: a corner overshoot of one stop, plus missing steps beyond the brakes cap when the way ends. */
   tiresLoss: number;
-  /** tiresLoss + 3 x brakesLoss, the figure the AI minimises (§14). */
+  /** tiresLoss + 3 x brakesLoss + 6 x bodyLoss, +100 for a crash: the figure the AI minimises (§14). */
   cost: number;
   laps: number;
   /** Risk rolls on the way (§8). */

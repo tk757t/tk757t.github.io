@@ -15,24 +15,24 @@ Seeds 1 à 200 :
 
 | Niveau | Circuit | Tours | Victoires | Abandons du joueur | Rang moyen | Manches | Étoiles 0 / 1 / 2 / 3 |
 |---|---|---|---|---|---|---|---|
-| 1. Débutant | anneau | 2 | 84,5 % | 15,5 % | 1,16 | 24 | 15,5 % / 0,0 % / 58,5 % / 26,0 % |
-| 2. Challenger | lac | 3 | 40,0 % | 19,0 % | 1,91 | 50 | 19,0 % / 14,5 % / 65,5 % / 1,0 % |
-| 3. Champion | epingles | 3 | 35,0 % | 24,5 % | 2,10 | 57 | 24,5 % / 8,0 % / 46,5 % / 21,0 % |
+| 1. Débutant | anneau | 2 | 87,0 % | 6,0 % | 1,13 | 21 | 6,0 % / 0,0 % / 62,0 % / 32,0 % |
+| 2. Challenger | lac | 3 | 38,5 % | 10,0 % | 1,91 | 50 | 10,0 % / 20,0 % / 69,0 % / 1,0 % |
+| 3. Champion | epingles | 3 | 31,0 % | 13,5 % | 2,10 | 59 | 13,5 % / 16,0 % / 50,0 % / 20,5 % |
 
 Seeds 1000 à 1199 :
 
 | Niveau | Circuit | Tours | Victoires | Abandons du joueur | Rang moyen | Manches | Étoiles 0 / 1 / 2 / 3 |
 |---|---|---|---|---|---|---|---|
-| 1. Débutant | anneau | 2 | 82,5 % | 17,5 % | 1,18 | 24 | 17,5 % / 0,0 % / 57,5 % / 25,0 % |
-| 2. Challenger | lac | 3 | 41,5 % | 20,0 % | 1,85 | 50 | 20,0 % / 10,0 % / 70,0 % / 0,0 % |
-| 3. Champion | epingles | 3 | 35,0 % | 23,5 % | 2,07 | 56 | 23,5 % / 7,5 % / 49,0 % / 20,0 % |
+| 1. Débutant | anneau | 2 | 85,0 % | 5,5 % | 1,15 | 20 | 5,5 % / 0,0 % / 61,0 % / 33,5 % |
+| 2. Challenger | lac | 3 | 42,0 % | 8,5 % | 1,82 | 50 | 8,5 % / 16,5 % / 75,0 % / 0,0 % |
+| 3. Champion | epingles | 3 | 31,0 % | 15,5 % | 2,17 | 58 | 15,5 % / 19,5 % / 49,0 % / 16,0 % |
 
 Bornes respectées sur les deux séries : **oui**.
 
 ## Adversaires
 
 - Niveau 1 Débutant :
-  - IA easy, Léa Virage (Écurie Corail), pneus soft, sans pièce
+  - IA easy, Léa Virage (Écurie Corail), pneus soft, wing: wng-active niv. 1
 - Niveau 2 Challenger :
   - IA medium, Hugo Turbo (Team Ardoise), pneus hard, brakes: brk-stock niv. 1
   - IA medium, Sami Gomme (Écurie Lagon), pneus hard, sans pièce

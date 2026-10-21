@@ -7,6 +7,17 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.0',
+    date: '2026-10-21',
+    notes: [
+      'Une voiture qui barre la route te coûte 1 point de Carrosserie, plus de freins ni de pneus.',
+      'Le mur : sortir d’un virage avec 2 arrêts manquants ou plus fait abandonner. La case est rouge avant de jouer ; les cases qui coûtent de la carrosserie sont jaunes.',
+      'Connexion Discord : les erreurs sont expliquées, et un compte invité lié à Discord est reconnu.',
+      'Niveau Débutant de la campagne : la rivale est un peu plus rapide.',
+      'La course ne redessine plus l’écran quand rien ne bouge : moins de chauffe sur téléphone.',
+    ],
+  },
+  {
     version: '0.2.2',
     date: '2026-10-21',
     notes: ['Les achats, cadeaux, équipements et récompenses s’affichent tout de suite, sans attendre le serveur.', 'Un bouton qui attend le serveur affiche une petite roue : plus de doute sur le tap.', 'Le serveur répond plus vite (environ 350 ms au lieu de 800 à 3000 ms).'],

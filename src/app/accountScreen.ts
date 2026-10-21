@@ -1,4 +1,5 @@
-import { claimPseudo, accountError, loadAccount, pseudoProblem, signInGuest, startDiscord, type Account } from './account';
+import { claimPseudo, accountError, loadAccount, pseudoProblem, signInGuest, startDiscord, takeRedirectError, type Account } from './account';
+import { toast } from './toast';
 import { devParam } from './devParams';
 import { Button, Modal, type ModalHandle } from '../ui/kit';
 import { el } from '../ui/dom';
@@ -12,13 +13,18 @@ const accountStepEnabled = (): boolean => !import.meta.env.DEV || devParam('acco
  */
 export async function ensureAccount(): Promise<void> {
   if (!accountStepEnabled()) return;
+  // coming back from Discord with an error: read it before the session code touches the address
+  const redirectError = takeRedirectError();
   let account: Account | null;
   try {
     account = await loadAccount();
   } catch {
     return; // offline: play without an account
   }
-  if (account?.pseudo) return;
+  if (account?.pseudo) {
+    if (redirectError) toast(redirectError, 'bad');
+    return;
+  }
   await new Promise<void>((resolve) => {
     let modal: ModalHandle | null = null;
     const input = el('input', { type: 'text', maxlength: 16, autocomplete: 'off', spellcheck: 'false', placeholder: 'Votre pseudo', 'aria-label': 'Votre pseudo', 'data-testid': 'account-pseudo' });
@@ -26,6 +32,7 @@ export async function ensureAccount(): Promise<void> {
     const say = (t: string): void => {
       message.textContent = t;
     };
+    if (redirectError) say(redirectError);
     const finish = (): void => {
       modal?.close();
       resolve();

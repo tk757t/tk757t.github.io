@@ -22,6 +22,7 @@ const RETIRE_CRASH: Record<DnfReason, SoundName> = {
   engine: 'crash-engine',
   handling: 'crash-handling',
   'no-move': 'crash-body',
+  crash: 'crash-body',
 };
 
 /**

@@ -28,6 +28,7 @@ const RETIRE_LABELS: Record<DnfReason, string> = {
   engine: 'moteur cassé',
   handling: 'tenue de route perdue',
   'no-move': 'aucun déplacement possible',
+  crash: 'mur percuté',
 };
 
 export const TIRE_LABELS: Record<TireType, string> = { hard: 'Durs', rain: 'Pluie', soft: 'Tendres' };
@@ -88,7 +89,11 @@ export function describeEvent(e: GameEvent, state: RaceState, name: (carId: stri
     case 'ADJUSTED':
       return null;
     case 'BLOCKED':
-      return `Chemin barré : ${plural(e.missing, 'case manquante', 'cases manquantes')}, freins −${e.brakes}${e.tires ? `, pneus −${e.tires}` : ''}.`;
+      return e.by === 'car'
+        ? `Contact : une voiture barre la route (${plural(e.missing, 'case manquante', 'cases manquantes')}), carrosserie −${e.body}.`
+        : `Chemin barré : ${plural(e.missing, 'case manquante', 'cases manquantes')}, freins −${e.brakes}${e.tires ? `, pneus −${e.tires}` : ''}.`;
+    case 'WALL_CRASH':
+      return `Virage ${e.corner} : ${plural(e.left, 'arrêt manquant', 'arrêts manquants')}, la voiture percute le mur et abandonne.`;
     case 'CORNER_STOP':
       return e.left > 0 ? `Arrêt au virage ${e.corner} : encore ${plural(e.left, 'arrêt')}.` : `Virage ${e.corner} : tous les arrêts sont faits.`;
     case 'CORNER_OVERSHOOT':

@@ -91,7 +91,7 @@ export function statRows(mods: CarMods, base: Wear): StatRow[] {
     { key: 'freeStops', label: 'Arrêts gratuits en virage', value: mods.freeStops },
     { key: 'downshift', label: 'Rapports offerts à la rétrogradation', value: mods.downshiftDiscount },
     { key: 'overshoot', label: 'Pneus épargnés si virage raté', value: mods.overshootTireDiscount },
-    { key: 'block', label: 'Freins épargnés si bloqué', value: mods.blockBrakeDiscount },
+    { key: 'block', label: 'Carrosserie épargnée si une voiture barre la route', value: mods.blockBrakeDiscount },
     { key: 'strain', label: 'Jet moteur : seuil en moins', value: mods.rollWearDiscount.engine ?? 0 },
     { key: 'move', label: 'Cases bonus (rapports 1 à 6)', value: mods.moveBonus.reduce((sum, b) => sum + b.amount * (b.gears === 'all' ? 6 : b.gears.length), 0) },
   );

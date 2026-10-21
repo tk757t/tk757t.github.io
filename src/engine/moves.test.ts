@@ -71,47 +71,43 @@ describe('§5 enumerating the paths', () => {
 describe('§5 occupied cells cannot be crossed', () => {
   const line = (n = 20, blockerAt = 3) => place(inRace(linearTrack(n, { grid: [0, 1] }), {}, 2), 'car2', `c${blockerAt}`);
 
-  it('the car stops before the occupied cell; the missing steps cost brakes', () => {
+  it('the car stops before the occupied cell and loses bodywork', () => {
     const o = moves(line(), 3); // c0 -> c1, c2, then c3 is taken: 1 step missing
     expect(o).toHaveLength(1);
-    expect(o[0]).toMatchObject({ cellId: 'c2', missing: 1, brakesLoss: 1, tiresLoss: 0, cost: 3, playable: true });
+    expect(o[0]).toMatchObject({ cellId: 'c2', missing: 1, blocked: 'car', bodyLoss: 1, brakesLoss: 0, tiresLoss: 0, cost: 6, playable: true, crash: false });
   });
 
-  it('2 and 3 missing steps cost 2 and 3 brakes', () => {
-    expect(moves(line(), 4)[0]).toMatchObject({ cellId: 'c2', missing: 2, brakesLoss: 2, tiresLoss: 0 });
-    expect(moves(line(), 5)[0]).toMatchObject({ cellId: 'c2', missing: 3, brakesLoss: 3, tiresLoss: 0, cost: 9 });
-  });
-
-  it('beyond 3 missing steps the excess goes to the tires (max 3 brakes)', () => {
-    expect(moves(line(), 6)[0]).toMatchObject({ missing: 4, brakesLoss: 3, tiresLoss: 1, cost: 10 });
-    expect(moves(line(), 9)[0]).toMatchObject({ missing: 7, brakesLoss: 3, tiresLoss: 4, cost: 13 });
+  it('the bodywork lost does not grow with the number of missing steps, and no brakes or tires are lost', () => {
+    for (const m of [4, 5, 6, 9]) expect(moves(line(), m)[0]).toMatchObject({ cellId: 'c2', missing: m - 2, blocked: 'car', bodyLoss: 1, brakesLoss: 0, tiresLoss: 0, cost: 6 });
   });
 
   it('a roll that does not reach the other car is not affected', () => {
-    expect(moves(line(), 2)[0]).toMatchObject({ cellId: 'c2', missing: 0, cost: 0 });
+    expect(moves(line(), 2)[0]).toMatchObject({ cellId: 'c2', missing: 0, blocked: null, bodyLoss: 0, cost: 0 });
   });
 
   it('a car directly ahead blocks everything: the car stays where it is', () => {
     const o = moves(line(20, 1), 5)[0];
-    expect(o).toMatchObject({ cellId: 'c0', missing: 5, brakesLoss: 3, tiresLoss: 2 });
+    expect(o).toMatchObject({ cellId: 'c0', missing: 5, bodyLoss: 1, brakesLoss: 0, tiresLoss: 0 });
   });
 
-  it('a dead end costs the same as a blocked cell', () => {
+  it('a dead end (none on our circuits) costs brakes, then tires', () => {
     const s = inRace(linearTrack(5), {}, 1);
-    expect(moves(s, 8)[0]).toMatchObject({ cellId: 'c4', missing: 4, brakesLoss: 3, tiresLoss: 1 });
+    expect(moves(s, 5)[0]).toMatchObject({ cellId: 'c4', missing: 1, blocked: 'end', brakesLoss: 1, tiresLoss: 0, bodyLoss: 0 });
+    expect(moves(s, 8)[0]).toMatchObject({ cellId: 'c4', missing: 4, blocked: 'end', brakesLoss: 3, tiresLoss: 1, bodyLoss: 0 });
   });
 
-  it('parts can reduce the brakes lost when blocked, not the tires', () => {
+  it('parts can reduce the bodywork lost behind a car', () => {
     const s = place(inRace(linearTrack(20, { grid: [0, 1] }), {}, 2, { mods: { car1: { blockBrakeDiscount: 2 } } }), 'car2', 'c3');
-    expect(moves(s, 5)[0]).toMatchObject({ missing: 3, brakesLoss: 1, tiresLoss: 0 });
-    expect(moves(s, 9)[0]).toMatchObject({ missing: 7, brakesLoss: 1, tiresLoss: 4 });
+    expect(moves(s, 5)[0]).toMatchObject({ missing: 3, bodyLoss: 0, cost: 0 });
+    const weak = place(inRace(linearTrack(20, { grid: [0, 1] }), {}, 2, { mods: { car1: { blockBrakeDiscount: 0.25 } } }), 'car2', 'c3');
+    expect(moves(weak, 5)[0]).toMatchObject({ missing: 3, bodyLoss: 1 });
   });
 
   it('a free lane keeps its cost-free destination next to the blocked one', () => {
     const s = place(inRace(twoLaneTrack(12, { from: 0, to: 6 }), {}, 2), 'car2', 'a2');
     const o = moves(s, 3);
     expect(o.find((x) => x.cellId === 'b3' || x.cellId === 'a3')).toMatchObject({ missing: 0, cost: 0 });
-    expect(o.find((x) => x.cellId === 'a1')).toMatchObject({ missing: 2, brakesLoss: 2 });
+    expect(o.find((x) => x.cellId === 'a1')).toMatchObject({ missing: 2, blocked: 'car', bodyLoss: 1, brakesLoss: 0 });
   });
 
   it('retired cars and cars that finished no longer block', () => {
@@ -121,30 +117,36 @@ describe('§5 occupied cells cannot be crossed', () => {
 });
 
 describe('§5 playable and greyed-out destinations', () => {
-  const blocked = (brakes: number, tires = 6, m = 5) => {
+  const behindCar = (brakes: number, tires = 6, m = 5) => {
     const s = place(inRace(linearTrack(20, { grid: [0, 1] }), {}, 2), 'car2', 'c3');
     return moves(patchCar(s, 'car1', { wear: { brakes, tires } }), m)[0];
   };
+  const deadEnd = (brakes: number, tires = 6, m = 8) => moves(patchCar(inRace(linearTrack(5), {}, 1), 'car1', { wear: { brakes, tires } }), m)[0];
 
-  it('brakes are enough when they cover the loss', () => {
-    expect(blocked(3)).toMatchObject({ brakesLoss: 3, playable: true });
-    expect(blocked(3).reason).toBeUndefined();
+  it('behind a car no brakes and no tires are needed: it stays playable with nothing left', () => {
+    expect(behindCar(0, 0, 6)).toMatchObject({ playable: true, bodyLoss: 1, brakesLoss: 0, tiresLoss: 0 });
+    expect(behindCar(0, 0, 6).reason).toBeUndefined();
   });
 
-  it('not enough brakes: greyed out, reason brakes', () => {
-    expect(blocked(2)).toMatchObject({ playable: false, reason: 'brakes' });
-    expect(blocked(0, 6, 3)).toMatchObject({ playable: false, reason: 'brakes' });
+  it('at a dead end, brakes are enough when they cover the loss', () => {
+    expect(deadEnd(3)).toMatchObject({ brakesLoss: 3, playable: true });
+    expect(deadEnd(3).reason).toBeUndefined();
   });
 
-  it('points already spent on the roll count against the brakes', () => {
-    const s = place(inRace(linearTrack(20, { grid: [0, 1] }), {}, 2), 'car2', 'c3');
+  it('at a dead end, not enough brakes: greyed out, reason brakes', () => {
+    expect(deadEnd(2)).toMatchObject({ playable: false, reason: 'brakes' });
+    expect(deadEnd(0, 6, 5)).toMatchObject({ playable: false, reason: 'brakes' });
+  });
+
+  it('points already spent on the roll count against the brakes at a dead end', () => {
+    const s = inRace(linearTrack(5), {}, 1);
     expect(moves(s, 5, 'car1', 0)[0].playable).toBe(true);
-    expect(moves(s, 5, 'car1', 1)[0]).toMatchObject({ playable: false, reason: 'brakes' });
+    expect(moves(s, 8, 'car1', 1)[0]).toMatchObject({ playable: false, reason: 'brakes' });
   });
 
-  it('not enough tires for the excess: greyed out, reason tires; exactly enough is fine', () => {
-    expect(blocked(3, 0, 6)).toMatchObject({ tiresLoss: 1, playable: false, reason: 'tires' });
-    expect(blocked(3, 1, 6)).toMatchObject({ tiresLoss: 1, playable: true });
+  it('at a dead end, not enough tires for the excess: greyed out, reason tires; exactly enough is fine', () => {
+    expect(deadEnd(3, 0)).toMatchObject({ tiresLoss: 1, playable: false, reason: 'tires' });
+    expect(deadEnd(3, 1)).toMatchObject({ tiresLoss: 1, playable: true });
   });
 });
 

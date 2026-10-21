@@ -19,9 +19,11 @@ const COLORS = {
   background: 0x0c1d4d,
   link: 0x3a4454,
   corner: { 1: 0xf2c94c, 2: 0xf2994a, 3: 0xeb5757 } as Record<number, number>,
-  // destinations: cyan when free, yellow when they cost brakes or tires (orange is kept for the wear cells)
+  // destinations: cyan when free, yellow when they cost bodywork, brakes or tires (orange is kept for the wear cells),
+  // red when they end against the wall
   reach: 0x5fdcff,
   costly: 0xffe14d,
+  crash: 0xff4d4d,
   ring: 0xffffff,
 };
 export const CAR_COLORS = [0xe53935, 0x1e88e5, 0x43a047, 0xab47bc, 0xfb8c00, 0x00acc1];
@@ -205,9 +207,9 @@ export class RaceRenderer {
   /** Redraws everything that depends on the race state. Does not modify it. */
   /**
    * Redraws what depends on the race state. `marks` are the cells to highlight: 'free' destinations in cyan,
-   * 'costly' ones (they lose brakes or tires) in orange.
+   * 'costly' ones (they lose bodywork, brakes or tires) in yellow, 'crash' ones (the wall: the car is out) in red.
    */
-  update(state: RaceState, marks: Map<string, 'free' | 'costly'> = new Map()): void {
+  update(state: RaceState, marks: Map<string, 'free' | 'costly' | 'crash'> = new Map()): void {
     this.dirty = true;
     this.reachLayer.clear();
     this.dimLayer.clear();
@@ -221,7 +223,7 @@ export class RaceRenderer {
       const c = this.cellById.get(id);
       const pts = this.cellPoly.get(id);
       if (!c || !pts) continue;
-      const color = kind === 'free' ? COLORS.reach : COLORS.costly;
+      const color = kind === 'free' ? COLORS.reach : kind === 'costly' ? COLORS.costly : COLORS.crash;
       const grow = (k: number) => pts.map((v, i) => (i % 2 === 0 ? c.x + (v - c.x) * k : c.y + (v - c.y) * k));
       this.reachLayer.poly(grow(1.3)).fill({ color, alpha: 0.4 });
       this.reachLayer.poly(grow(1.3)).stroke({ width: 3 * u, color });

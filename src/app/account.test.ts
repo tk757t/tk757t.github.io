@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { accountError, pseudoProblem } from './account';
+import { accountError, pseudoProblem, redirectErrorMessage } from './account';
 
 describe('pseudo rules (same as the server)', () => {
   it('accepts 3 to 16 letters, digits and _ - .', () => {
@@ -30,5 +30,26 @@ describe('error messages for the player', () => {
   it('never shows a raw technical message', () => {
     expect(accountError(new Error('relation "profiles" does not exist'))).toBe('Une erreur est survenue. Réessayez.');
     expect(accountError(null)).toBe('Une erreur est survenue. Réessayez.');
+  });
+});
+
+describe('Discord failures, in words the player can act on', () => {
+  it('turns what the server says into a sentence about the cause', () => {
+    expect(accountError(new Error('Unsupported provider: provider is not enabled'))).toMatch(/Discord n’est pas encore disponible/);
+    expect(accountError(new Error('Manual linking is disabled'))).toMatch(/Lier ce compte à Discord/);
+    expect(accountError({ message: 'Identity is already linked to another user', code: 'identity_already_exists' })).toMatch(/déjà lié/);
+    expect(accountError(new Error('requested path is invalid'))).toMatch(/adresse du jeu/);
+  });
+
+  it('reads the error of a return from Discord, in the query or in the # part', () => {
+    expect(redirectErrorMessage('?error=access_denied&error_description=The+resource+owner+denied', '')).toBe('Connexion Discord annulée.');
+    expect(redirectErrorMessage('', '#error=access_denied&error_code=bad_oauth_callback')).toBe('Connexion Discord annulée.');
+    expect(redirectErrorMessage('?error=server_error&error_description=Error+getting+user+email+from+external+provider', '')).toMatch(/adresse vérifiée/);
+    expect(redirectErrorMessage('?error=server_error&error_description=Something+odd', '')).toMatch(/La connexion avec Discord a échoué/);
+  });
+
+  it('says nothing when the address carries no error', () => {
+    expect(redirectErrorMessage('?join=ABCD', '')).toBeNull();
+    expect(redirectErrorMessage('', '')).toBeNull();
   });
 });

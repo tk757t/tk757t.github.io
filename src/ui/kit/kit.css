@@ -1,0 +1,206 @@
+/* Design system: colours come from tokens.ts (CSS variables written at start-up). */
+:root {
+  --font: 'Lilita One', 'Trebuchet MS', system-ui, sans-serif;
+  --radius: 14px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+[hidden] { display: none !important; } /* component display rules must not win over the hidden attribute */
+
+/* ------------------------------------------------------------- Button */
+.kit-btn {
+  --face: var(--blue);
+  --edge: var(--blue-edge);
+  --ink: var(--text);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 18px;
+  font-family: var(--font);
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: 0.4px;
+  color: var(--ink);
+  background: var(--face);
+  border: 3px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.32), 0 5px 0 var(--edge), 0 5px 0 3px var(--line), 0 10px 14px rgba(0, 0, 0, 0.35);
+  margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.07s ease, box-shadow 0.07s ease, filter 0.15s;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+.kit-btn--yellow { --face: var(--yellow); --edge: var(--yellow-edge); --ink: var(--yellow-text); text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); }
+.kit-btn--blue { --face: var(--blue); --edge: var(--blue-edge); }
+.kit-btn--green { --face: var(--green); --edge: var(--green-edge); }
+.kit-btn--red { --face: var(--red); --edge: var(--red-edge); }
+.kit-btn--ghost { --face: var(--ghost); --edge: var(--ghost-edge); }
+.kit-btn--lg { min-height: 58px; font-size: 22px; padding: 0 24px; }
+.kit-btn--xl { min-height: 76px; font-size: 34px; padding: 0 32px; letter-spacing: 1px; border-radius: 18px; }
+.kit-btn--block { display: flex; width: 100%; }
+.kit-btn:hover:not(:disabled) { filter: brightness(1.06); }
+.kit-btn:active:not(:disabled),
+.kit-btn.is-pressed:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.25), 0 0 0 var(--edge), 0 0 0 3px var(--line), 0 3px 5px rgba(0, 0, 0, 0.3);
+}
+.kit-btn.pop { animation: kit-pop 0.28s ease-out; }
+.kit-btn:disabled { filter: grayscale(0.7) brightness(0.8); cursor: default; box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.15), 0 5px 0 var(--edge), 0 5px 0 3px var(--line); }
+.kit-btn.is-busy { position: relative; cursor: progress; }
+.kit-btn.is-busy > * { opacity: 0.45; }
+.kit-btn.is-busy::after {
+  content: '';
+  position: absolute;
+  top: calc(50% - 10px);
+  left: calc(50% - 10px);
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 3px solid var(--ink, #fff);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: kit-spin 0.7s linear infinite;
+}
+@keyframes kit-spin { to { transform: rotate(360deg); } }
+.kit-btn:focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
+.kit-btn--xl.kit-btn--yellow { animation: kit-breathe 2.4s ease-in-out infinite; }
+.kit-btn--xl.kit-btn--yellow.pop { animation: kit-pop 0.28s ease-out; }
+
+@keyframes kit-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+@keyframes kit-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+
+/* -------------------------------------------------------------- Panel */
+.kit-panel {
+  position: relative;
+  padding: 12px;
+  background: var(--panel);
+  border: 3px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.12), 0 4px 0 var(--line);
+  color: var(--text);
+}
+.kit-panel--dark { background: var(--panel-dark); }
+.kit-panel--gold { background: var(--panel-dark); border-color: var(--gold); box-shadow: 0 4px 0 var(--yellow-edge); }
+.kit-panel__title { margin: 0 0 8px; font-family: var(--font); font-weight: 400; font-size: 20px; letter-spacing: 0.4px; color: var(--text); }
+
+/* -------------------------------------------------------------- Badge */
+.kit-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.kit-badge--red { background: var(--red); }
+.kit-badge--blue { background: var(--blue); }
+.kit-badge--green { background: var(--green); }
+.kit-badge--gold { background: var(--panel-dark); color: var(--gold); border-color: var(--gold); }
+
+/* ----------------------------------------------------------- Progress */
+.kit-progress {
+  position: relative;
+  height: 22px;
+  background: var(--bg-deep);
+  border: 3px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.kit-progress--small { height: 14px; border-width: 2px; }
+.kit-progress__fill { height: 100%; width: 0; background: var(--fill, var(--gold)); border-radius: 999px; box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35); transition: width 0.4s ease; }
+.kit-progress--gold { --fill: var(--gold); }
+.kit-progress--xp { --fill: var(--xp); }
+.kit-progress--green { --fill: #3fd06a; }
+.kit-progress--red { --fill: #ff5a55; }
+.kit-progress--blue { --fill: #4d9bff; }
+.kit-progress__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  text-shadow: 0 1px 2px #000, 0 0 3px #000;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------- RarityFrame */
+.kit-frame { --rc: var(--common); border: 3px solid var(--rc); border-radius: var(--radius); background: var(--panel-dark); }
+.kit-frame--rare { --rc: var(--rare); }
+.kit-frame--epic { --rc: var(--epic); }
+.kit-frame--legendary { --rc: var(--legendary); }
+.kit-frame--glow { box-shadow: 0 0 18px color-mix(in srgb, var(--rc) 60%, transparent); }
+
+/* -------------------------------------------------------------- Modal */
+#modal-root { position: relative; z-index: 100; }
+.kit-modal-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+  background: rgba(4, 12, 40, 0.82);
+  animation: kit-fade 0.18s ease-out;
+}
+.kit-modal-wrap--sheet { align-items: flex-end; }
+.kit-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 100%;
+  padding: 14px;
+  background: var(--panel);
+  border: 4px solid var(--line);
+  border-radius: 20px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.15), 0 8px 0 var(--line), 0 18px 30px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  animation: kit-rise 0.22s ease-out;
+}
+.kit-modal__header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kit-modal__header .kit-btn { min-width: 48px; padding: 0 10px; font-size: 20px; }
+.kit-modal__title { margin: 0; font-family: var(--font); font-weight: 400; font-size: 26px; letter-spacing: 0.5px; }
+.kit-modal__floating-close { position: absolute; top: -14px; right: -6px; z-index: 2; }
+.kit-modal__body { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0; padding: 2px; }
+.kit-modal__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.kit-modal__actions > * { flex: 1 1 140px; }
+
+@keyframes kit-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kit-rise { from { transform: translateY(18px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-btn, .kit-progress__fill { transition: none; }
+  .kit-btn--xl.kit-btn--yellow, .kit-btn.pop, .kit-modal, .kit-modal-wrap { animation: none; }
+  .kit-btn.is-busy::after { animation: none; }
+}

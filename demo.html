@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>4 Mules - circuit</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #10151c; overflow: hidden; font-family: system-ui, sans-serif; color: #e8edf3; }
+      #host { position: fixed; inset: 0; }
+      .panel { position: fixed; left: 8px; right: 8px; background: rgba(16, 21, 28, 0.88); border: 1px solid #2b3340; border-radius: 10px; padding: 8px 10px; }
+      #hud { top: 8px; font-size: 14px; line-height: 1.35; max-width: 460px; }
+      #hud b { color: #fff; }
+      #legend { display: flex; gap: 10px; margin-top: 4px; font-size: 12px; }
+      .sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -1px; margin-right: 4px; }
+      #bar { bottom: 8px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+      button { min-height: 44px; min-width: 44px; padding: 0 14px; font-size: 15px; border-radius: 8px; border: 1px solid #566175; background: #232b36; color: #fff; }
+      button:disabled { opacity: 0.4; }
+      button.primary { background: #1e88e5; border-color: #1e88e5; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div id="host"></div>
+    <div id="hud" class="panel">
+      <div id="status" data-testid="status"></div>
+      <div id="legend">
+        <span><i class="sw" style="background:#f2780c"></i>usure (virage)</span>
+        <span><i class="sw" style="background:#d03a38"></i>casse (risque)</span>
+        <span><i class="sw" style="background:#5fdcff"></i>atteignable</span>
+      </div>
+    </div>
+    <div id="bar" class="panel">
+      <button id="down" aria-label="Rétrograder">Rapport −</button>
+      <button id="up" aria-label="Monter">Rapport +</button>
+      <button id="roll" class="primary">Lancer les dés</button>
+      <button id="end">Fin de tour</button>
+      <button id="fit">Vue d'ensemble</button>
+      <button id="follow">Suivre</button>
+    </div>
+    <script type="module" src="/src/demo.ts"></script>
+  </body>
+</html>

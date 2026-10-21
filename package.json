@@ -1,0 +1,44 @@
+{
+  "name": "4mules",
+  "private": true,
+  "version": "0.2.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:origin": "vite --mode origin",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build && npm run check:origin && npm run e2e",
+    "gen:tracks": "tsx scripts/gen-tracks.ts",
+    "sim": "tsx scripts/sim.ts",
+    "import:track": "tsx src/dev-only/tools/import-tdf.ts",
+    "circuits:difficulty": "tsx src/dev-only/tools/circuits-difficulty.ts",
+    "thumbs": "tsx src/dev-only/tools/make-thumbs.ts",
+    "balance:campaign": "tsx scripts/balance-campaign.ts",
+    "check:origin": "tsx tools/check-origin.ts",
+    "check:gdd": "tsx tools/check-gdd.ts",
+    "build:edge": "tsx tools/build-edge.ts",
+    "circuits:report": "tsx scripts/circuits-report.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "jsdom": "^30.1.3",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@fontsource/lilita-one": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "pixi.js": "^8.22.0"
+  }
+}

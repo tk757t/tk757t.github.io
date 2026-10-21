@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.6',
+    date: '2026-10-22',
+    notes: [
+      'Journal de course : le bouton 📋 raconte la course manche par manche (dé, déplacements, dépassements, incidents, stands, tours), avec des filtres. Aussi disponible à la fin de la course.',
+    ],
+  },
+  {
     version: '0.3.5',
     date: '2026-10-22',
     notes: [

@@ -186,3 +186,13 @@ classé du serveur ; « Rejouer » relance la recherche. Migration : `2026102214
   `open_close` (migration `20261022150000_open_rooms.sql`, tables `open_rooms`).
 - **Course perso** : la fenêtre de réglage de course (joueurs humains ou IA, circuit, tours, équipement) pour jouer en local ou contre des IA, hors ligne.
 - Un petit bouton **Jouer avec des amis** garde les salons à code (§ 4.4 : code ou lien à envoyer).
+
+## 4.15 Journal de course (réalisé)
+
+Le bouton **📋** de la barre de course (et « Journal de la course » dans l'écran de classement de fin) ouvre le journal : ce qui s'est passé, manche par
+manche, depuis les événements du moteur (`src/app/raceJournal.ts`, sans écran). Chaque ligne a une icône, la voiture concernée (les vôtres sont marquées) et son
+texte : dé et cases gagnées, rapport changé, déplacement (avec les cases manquantes), **dépassement** (une voiture qui était derrière une autre et se retrouve devant
+après son déplacement ; les voitures sorties ne comptent pas), incidents (contact, case barrée, jet raté, mur, panne, abandon), usure, virages et arrêts gratuits,
+arrêts aux stands, tours et arrivée, météo (seulement quand elle change). Cinq filtres : **Tout, Moi, Dépassements, Incidents** (avec l'usure), **Arrêts** (stands et
+virages). La fenêtre suit la course en direct, sauf si on lit plus haut ; en ligne, les manches rattrapées au retour d'un joueur sont écrites aussi. Le journal garde les
+3 000 dernières lignes.

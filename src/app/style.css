@@ -247,6 +247,15 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 .open-room__ais { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 10px 0; }
 .open-room__ais .kit-btn { min-width: 64px; flex: 0 0 auto; }
 .open-room__count { min-width: 96px; text-align: center; font-size: 18px; font-weight: 700; }
+.journal__filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.journal__filters .kit-btn { padding-left: 10px; padding-right: 10px; font-size: 14px; }
+.journal__list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.journal__round { margin: 12px 0 4px; font-size: 14px; color: var(--gold); }
+.journal__lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.journal__line { display: flex; gap: 8px; align-items: flex-start; padding: 6px 8px; background: var(--panel-dark); border-radius: var(--radius); font-size: 14px; }
+.journal__line--mine { border-left: 4px solid var(--gold); }
+.journal__icon { flex: 0 0 auto; }
+.journal__text b { color: var(--gold); }
 .chat__place { margin: 0 0 8px; font-size: 14px; color: var(--gold); }
 .chat__meta .kit-badge { transform: scale(0.85); transform-origin: left center; }
 .chat__rules { margin: 0 0 8px; font-size: 13px; }
@@ -360,6 +369,8 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 .topbar > * { pointer-events: auto; }
 .topbar .spacer { flex: 1; pointer-events: none; }
 .topbar .kit-btn { margin: 0; padding: 0 12px; white-space: nowrap; min-height: 48px; font-size: 16px; }
+.topbar .kit-btn[data-testid="race-journal-open"], .topbar .kit-btn[data-testid="race-settings"] { min-width: 44px; padding: 0 8px; }
+.topbar { gap: 6px; }
 .chip { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; min-width: 0; padding: 0 14px; border-radius: 24px; background: var(--panel-dark); border: 3px solid var(--line); }
 .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; flex: none; }
 .who2 { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
@@ -505,3 +516,8 @@ legend { padding: 0; margin-bottom: 6px; font-size: 18px; }
 /* account screen (first launch) */
 .account__hint { margin: 10px 0 0; font-size: 15px; opacity: 0.85; }
 .account__message { min-height: 1.4em; margin: 8px 0 0; font-size: 16px; color: var(--danger); }
+@media (max-width: 430px) {
+  .topbar { gap: 4px; }
+  .topbar .kit-btn { padding: 0 9px; }
+  .topbar .chip { padding: 0 9px; gap: 6px; }
+}

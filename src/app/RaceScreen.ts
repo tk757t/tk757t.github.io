@@ -28,6 +28,7 @@ import { Badge, Button, LevelBadge, Modal, ProgressBar, setButtonText, setProgre
 import { getProfile } from './profile';
 import { onSoundChange, playSound, setSoundEnabled, soundEnabled } from './sound';
 import { explosionFor, playRaceEvents } from './raceSounds';
+import { JOURNAL_FILTERS, filterJournal, groupByRound, journalLines, type JournalEntry, type JournalFilter } from './raceJournal';
 import { showPackReveal } from './packReveal';
 import { profilePortraitIndex } from './portrait';
 import { el, prefersReducedMotion, sleep } from './dom';
@@ -95,6 +96,10 @@ export class RaceScreen {
   private readyFor: string | null = null;
   private rolling = false;
   private notices: string[] = [];
+  /** What happened in the race, line by line (the journal window). */
+  private journal: JournalEntry[] = [];
+  private journalModal: ModalHandle | null = null;
+  private journalFilter: JournalFilter = 'all';
   private aiTimer: ReturnType<typeof setTimeout> | null = null;
   private aiRng: number;
   private destroyed = false;
@@ -222,8 +227,9 @@ export class RaceScreen {
       ? [Button({ text: 'Cases', variant: 'ghost', attrs: { 'data-testid': 'debug-cases', 'aria-pressed': 'false' }, onClick: () => this.toggleDebug() })]
       : [];
     this.debugButton = debugBtn[0] ?? null;
+    const journalBtn = Button({ text: '📋', variant: 'ghost', attrs: { 'data-testid': 'race-journal-open', 'aria-label': 'Journal de course' }, onClick: () => this.openJournal() });
     const settingsBtn = Button({ text: '⚙', variant: 'ghost', attrs: { 'data-testid': 'race-settings', 'aria-label': 'Réglages' }, onClick: () => this.openSettings() });
-    this.root.replaceChildren(this.stage, el('div', { class: 'topbar' }, this.chip, el('span', { class: 'spacer' }), ...debugBtn, fitBtn, followBtn, settingsBtn), hud);
+    this.root.replaceChildren(this.stage, el('div', { class: 'topbar' }, this.chip, el('span', { class: 'spacer' }), ...debugBtn, fitBtn, followBtn, journalBtn, settingsBtn), hud);
 
     this.renderer = await RaceRenderer.create(this.stage, def, Object.values(this.carStyles).flatMap((s) => (s.sprite ? [s.sprite] : [])));
     this.renderer.carStyles = this.carStyles;
@@ -250,6 +256,73 @@ export class RaceScreen {
     this.refresh();
     this.renderer.settle();
     this.exposeDebug();
+  }
+
+  // ------------------------------------------------------------ journal
+
+  /** Writes what an action did in the journal (also while an online race is being caught up). */
+  private record(prev: RaceState, events: GameEvent[]): void {
+    const lines = journalLines(prev, this.state, events, (id) => this.seatName(id), (id) => (id === 'p1' ? this.sources : {}));
+    for (const l of lines) this.journal.push({ ...l, n: this.journal.length + 1 });
+    if (this.journal.length > 3000) this.journal.splice(0, this.journal.length - 3000);
+    if (lines.length > 0) this.journalModal?.el.dispatchEvent(new CustomEvent('journal-changed'));
+  }
+
+  /** The journal window: the lines by round, with filters. The race goes on behind it. */
+  openJournal(): void {
+    if (this.journalModal || this.destroyed) return;
+    const list = el('div', { class: 'journal__list', 'data-testid': 'journal-list', tabindex: '0' });
+    const bar = el('div', { class: 'journal__filters', role: 'group', 'aria-label': 'Filtrer le journal' });
+    const draw = (): void => {
+      const entries = filterJournal(this.journal, this.journalFilter, (id) => this.isMine(id));
+      const wasAtEnd = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+      list.replaceChildren(
+        ...(entries.length === 0
+          ? [el('p', { class: 'muted', 'data-testid': 'journal-empty', text: this.journal.length === 0 ? 'Rien ne s’est encore passé.' : 'Rien pour ce filtre.' })]
+          : groupByRound(entries).flatMap((g) => [
+              el('h3', { class: 'journal__round', text: `Manche ${g.round}` }),
+              el(
+                'ol',
+                { class: 'journal__lines' },
+                ...g.entries.map((e) =>
+                  el(
+                    'li',
+                    { class: `journal__line journal__line--${e.kind}${e.carId !== null && this.isMine(e.carId) ? ' journal__line--mine' : ''}`, 'data-kind': e.kind },
+                    el('span', { class: 'journal__icon', 'aria-hidden': 'true', text: e.icon }),
+                    el('span', { class: 'journal__text' }, ...(e.carId ? [el('b', { text: `${this.seatName(e.carId)} ` })] : []), e.text),
+                  ),
+                ),
+              ),
+            ])),
+      );
+      if (wasAtEnd) list.scrollTop = list.scrollHeight; // follows the race, unless someone is reading further up
+    };
+    const drawBar = (): void =>
+      bar.replaceChildren(
+        ...JOURNAL_FILTERS.map((f) => {
+          const b = Button({ text: f.label, variant: this.journalFilter === f.id ? 'blue' : 'ghost', attrs: { 'data-filter': f.id, 'aria-pressed': String(this.journalFilter === f.id) }, onClick: () => {
+            this.journalFilter = f.id;
+            drawBar();
+            draw();
+            list.scrollTop = list.scrollHeight;
+          } });
+          return b;
+        }),
+      );
+    drawBar();
+    const modal = Modal({
+      title: 'Journal de course',
+      testid: 'race-journal',
+      children: [bar, list],
+      actions: [Button({ text: 'Fermer', variant: 'green', size: 'lg', block: true, onClick: () => modal.close() })],
+      onClose: () => {
+        this.journalModal = null;
+      },
+    });
+    modal.el.addEventListener('journal-changed', draw);
+    this.journalModal = modal;
+    draw();
+    list.scrollTop = list.scrollHeight;
   }
 
   // ------------------------------------------------------- settings and giving up
@@ -342,6 +415,7 @@ export class RaceScreen {
     }
     if (this.state.status !== 'racing' || this.forfeitModal) return;
     this.settingsModal?.close();
+    this.journalModal?.close();
     this.abandonModal?.close();
     playSound('win');
     this.forfeitModal = Modal({
@@ -447,6 +521,7 @@ export class RaceScreen {
     this.endModal?.close();
     this.pitModal?.close();
     this.settingsModal?.close();
+    this.journalModal?.close();
     this.abandonModal?.close();
     this.forfeitModal?.close();
     
@@ -471,6 +546,7 @@ export class RaceScreen {
     const r = reducer(this.state, action);
     this.state = r.state;
     if (this.lvl) this.stats = trackStats(this.stats, 'p1', prev, this.state, r.events);
+    this.record(prev, r.events);
     for (const e of r.events) {
       if (!('carId' in e) || e.carId !== 'p1') continue;
       if (e.type === 'DICE_ROLLED' && e.bonus > 0) this.partUse.cells += e.bonus;
@@ -1024,6 +1100,7 @@ export class RaceScreen {
           : Button({ text: 'Rejouer', variant: 'green', size: 'lg', onClick: () => this.handlers.onReplay({ ...this.cfg, seed: this.cfg.seed + 1 }) }),
         Button({ text: this.lvl ? 'Carte' : 'Menu', variant: 'blue', size: 'lg', onClick: () => this.handlers.onMenu() }),
       ),
+      Button({ text: '📋 Journal de la course', variant: 'ghost', block: true, attrs: { 'data-testid': 'ranking-journal' }, onClick: () => this.openJournal() }),
     );
   }
 

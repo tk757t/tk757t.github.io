@@ -10,7 +10,7 @@ type W = {
   };
 };
 
-const tracks = ['oval', 'dunes', 'pins', 'col'];
+const tracks = ['oval', 'dunes', 'port', 'pins', 'col', 'cratere'];
 
 async function open(page: Page, track: string, errors: string[]) {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });

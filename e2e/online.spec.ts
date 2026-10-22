@@ -37,7 +37,7 @@ test.describe('jouer en ligne', () => {
     expect(code).toMatch(/^[A-HJ-NP-Z]{5}$/);
     await expect(host.getByTestId('online-link')).toContainText(`join=${code}`);
     await expect(host.getByTestId('online-start')).toBeDisabled();
-    await host.getByTestId('online-track').selectOption('anneau');
+    await host.getByTestId('online-track').selectOption('cratere');
     await host.getByTestId('online-laps').selectOption('1');
     await host.getByTestId('online-ais').selectOption('1');
 
@@ -49,7 +49,7 @@ test.describe('jouer en ligne', () => {
     await guest.getByTestId('online-join').click();
     await expect(guest.getByTestId('online-players').locator('li')).toHaveCount(2);
     await expect(host.getByTestId('online-players').locator('li')).toHaveCount(2);
-    await expect(guest.getByTestId('online-summary')).toContainText('Petit anneau · 1 tour · 1 IA');
+    await expect(guest.getByTestId('online-summary')).toContainText('Tour du Cratère · 1 tour · 1 IA');
     await expect(guest).toHaveURL(new RegExp(`join=${code}`));
     await check(host, 'salon hôte');
     await check(guest, 'salon invité');

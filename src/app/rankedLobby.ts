@@ -1,6 +1,6 @@
 import { getAccount } from './account';
-import { currentRanked, gridOrder, rankedTrack } from '../data/ranked';
-import { TRACK_LIST, trackName } from '../data/tracks';
+import { currentRanked, gridOrder, queueCircuit } from '../data/ranked';
+import { EDITOR_CIRCUITS, TRACKS, trackName } from '../data/tracks';
 import { QUEUE_POLL_MS, joinQueue, leaveQueue, myAccountId, pollQueue, type QueuePlayer } from '../net/matchmaking';
 import { serverError } from '../net/chat';
 import { Session } from '../net/session';
@@ -15,8 +15,8 @@ const ROOM_WAIT_MS = 15_000;
 
 const clock = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
-/** The ranked queue, or the unranked one (same waiting and same groups, but trophies count for nothing and are not moved; the circuit is the one of the player's settings). */
-export type QueueMode = { ranked: true } | { ranked: false; trackId: string; laps: number };
+/** The ranked queue, or the unranked one (same waiting and same groups, but trophies count for nothing and are not moved). Both race on a circuit drawn at random, with its own number of laps. */
+export type QueueMode = { ranked: true } | { ranked: false };
 
 /**
  * "Course classée" and "Course non classée": the matchmaking window. The player waits in the queue of the server, which forms the group and gives the
@@ -115,13 +115,15 @@ export function openRankedQueue(onSession: (s: Session) => void, mode: QueueMode
     const name = getAccount()?.pseudo ?? 'Pilote';
     if (!id || !alive) return;
     const trophiesOf = new Map(group.map((p) => [p.id, p.trophies]));
+    const trackId = queueCircuit(code, EDITOR_CIRCUITS);
+    const laps = TRACKS[trackId].laps ?? 1;
     const s = new Session({
       transport: transportFor(code),
       code,
       id,
       name,
       host,
-      settings: mode.ranked ? { trackId: rankedTrack(TRACK_LIST.map((t) => t.id), serverNow()), laps: 1, ais } : { trackId: mode.trackId, laps: mode.laps, ais },
+      settings: { trackId, laps, ais },
       // ranked: the fewest trophies in pole, to even things out; unranked: the order of arrival
       ...(mode.ranked ? { order: (players: { id: string; name: string }[]) => gridOrder(players.map((p) => ({ ...p, trophies: trophiesOf.get(p.id) ?? 0 }))).map(({ id: pid, name: pname }) => ({ id: pid, name: pname })) } : {}),
     });
@@ -136,7 +138,7 @@ export function openRankedQueue(onSession: (s: Session) => void, mode: QueueMode
         ...group.map((p) => el('li', {}, el('span', { text: p.pseudo }), ...(mode.ranked ? [Badge({ text: p.league.label, tone: 'blue' }), el('small', { class: 'muted', text: `🏆 ${p.trophies}` })] : []))),
         ...Array.from({ length: ais }, (_, i) => el('li', {}, el('span', { text: `IA ${i + 1}` }), Badge({ text: 'IA', tone: 'gold' }))),
       ),
-      el('p', { class: 'muted', 'data-testid': 'ranked-track', text: mode.ranked ? `${trackName(s.settings.trackId)} · 1 tour · météo aléatoire` : `${trackName(s.settings.trackId)} · ${s.settings.laps} tour${s.settings.laps > 1 ? 's' : ''}` }),
+      el('p', { class: 'muted', 'data-testid': 'ranked-track', text: `${trackName(s.settings.trackId)} · ${s.settings.laps} tour${s.settings.laps > 1 ? 's' : ''} · météo aléatoire` }),
       el('p', { class: 'muted', text: 'Départ dans un instant…' }),
     );
     offLobby = s.onLobby(() => {

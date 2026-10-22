@@ -14,7 +14,7 @@ import { applyRaceTrophies, leagueOf, rankedSeasonOf, seasonReset, type RankedOu
 import { levelStatus } from '../storage/campaign';
 import { fail } from './errors';
 import { asParams, bool, id, int, only, optInt, record, type Params } from './params';
-import { LAP_LENGTH, MAX_LAPS, MAX_PLAYERS, RACE_RULES, minRaceMs, raceSeed, tokenId, type RaceRules } from './race';
+import { LAP_LENGTH, MAX_LAPS, MAX_PLAYERS, QUEUE_LAPS, RACE_RULES, minRaceMs, raceSeed, tokenId, type RaceRules } from './race';
 import { freshState, rngFrom, type RaceToken, type ServerState } from './state';
 
 /**
@@ -115,9 +115,10 @@ function startRace(state: ServerState, p: Params, ctx: ActionContext): Applied {
     const bots = int(p, 'bots', 0, players - 1);
     const ranked = bool(p, 'ranked', false);
     if (ranked) {
-      // a ranked race: 2 to 4 cars, one lap (§ 4.3), AIs only to complete a race of the Paddock league
+      // a ranked race: 2 to 4 cars, on one of the circuits of the queue with its own number of laps (§ 4.3), AIs only to complete a race of the Paddock league
       if (players < 2) fail('Une course classée réunit 2 à 4 voitures.', 'invalid');
-      if (laps !== 1) fail('Une course classée dure un tour.', 'invalid');
+      if (QUEUE_LAPS[trackId] === undefined) fail('Ce circuit n’est pas celui d’une course classée.', 'invalid');
+      if (laps !== QUEUE_LAPS[trackId]) fail('Le nombre de tours d’une course classée est celui de son circuit.', 'invalid');
       if (bots > 0 && leagueOf(state.profile.ranked.trophies).id !== 'paddock') fail('Les IA ne complètent une course classée qu’en ligue Paddock.', 'refused');
     }
     token = { ...base, trackId, laps, players, bots, level: null, ...(ranked ? { ranked: true } : {}) };

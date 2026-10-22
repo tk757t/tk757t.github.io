@@ -1,11 +1,14 @@
 import type { TrackDef } from './schema';
 import anneau from './anneau.json';
 import col from './col.json';
+import corniche from './corniche.json';
+import cratere from './cratere.json';
 import dunes from './dunes.json';
 import epingles from './epingles.json';
 import lac from './lac.json';
 import oval from './oval.json';
 import pins from './pins.json';
+import port from './port.json';
 
 export { THEMES, TRACK_FORMAT, toTrack, type CellDef, type Theme, type TrackDef } from './schema';
 export { raceReadyProblems, validateTrackDef } from './validate';
@@ -13,8 +16,11 @@ export { raceReadyProblems, validateTrackDef } from './validate';
 /** The default circuit, until the game has its own circuits. */
 export const DEFAULT_TRACK = 'oval';
 
-/** Our original circuits drawn with the editor (/editor), from the easiest to the hardest (docs/circuits.md). */
-export const EDITOR_CIRCUITS = ['dunes', 'pins', 'col'];
+/**
+ * Our original circuits drawn with the editor (/editor), by number of laps (docs/circuits.md). All of them last about five minutes:
+ * the more laps, the shorter the lap. They are the circuits the ranked and unranked queues draw from, and the ones of the setup screens.
+ */
+export const EDITOR_CIRCUITS = ['dunes', 'port', 'corniche', 'pins', 'col', 'cratere'];
 
 /**
  * The circuits loaded up front: our test circuits (src/data/tracks/generators) and the circuits drawn with the editor.
@@ -26,8 +32,11 @@ export const TRACKS: Record<string, TrackDef> = {
   lac: lac as TrackDef,
   epingles: epingles as TrackDef,
   dunes: dunes as TrackDef,
+  port: port as TrackDef,
+  corniche: corniche as TrackDef,
   pins: pins as TrackDef,
   col: col as TrackDef,
+  cratere: cratere as TrackDef,
 };
 
 export interface TrackInfo {
@@ -35,6 +44,8 @@ export interface TrackInfo {
   name: string;
   cells: number;
   lapLength: number;
+  /** Laps the circuit is meant to be raced over (null for the test circuits). */
+  laps?: number | null;
   /** d20 thresholds of the weather: rain below `rain`, cloud up to `sun`, sun above. */
   weather: { rain: number; sun: number };
   /** True when the circuit comes with the picture of its board. */
@@ -43,12 +54,22 @@ export interface TrackInfo {
   thumb: string | null;
 }
 
-const info = (def: TrackDef): TrackInfo => ({ id: def.id, name: def.name, cells: def.cells.length, lapLength: def.lapLength, weather: def.weather, image: def.image !== undefined, thumb: null });
+const info = (def: TrackDef): TrackInfo => ({ id: def.id, name: def.name, cells: def.cells.length, lapLength: def.lapLength, laps: def.laps ?? null, weather: def.weather, image: def.image !== undefined, thumb: null });
 
-/** Every circuit the game can race on, with what the setup screen needs (no circuit data loaded). The default one first. */
-export const TRACK_LIST: TrackInfo[] = [TRACKS.oval, TRACKS.anneau, TRACKS.lac, TRACKS.epingles, ...EDITOR_CIRCUITS.map((id) => TRACKS[id])].map(info);
+/**
+ * Every circuit the game can race on, with what the setup screen needs (no circuit data loaded). The default one first.
+ * The other test circuits (anneau, lac, epingles) only serve the campaign: they are in TRACKS but not offered.
+ */
+export const TRACK_LIST: TrackInfo[] = [TRACKS.oval, ...EDITOR_CIRCUITS.map((id) => TRACKS[id])].map(info);
 
-export const trackName = (id: string): string => TRACK_LIST.find((t) => t.id === id)?.name ?? id;
+/** What the screens need to know about any circuit of the game, also those that are not offered (the campaign ones). */
+export const trackInfo = (id: string): TrackInfo | undefined => (TRACKS[id] ? info(TRACKS[id]) : TRACK_LIST.find((t) => t.id === id));
+
+/** A circuit in a list: its name, the laps it is meant for and its cells per lap. */
+export const trackLabel = (t: TrackInfo): string => `${t.name}${t.laps ? ` · ${t.laps} tour${t.laps > 1 ? 's' : ''}` : ''} · ${t.lapLength} cases`;
+
+/** The name of any circuit of the game (also those that are not offered, which the campaign and the lists of games still show). */
+export const trackName = (id: string): string => TRACKS[id]?.name ?? TRACK_LIST.find((t) => t.id === id)?.name ?? id;
 
 const loaders = new Map<string, () => Promise<TrackDef>>();
 

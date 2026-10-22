@@ -5,5 +5,5 @@ export { GameError, fail, type ErrorCode } from './errors';
 export { IMPORT_CAPS, MAX_SAVE_CHARS, boundProfile, importSave, type Adjustment } from './importSave';
 export { createGameHandler, cryptoRandom, defaultAllowedOrigin, PROD_ORIGIN, type ErrorResponse, type GameResponse, type GameStore, type HandlerOptions, type LogEntry, type ServerAction, type StoredRow } from './handler';
 export { memoryStore, type MemoryStore } from './memoryStore';
-export { LAP_LENGTH, RACE_RULES, minRaceMs, type RaceRules } from './race';
+export { LAP_LENGTH, QUEUE_LAPS, RACE_RULES, minRaceMs, type RaceRules } from './race';
 export { RULES_VERSION, STATE_VERSION, freshState, publicState, readState, type PublicState, type RaceToken, type ServerState } from './state';

@@ -32,7 +32,7 @@ function refused(state: ServerState, action: string, params: unknown, c: ActionC
   throw new Error(`${action} should have been refused`);
 }
 
-const startRanked = (s: ServerState, over: object = {}, c = ctx()) => applyAction(s, 'start_race', { trackId: 'oval', laps: 1, players: 2, bots: 0, ranked: true, ...over }, c);
+const startRanked = (s: ServerState, over: object = {}, c = ctx()) => applyAction(s, 'start_race', { trackId: 'dunes', laps: 1, players: 2, bots: 0, ranked: true, ...over }, c);
 const finish = (s: ServerState, over: object = {}, at?: number) =>
   applyAction(s, 'finish_race', { token: s.race!.id, rank: 1, retired: false, clean: true, ...over }, ctx(at ?? T0 + minRaceMs(s.race!, false)));
 
@@ -40,9 +40,10 @@ describe('ranked races (docs/gdd/04-modes.md § 4.3 and § 4.5, src/data/ranked.
   it('issues a ranked token only for 2 to 4 cars on one lap', () => {
     const a = startRanked(withRanked());
     expect(a.state.race).toMatchObject({ players: 2, laps: 1, bots: 0, level: null, ranked: true });
-    expect(refused(withRanked(), 'start_race', { trackId: 'oval', laps: 1, players: 1, bots: 0, ranked: true }).code).toBe('invalid');
-    expect(refused(withRanked(), 'start_race', { trackId: 'oval', laps: 2, players: 2, bots: 0, ranked: true }).code).toBe('invalid');
-    expect(refused(withRanked(), 'start_race', { trackId: 'oval', laps: 1, players: 2, bots: 0, ranked: 'yes' }).code).toBe('invalid');
+    expect(refused(withRanked(), 'start_race', { trackId: 'dunes', laps: 1, players: 1, bots: 0, ranked: true }).code).toBe('invalid');
+    expect(refused(withRanked(), 'start_race', { trackId: 'dunes', laps: 2, players: 2, bots: 0, ranked: true }).code).toBe('invalid'); // the laps are the circuit's
+    expect(refused(withRanked(), 'start_race', { trackId: 'oval', laps: 1, players: 2, bots: 0, ranked: true }).code).toBe('invalid'); // not a circuit of the queue
+    expect(refused(withRanked(), 'start_race', { trackId: 'dunes', laps: 1, players: 2, bots: 0, ranked: 'yes' }).code).toBe('invalid');
     // an ordinary race stays ordinary
     expect(applyAction(withRanked(), 'start_race', { trackId: 'oval', laps: 1, players: 2, bots: 0 }, ctx()).state.race!.ranked).toBeUndefined();
     expect(applyAction(withRanked(), 'start_race', { level: 0 }, ctx()).state.race!.ranked).toBeUndefined();
@@ -50,7 +51,7 @@ describe('ranked races (docs/gdd/04-modes.md § 4.3 and § 4.5, src/data/ranked.
 
   it('lets AIs complete a race of the Paddock league only', () => {
     expect(startRanked(withRanked({ trophies: 100 }), { players: 3, bots: 1 }).state.race!.bots).toBe(1);
-    const higher = refused(withRanked({ trophies: 450, peak: 450 }), 'start_race', { trackId: 'oval', laps: 1, players: 3, bots: 1, ranked: true });
+    const higher = refused(withRanked({ trophies: 450, peak: 450 }), 'start_race', { trackId: 'dunes', laps: 1, players: 3, bots: 1, ranked: true });
     expect(higher.code).toBe('refused');
     expect(higher.message).toContain('Paddock');
   });
@@ -120,7 +121,7 @@ describe('ranked races (docs/gdd/04-modes.md § 4.3 and § 4.5, src/data/ranked.
   });
 
   it('the trophies cannot be asked for or given by the browser', () => {
-    expect(refused(withRanked(), 'start_race', { trackId: 'oval', laps: 1, players: 2, bots: 0, ranked: true, trophies: 4000 }).code).toBe('invalid');
+    expect(refused(withRanked(), 'start_race', { trackId: 'dunes', laps: 1, players: 2, bots: 0, ranked: true, trophies: 4000 }).code).toBe('invalid');
     const s = startRanked(withRanked()).state;
     expect(refused(s, 'finish_race', { token: s.race!.id, rank: 1, retired: false, trophies: 999 }, ctx(T0 + 3_600_000)).code).toBe('invalid');
   });

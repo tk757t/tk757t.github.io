@@ -1,7 +1,7 @@
 import { AI_LABELS } from '../../ai';
 import { LEVELS, goalText, opponentLook, type CampaignLevel } from '../../data/campaign';
 import { assets } from '../../data/assets';
-import { TRACKS, TRACK_LIST } from '../../data/tracks';
+import { TRACKS, trackInfo } from '../../data/tracks';
 import { trackThumbUrl } from '../trackThumb';
 import { Badge, Button, Modal, Panel, ProgressBar } from '../../ui/kit';
 import { el } from '../../ui/dom';
@@ -12,7 +12,7 @@ import { getProfile, onProfileChange } from '../profile';
 
 const PACK_LABELS = { common: 'paquet commun', rare: 'paquet rare', epic: 'paquet épique' } as const;
 
-const trackOf = (level: CampaignLevel) => TRACK_LIST.find((t) => t.id === level.trackId);
+const trackOf = (level: CampaignLevel) => trackInfo(level.trackId);
 
 /** Chance (in %) that the first d20 of the race gives rain, from the weather thresholds of the circuit. */
 export const rainChance = (level: CampaignLevel): number => Math.round(((trackOf(level)?.weather.rain ?? 1) - 1) * 5);

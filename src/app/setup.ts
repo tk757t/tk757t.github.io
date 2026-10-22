@@ -1,5 +1,5 @@
 import { AI_LABELS, AI_LEVELS, type AiLevel } from '../ai';
-import { TRACK_LIST } from '../data/tracks';
+import { TRACK_LIST, trackLabel } from '../data/tracks';
 import { Button, Modal, type ModalHandle } from '../ui/kit';
 import { el } from '../ui/dom';
 
@@ -103,10 +103,13 @@ export function openSetup(initial: RaceConfig, info: SetupInfo, onChange: (cfg: 
     'aria-label': 'Circuit',
     onchange: () => {
       cfg.trackId = track.value;
+      // the laps the circuit is meant for are the starting point: they can still be changed
+      const meant = TRACK_LIST.find((t) => t.id === track.value)?.laps;
+      if (meant) setLaps(meant);
       emit();
     },
   });
-  for (const t of TRACK_LIST) track.append(el('option', { value: t.id, text: `${t.name} · ${t.cells} cases` }));
+  for (const t of TRACK_LIST) track.append(el('option', { value: t.id, text: trackLabel(t) }));
   track.value = cfg.trackId;
 
   const gearToggle = Button({

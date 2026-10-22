@@ -53,6 +53,8 @@ export interface TrackDef {
   /** The editor document the circuit was generated from (src/editor/doc.ts), so it can be edited again. */
   editor?: unknown;
   lapLength: number;
+  /** Laps the circuit is meant to be raced over (1 to 3), from the editor document. */
+  laps?: number;
   /** d20 thresholds of the weather: below `rain` rain, up to `sun` cloudy, above sunny. */
   weather: { rain: number; sun: number };
   cells: CellDef[];

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { asCurrent, fixedDice, inRace, linearTrack, patchCar } from '../../engine/testing';
 import { NO_ASSETS, setAssetProvider, type AssetProvider } from '../assets';
 import { getPart } from '../parts/catalogue';
-import { TRACKS, TRACK_LIST, validateTrackDef } from '../tracks';
+import { TRACKS, trackInfo, validateTrackDef } from '../tracks';
 import { indicators } from '../tracks/difficulty';
 import { EMPTY_STATS, LEVELS, goalText, opponentLook, opponentMods, starsFor, trackStats } from './index';
 
@@ -12,7 +12,7 @@ describe('campaign levels', () => {
     const ids = LEVELS.map((l) => l.trackId);
     expect(new Set(ids).size).toBe(3);
     for (const id of ids) {
-      expect(TRACK_LIST.some((t) => t.id === id), id).toBe(true);
+      expect(trackInfo(id), id).toBeDefined();
       expect(validateTrackDef(TRACKS[id]), id).toEqual([]);
     }
   });
@@ -49,7 +49,7 @@ describe('campaign levels', () => {
   });
 
   it('the weather thresholds come from the circuits', () => {
-    expect(TRACK_LIST.find((t) => t.id === 'lac')!.weather).toEqual({ rain: 7, sun: 13 });
+    expect(trackInfo('lac')!.weather).toEqual({ rain: 7, sun: 13 });
     expect(TRACKS.epingles.weather).toEqual({ rain: 3, sun: 10 });
   });
 

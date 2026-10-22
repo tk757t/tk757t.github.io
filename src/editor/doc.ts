@@ -47,10 +47,13 @@ export interface EditorDoc {
   grid: { pole: number; size: number };
   /** Advised gears corrected by hand, by cell id. */
   gears: Record<string, [number, number, number, number]>;
+  /** Laps the circuit is meant to be raced over (1 to 3): the random draw of the ranked and unranked queues uses it, and the setup screen starts from it. */
+  laps?: number;
 }
 
 export const CELL_LENGTH = { min: 30, max: 60, default: 40 };
 export const GRID_SIZE = { min: 4, max: 6, default: 5 };
+export const LAPS = { min: 1, max: 3 };
 
 /** A new circuit: a stadium (two straights, two half circles) without corners or pit lane, ready to be shaped. */
 export function newDoc(id = 'nouveau', name = 'Nouveau circuit'): EditorDoc {
@@ -124,6 +127,7 @@ export function parseDoc(raw: unknown): EditorDoc {
     start: frac(raw.start, fresh.start),
     grid: { pole: frac(grid.pole, fresh.grid.pole), size: clampInt(grid.size, GRID_SIZE.min, GRID_SIZE.max, GRID_SIZE.default) },
     gears,
+    ...(typeof raw.laps === 'number' ? { laps: clampInt(raw.laps, LAPS.min, LAPS.max, LAPS.min) } : {}),
   };
 }
 

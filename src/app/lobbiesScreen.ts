@@ -1,4 +1,4 @@
-import { TRACK_LIST, trackName } from '../data/tracks';
+import { TRACK_LIST, trackLabel, trackName } from '../data/tracks';
 import { LOBBIES_POLL_MS, createLobby, closeLobby, joinLobby, listLobbies, touchLobby, type Lobby } from '../net/lobbies';
 import { serverError } from '../net/chat';
 import { Button, Modal, type ModalHandle } from '../ui/kit';
@@ -131,10 +131,23 @@ export function openLobbies(o: LobbiesOptions): ModalHandle {
     let seats = 4;
     const error = el('p', { class: 'online__error', role: 'alert', 'data-testid': 'lobby-create-error' });
     error.hidden = true;
-    const track = el('select', { id: 'lobby-track', 'aria-label': 'Circuit', onchange: () => (trackId = track.value) });
-    for (const t of TRACK_LIST) track.append(el('option', { value: t.id, text: `${t.name} · ${t.cells} cases` }));
+    let paintLaps = (): void => undefined;
+    const track = el('select', {
+      id: 'lobby-track',
+      'aria-label': 'Circuit',
+      onchange: () => {
+        trackId = track.value;
+        // the laps the circuit is meant for are the starting point: they can still be changed
+        const meant = TRACK_LIST.find((t) => t.id === trackId)?.laps;
+        if (meant) {
+          laps = meant;
+          paintLaps();
+        }
+      },
+    });
+    for (const t of TRACK_LIST) track.append(el('option', { value: t.id, text: trackLabel(t) }));
     track.value = trackId;
-    const segment = (label: string, values: number[], get: () => number, set: (n: number) => void): HTMLElement => {
+    const segment = (label: string, values: number[], get: () => number, set: (n: number) => void, register?: (paint: () => void) => void): HTMLElement => {
       const group = el('div', { class: `seg${values.length === 3 ? ' seg--3' : ''}`, role: 'group', 'aria-label': label });
       const paint = (): void => buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(values[i] === get())));
       const buttons = values.map((n) =>
@@ -150,6 +163,7 @@ export function openLobbies(o: LobbiesOptions): ModalHandle {
       );
       group.append(...buttons);
       paint();
+      register?.(paint);
       return group;
     };
     let busy = false;
@@ -158,7 +172,7 @@ export function openLobbies(o: LobbiesOptions): ModalHandle {
       testid: 'lobby-create-modal',
       children: [
         el('label', { class: 'field' }, el('span', { text: 'Circuit' }), track),
-        el('fieldset', {}, el('legend', { text: 'Tours' }), segment('Tours', [1, 2, 3], () => laps, (n) => (laps = n))),
+        el('fieldset', {}, el('legend', { text: 'Tours' }), segment('Tours', [1, 2, 3], () => laps, (n) => (laps = n), (paint) => (paintLaps = paint))),
         el('fieldset', {}, el('legend', { text: 'Places (IA comprises)' }), segment('Places', [2, 3, 4], () => seats, (n) => (seats = n))),
         error,
         Button({

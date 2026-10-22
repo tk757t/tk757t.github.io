@@ -40,7 +40,7 @@ Le fil rouge en solo et le **tutoriel déguisé**. Existe aujourd'hui avec 3 niv
 
 - **Mise en relation** par trophées (écart initial ±100, élargi de 50 toutes les 5 s, 20 s au plus) ; 2 à 4 joueurs, complétés
   par des IA nommées comme telles si l'attente dépasse 20 s (en Ligue Paddock seulement).
-- **Format** : 1 tour de circuit, météo aléatoire, circuit tiré parmi les 3 circuits de la saison (rotation hebdomadaire).
+- **Format** : météo aléatoire, circuit tiré au hasard parmi les 6 circuits du jeu avec **son nombre de tours** (1, 2 ou 3 : plus il y a de tours, plus le tour est court, pour que toute course dure environ 5 minutes ; `docs/circuits.md`).
 - **Grille** : inverse des trophées (le moins classé en pole), pour compenser.
 - **Minuteur par tour** : 15 s pour choisir son rapport, 15 s pour ajuster et choisir sa case, plus une **réserve de 20 s**
   par course qui se consomme quand on dépasse. À la fin du temps : l'IA joue ce tour à sa place (choix prudent).
@@ -172,7 +172,7 @@ Le bouton **🏆 Course classée** (onglet Course, comptes avec pseudo) ouvre la
 (`queue_join`, trophées plafonnés à ce que le serveur connaît), puis la relève toutes les 2 s (`queue_poll`). Le serveur forme les groupes de 2 à 4 joueurs
 dont l'écart de trophées tient dans la fenêtre (±100, +50 toutes les 5 s, 20 s au plus), à partir de 5 s d'attente (tout de suite à 4) ; après 20 s, un groupe de
 la ligue Paddock est complété par des IA jusqu'à 4 voitures, les autres ligues attendent. Il donne un code de salon et désigne l'hôte (le plus ancien dans la
-file). Le salon est celui des parties entre amis (canal temps réel) : circuit de la semaine (`rankedTrack`), 1 tour, météo aléatoire, **grille inversée**
+file). Le salon est celui des parties entre amis (canal temps réel) : circuit tiré du code du salon (`queueCircuit`, le même pour tout le groupe) avec ses tours, météo aléatoire, **grille inversée**
 (le moins de trophées en pole), départ automatique. Un invité que l'hôte n'a pas encore listé redit bonjour toutes les 3 s. Chaque joueur obtient un jeton
 classé du serveur ; « Rejouer » relance la recherche. Migration : `20261022140000_ranked_queue.sql` (appliquée en production à la main ; ses fonctions restent à
 éprouver sur de faux joueurs en transactions annulées).
@@ -181,11 +181,11 @@ classé du serveur ; « Rejouer » relance la recherche. Migration : `2026102214
 
 - **COURSE !** (gros bouton) lance la mise en relation **classée** (§ 4.13). Sans compte avec pseudo, un message l'explique.
 - **Course non classée** : la même file d'attente que COURSE ! (§ 4.13), **sans tenir compte des trophées** : aucun écart à respecter, les groupes de 2 à 4 se forment comme en classé
-  (dès 2 joueurs après 5 s, tout de suite à 4), et après 20 s seul, n'importe qui est complété par des IA. Les deux files ne se mélangent pas. Le circuit et les tours sont ceux du
-  réglage du joueur (ceux du premier de la file font foi). Rien n'est gagné ni perdu : pas de jeton de course, pas de trophées. Serveur : `queue_join(p_trophies, p_ranked)` et `queue_poll`
+  (dès 2 joueurs après 5 s, tout de suite à 4), et après 20 s seul, n'importe qui est complété par des IA. Les deux files ne se mélangent pas. Le circuit est tiré au hasard,
+  avec ses tours, comme en classé. Rien n'est gagné ni perdu : pas de jeton de course, pas de trophées. Serveur : `queue_join(p_trophies, p_ranked)` et `queue_poll`
   (migration `20261022180000_unranked_queue.sql`, colonne `ranked` de `ranked_queue`).
 - **Course perso** : une page avec les parties publiques déjà créées par les autres joueurs (Rejoindre) et un bouton **Créer une partie** (circuit, tours, places) ; « Jouer hors ligne » ouvre
-  la fenêtre de réglage de course (joueurs humains ou IA, circuit, tours, équipement). Serveur : table `lobbies` (migration `20261022170000_lobbies.sql`).
+  la fenêtre de réglage de course (joueurs humains ou IA, circuit, tours, équipement) : on choisit le circuit et le nombre de tours, qui part de celui du circuit (réglable). Serveur : table `lobbies` (migration `20261022170000_lobbies.sql`).
 - Un petit bouton **Jouer avec des amis** garde les salons à code (§ 4.4 : code ou lien à envoyer).
 
 ## 4.15 Journal de course (réalisé)

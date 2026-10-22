@@ -33,8 +33,8 @@ function defaultConfig(): RaceConfig {
     laps: 2,
     seed: Number.isFinite(seed) && seed > 0 ? seed : (Date.now() % 900_000) + 1,
     useGear: true,
-    // development only (?ranked=1): the next race is a ranked one, to try the screens without the matchmaking
-    ...(devParam('ranked') === '1' ? { ranked: true, laps: 1 } : {}),
+    // development only (?ranked=1): the next race is a ranked one (on a circuit of the queue, with its laps), to try the screens without the matchmaking
+    ...(devParam('ranked') === '1' ? { ranked: true, trackId: 'dunes', laps: 1 } : {}),
   };
 }
 
@@ -128,7 +128,7 @@ export class App {
   }
 
   openUnranked(): void {
-    const lobby = openRankedQueue((s) => this.follow(s, () => lobby.close()), { ranked: false, trackId: this.config.trackId, laps: this.config.laps });
+    const lobby = openRankedQueue((s) => this.follow(s, () => lobby.close()), { ranked: false });
   }
 
   openRanked(): void {

@@ -8,7 +8,7 @@ import {
   RANKED_SEASON_MS,
   canMatch,
   currentRanked,
-  rankedTrack,
+  queueCircuit,
   gridOrder,
   leagueOf,
   matchWindow,
@@ -160,19 +160,24 @@ describe('the ranked figures shown to the player', () => {
   });
 });
 
-describe('the circuit of the ranked week', () => {
-  const ids = ['lac', 'oval', 'anneau', 'epingles'];
+describe('the circuit of a ranked or unranked race', () => {
+  const ids = ['dunes', 'port', 'corniche', 'pins', 'col', 'cratere'];
 
-  it('is one of the first three circuits by name (only the host picks it: the guests follow the room), the same whatever the order of the list', () => {
-    const now = RANKED_SEASON_ANCHOR + 1000;
-    expect(['anneau', 'epingles', 'lac']).toContain(rankedTrack(ids, now));
-    expect(rankedTrack([...ids].reverse(), now)).toBe(rankedTrack(ids, now));
+  it('comes from the room code: the same for everyone in the room, whatever the order of the list', () => {
+    for (const code of ['ABCDE', 'FGHJK', 'ZZZZZ']) {
+      expect(ids).toContain(queueCircuit(code, ids));
+      expect(queueCircuit(code, [...ids].reverse())).toBe(queueCircuit(code, ids));
+    }
   });
 
-  it('changes every week and goes round the three circuits', () => {
-    const week = 7 * 86_400_000;
-    const picks = [0, 1, 2, 3].map((w) => rankedTrack(ids, RANKED_SEASON_ANCHOR + w * week + 5));
-    expect(new Set(picks.slice(0, 3)).size).toBe(3);
-    expect(picks[3]).toBe(picks[0]);
+  it('is drawn at random: every circuit comes up, and none far more often than the others', () => {
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const count = new Map<string, number>();
+    for (let i = 0; i < 1200; i++) {
+      const code = [0, 1, 2, 3, 4].map((k) => letters[Math.floor(i / 24 ** k) % 24]).join('');
+      count.set(queueCircuit(code, ids), (count.get(queueCircuit(code, ids)) ?? 0) + 1);
+    }
+    expect(count.size).toBe(ids.length);
+    for (const n of count.values()) expect(n).toBeGreaterThan(120); // an even draw gives 200 each
   });
 });

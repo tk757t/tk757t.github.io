@@ -233,6 +233,7 @@ export function generate(doc: EditorDoc): Generated {
     name: doc.name,
     theme: doc.theme,
     lapLength: n,
+    ...(doc.laps !== undefined ? { laps: doc.laps } : {}),
     weather: { ...doc.weather },
     cellRadius: Math.round(doc.cellLength * 0.375 * 10) / 10,
     cells,

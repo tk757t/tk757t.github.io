@@ -1,4 +1,4 @@
-// Writes docs/circuits.md: difficulty indicators and AI simulations of the circuits drawn with the editor.
+// Writes docs/circuits.md: difficulty indicators, and AI simulations (rounds, minutes, retirements) of the circuits drawn with the editor.
 // npm run circuits:report (about half a minute: 600 races).
 import { writeFileSync } from 'node:fs';
 import { EDITOR_CIRCUITS, TRACKS, type TrackDef } from '../src/data/tracks/index.ts';
@@ -8,9 +8,10 @@ import { generate } from '../src/editor/generate.ts';
 import { SECONDS_PER_TURN, SIM_LINEUP, SIM_RACES, simulateSync, type SimReport } from '../src/editor/simulate.ts';
 
 const AI = { easy: 'Facile', medium: 'Moyen', hard: 'Difficile' } as const;
-const CAUSES: Record<string, string> = { tires: 'pneus', brakes: 'freins', gearbox: 'boîte', body: 'carrosserie', engine: 'moteur', handling: 'tenue de route', 'no-move': 'sans case jouable' };
+const CAUSES: Record<string, string> = { tires: 'pneus', brakes: 'freins', gearbox: 'boîte', body: 'carrosserie', engine: 'moteur', handling: 'tenue de route', 'no-move': 'sans case jouable', crash: 'mur' };
 const fr = (x: number, digits = 1) => x.toFixed(digits).replace('.', ',');
 const pct = (x: number) => `${fr(x * 100)} %`;
+const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
 /** What the editor document says about a circuit, in a sentence per element. */
 function describe(def: TrackDef): { lanes: number; pit: number; corners: string; weather: string } {
@@ -25,7 +26,7 @@ function describe(def: TrackDef): { lanes: number; pit: number; corners: string;
   }
   const corners = [...zones]
     .sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true }))
-    .map(([id, z]) => `${id} ${z.stops} arrêt${z.stops > 1 ? 's' : ''} (${z.cells} cases${z.risk ? `, chicane ${z.risk} jet${z.risk > 1 ? 's' : ''}` : ''})`)
+    .map(([id, z]) => `${id} ${plural(z.stops, 'arrêt')} (${z.cells} cases${z.risk ? `, chicane ${plural(z.risk, 'jet')}` : ''})`)
     .join(', ');
   const { rain, sun } = def.weather;
   const share = (k: number) => `${Math.round((k / 20) * 100)} %`;
@@ -37,10 +38,10 @@ function describe(def: TrackDef): { lanes: number; pit: number; corners: string;
   };
 }
 
-const sims = new Map<string, { two: SimReport; one: SimReport }>();
+const sims = new Map<string, SimReport>();
 for (const id of EDITOR_CIRCUITS) {
   const def = TRACKS[id];
-  sims.set(id, { two: simulateSync(def, { laps: 2 }), one: simulateSync(def, { laps: 1 }) });
+  sims.set(id, simulateSync(def, { laps: def.laps ?? 1 }));
   console.log(`${id}: done`);
 }
 
@@ -51,10 +52,13 @@ lines.push(
   '',
   'Généré par `npm run circuits:report` (scripts/circuits-report.ts) : ne pas modifier à la main.',
   '',
-  'Trois circuits dessinés avec l’éditeur (`/editor`, en développement), de difficulté croissante.',
+  'Six circuits dessinés avec l’éditeur (`/editor`, en développement), deux de 1 tour, deux de 2 tours, deux de 3 tours. **Une course dure environ 5 minutes**',
+  '(docs/gdd/01-vision.md : 4 à 6 minutes, environ 12 rondes) **quel que soit le circuit** : plus il y a de tours, plus le tour est court (de 51 cases à 17 cases).',
+  'Les files classée et non classée en tirent un au hasard, avec ses tours (`src/data/ranked.ts`, `queueCircuit`) ; « Course perso » et « Jouer avec des amis »',
+  'proposent les mêmes circuits et partent de leurs tours, que le joueur peut changer. Chaque circuit porte son nombre de tours conseillé (`laps` du document de l’éditeur).',
   'Chaque fichier `src/data/tracks/<id>.json` contient le circuit au format du moteur **et** le document de l’éditeur qui l’a produit (champ `editor`) :',
   'on les rouvre avec `/editor?load=<id>` (ou « Ouvrir un circuit du jeu » dans l’onglet Circuit), et `npm run gen:tracks` régénère les cases depuis ce document',
-  '(`src/data/tracks/tracks.test.ts` vérifie qu’ils sont synchrones).',
+  '(`src/data/tracks/tracks.test.ts` vérifie qu’ils sont synchrones, et que chaque course dure de 10,5 à 15 rondes).',
   '',
   '## Les circuits',
   '',
@@ -63,10 +67,10 @@ for (const id of EDITOR_CIRCUITS) {
   const def = TRACKS[id];
   const d = describe(def);
   lines.push(
-    `### ${def.name} (\`${id}\`)`,
+    `### ${def.name} (\`${id}\`) : ${plural(def.laps ?? 1, 'tour')}`,
     '',
-    `- Décor : ${THEME_LABELS[def.theme ?? 'forest']} ; ${d.lanes} voies, ${def.lapLength} cases par voie, ${def.cells.length} cases en tout ; voie des stands de ${d.pit} cases.`,
-    `- Virages : ${d.corners}.`,
+    `- Décor : ${THEME_LABELS[def.theme ?? 'forest']} ; ${d.lanes} voies, ${def.lapLength} cases par voie et par tour, ${def.cells.length} cases en tout ; voie des stands de ${d.pit} cases.`,
+    `- Virages : ${d.corners || 'aucun'}.`,
     `- Météo (d20) : ${d.weather}.`,
     '',
   );
@@ -75,60 +79,54 @@ lines.push(
   '## Indicateurs de difficulté',
   '',
   'Calculés par `src/data/tracks/difficulty.ts` (les mêmes que pour la campagne) : arrêts à faire, nombre de virages, virages qui s’enchaînent',
-  `(à moins de 25 rangs), part du tour passée en virage. Le score ne compte pas le nombre de voies : à 2 voies (Col des Neiges), on est plus souvent bloqué.`,
+  '(à moins de 25 rangs), part du tour passée en virage. Le score ne compte ni le nombre de voies (à 2 voies, on est plus souvent bloqué) ni le nombre de tours.',
   '',
 );
-row(['Circuit', 'Voies', 'Cases / tour', 'Virages', 'Arrêts', 'À 2 arrêts ou plus', 'Enchaînés', 'Part en virage', 'Score']);
-row(['---', '---', '---', '---', '---', '---', '---', '---', '---']);
+row(['Circuit', 'Tours', 'Voies', 'Cases / tour', 'Virages', 'Arrêts', 'À 2 arrêts ou plus', 'Enchaînés', 'Part en virage', 'Score']);
+row(['---', '---', '---', '---', '---', '---', '---', '---', '---', '---']);
 for (const id of EDITOR_CIRCUITS) {
   const def = TRACKS[id];
   const ind = indicators(def);
-  row([def.name, describe(def).lanes, def.lapLength, ind.corners, `${ind.stops} (${ind.stopsList.join(', ')})`, ind.hard, ind.chicanes, pct(ind.cornerShare), fr(ind.score)]);
+  row([def.name, def.laps ?? 1, describe(def).lanes, def.lapLength, ind.corners, `${ind.stops} (${ind.stopsList.join(', ')})`, ind.hard, ind.chicanes, pct(ind.cornerShare), fr(ind.score)]);
 }
 lines.push(
   '',
   '## Simulation',
   '',
-  `${SIM_RACES} courses par circuit et par format, entre quatre IA (${SIM_LINEUP.map((l) => AI[l]).join(', ')}), places tournantes, graines 1 à ${SIM_RACES},`,
-  `pneus durs, météo tirée au d20 du circuit : le bouton « Tester » de l’éditeur (src/editor/simulate.ts). Durée estimée pour quatre joueurs humains à ${SECONDS_PER_TURN} s par tour.`,
-  'Le coût d’un virage = pneus perdus en sortie ratée + 6 par abandon qui s’y produit, par course.',
+  `${SIM_RACES} courses par circuit, sur ses tours, entre quatre IA (${SIM_LINEUP.map((l) => AI[l]).join(', ')}), places tournantes, graines 1 à ${SIM_RACES},`,
+  `pneus durs, météo tirée au d20 du circuit : le bouton « Tester » de l’éditeur (src/editor/simulate.ts). Durée estimée pour quatre joueurs humains à ${SECONDS_PER_TURN} s par tour`,
+  '(la moitié pour deux joueurs humains : les IA jouent sans attendre).',
   '',
 );
-row(['Circuit', 'Tours', 'Manches', 'Durée estimée', 'Abandons', 'Causes', 'Virages les plus coûteux (coût par course)']);
-row(['---', '---', '---', '---', '---', '---', '---']);
+row(['Circuit', 'Tours', 'Cases en tout', 'Manches', 'Durée estimée (4 humains)', 'Abandons', 'Causes', 'Virages les plus coûteux (coût par course)']);
+row(['---', '---', '---', '---', '---', '---', '---', '---']);
 for (const id of EDITOR_CIRCUITS) {
-  for (const [laps, r] of [
-    [1, sims.get(id)!.one],
-    [2, sims.get(id)!.two],
-  ] as const) {
-    const causes = Object.entries(r.causes)
-      .sort((a, b) => b[1] - a[1])
-      .map(([k, v]) => `${CAUSES[k] ?? k} ${v}`)
-      .join(', ');
-    const worst = r.corners
-      .slice(0, 3)
-      .map((c) => `${c.id} (${fr(c.cost, 2)})`)
-      .join(', ');
-    row([TRACKS[id].name, laps, fr(r.avgRounds), `${Math.round(r.minutes)} min`, pct(r.retireRate), causes || 'aucune', worst]);
-  }
+  const def = TRACKS[id];
+  const r = sims.get(id)!;
+  const causes = Object.entries(r.causes)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${CAUSES[k] ?? k} ${v}`)
+    .join(', ');
+  const worst = r.corners
+    .filter((c) => c.cost > 0)
+    .slice(0, 3)
+    .map((c) => `${c.id} (${fr(c.cost, 2)})`)
+    .join(', ');
+  row([def.name, def.laps ?? 1, def.lapLength * (def.laps ?? 1), fr(r.avgRounds), `${fr(r.minutes)} min`, pct(r.retireRate), causes || 'aucune', worst || '—']);
 }
-const two = EDITOR_CIRCUITS.map((id) => sims.get(id)!.two);
-const ordered = two.every((r, i) => i === 0 || (r.retireRate > two[i - 1].retireRate && r.avgRounds > two[i - 1].avgRounds));
+const rounds = EDITOR_CIRCUITS.map((id) => sims.get(id)!.avgRounds);
 lines.push(
   '',
   '## Lecture',
   '',
-  `- Ordre de difficulté sur 2 tours (abandons et manches croissants) : **${ordered ? 'respecté' : 'NON respecté'}**.`,
-  '- **Dunes d’Ocre** (facile) : deux longues lignes droites et des virages larges à 1 arrêt, sauf le dernier (2 arrêts) ; il pleut rarement.',
-  '  Les abandons viennent surtout du moteur : les lignes droites poussent les IA en 5e et 6e. Le virage de la contre-ligne droite casse la vitesse.',
-  '- **Boucle des Pins** (moyen) : une « morsure » vers l’intérieur crée une chicane (cases à risque à l’entrée et à la sortie) et des virages',
-  '  à 2 arrêts qui s’enchaînent ; c’est là que les courses se jouent.',
-  '- **Col des Neiges** (difficile) : trois épingles en lacets (dont une à 3 arrêts), un virage court à 2 arrêts au bout de la ligne droite du haut',
-  '  (V4, le plus coûteux), une chicane dans la descente, 2 voies seulement et le seuil de pluie le plus haut (40 % des tirages). Le plus long des trois.',
-  '  Première cause d’abandon : « sans case jouable » (aucune destination que la voiture puisse payer en freins ou en pneus).',
-  '- **Durée** : ces trois circuits sont longs (113 à 189 cases par voie). À quatre joueurs, même un tour dépasse l’objectif de 5 minutes',
-  '  du classé (docs/gdd/01-vision.md) ; ils conviennent à la campagne et aux courses rapides, le classé demandera des tracés plus courts',
-  '  (environ 60 cases) ou des courses à deux.',
+  `- **Durée** : de ${fr(Math.min(...rounds))} à ${fr(Math.max(...rounds))} manches, soit de ${fr(Math.min(...EDITOR_CIRCUITS.map((id) => sims.get(id)!.minutes)))} à ${fr(Math.max(...EDITOR_CIRCUITS.map((id) => sims.get(id)!.minutes)))} minutes à quatre joueurs humains : la durée d’une course ne dépend pas du circuit tiré.`,
+  '  Chaque virage coûte environ 1,2 manche par tour (un virage large à 1 arrêt coûte moins qu’un virage court ou à 2 arrêts) : plus il y a de tours, moins le circuit peut avoir de virages.',
+  '- **Dunes d’Ocre** (1 tour, facile) : deux longues lignes droites et trois virages larges à 1 arrêt ; il pleut rarement. Les abandons sont rares.',
+  '- **Rues du Port** (1 tour, moyen) : des rues à angle droit, une chicane (cases à risque) entre deux virages à gauche, cinq virages à 1 arrêt qui s’enchaînent ; une course d’attention.',
+  '- **Corniche d’Azur** (2 tours, moyen) : un long virage de 11 cases qui se prend vite et une épingle ; la route fait la course, la météo est clémente.',
+  '- **Boucle des Pins** (2 tours, difficile) : une chicane à risque dès la sortie de l’épingle ; la tenue de route lâche souvent. Le plus d’abandons des six.',
+  '- **Col des Neiges** (3 tours, moyen) : 2 voies seulement, donc on se bloque plus souvent, et le plus de pluie (40 % des tirages) ; un seul virage, large.',
+  '- **Tour du Cratère** (3 tours, facile) : un anneau très court, rapide et au soleil ; la course se joue aux stands et à la mise en vitesse.',
   '',
 );
 writeFileSync(new URL('../docs/circuits.md', import.meta.url), lines.join('\n'));

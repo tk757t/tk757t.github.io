@@ -18,7 +18,7 @@ describe('cellKind', () => {
     const kinds = (id: string) => new Set(TRACKS[id].cells.map(cellKind));
     expect(kinds('oval').has('break')).toBe(false);
     expect(kinds('pins').has('break')).toBe(true);
-    expect(kinds('col').has('break')).toBe(true);
+    expect(kinds('port').has('break')).toBe(true);
     expect(kinds('dunes').has('wear')).toBe(true);
   });
 

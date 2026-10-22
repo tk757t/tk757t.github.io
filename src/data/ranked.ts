@@ -150,11 +150,15 @@ export function gridOrder<T extends { id: string; trophies: number }>(players: r
   return [...players].sort((a, b) => a.trophies - b.trophies || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-/** The three circuits of the ranked season, one of them each week (§ 4.3): the same pick for everyone, from the circuits the game knows (their order does not matter). */
-export function rankedTrack(trackIds: readonly string[], now: number): string {
-  const season = [...trackIds].sort().slice(0, 3);
-  const week = Math.floor((now - RANKED_SEASON_ANCHOR) / (7 * 86_400_000));
-  return season[((week % season.length) + season.length) % season.length];
+/**
+ * The circuit of a ranked or unranked race: drawn at random from the circuits of the game, the same for everyone in the room because it comes from the room code
+ * (a hash of it, so the order of the list does not matter either). Each circuit carries its own number of laps, so every race lasts about the same.
+ */
+export function queueCircuit(roomCode: string, trackIds: readonly string[]): string {
+  const ids = [...trackIds].sort();
+  let h = 0x811c9dc5;
+  for (let i = 0; i < roomCode.length; i++) h = Math.imul(h ^ roomCode.charCodeAt(i), 0x01000193) >>> 0;
+  return ids[h % ids.length];
 }
 
 /** How the matchmaking server (supabase/migrations/20261022140000_ranked_queue.sql) fills a race: from 2 to 4 cars, AIs only for the Paddock league. */

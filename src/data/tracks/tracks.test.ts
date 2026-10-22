@@ -4,6 +4,7 @@ import { TEST_CIRCUITS } from './generators/circuits';
 import { buildOval } from './generators/oval';
 import { generate } from '../../editor/generate';
 import { parseDoc } from '../../editor/doc';
+import { simulateSync } from '../../editor/simulate';
 import { DEFAULT_TRACK, EDITOR_CIRCUITS, TRACKS, TRACK_LIST, raceReadyProblems, toTrack, validateTrackDef, type TrackDef } from './index';
 
 const clone = (d: TrackDef): TrackDef => JSON.parse(JSON.stringify(d));
@@ -38,14 +39,28 @@ describe('circuits drawn with the editor', () => {
   });
 
   it('have their own names, none of the test circuits', () => {
-    expect(EDITOR_CIRCUITS.map((id) => TRACKS[id].name)).toEqual(['Dunes d’Ocre', 'Boucle des Pins', 'Col des Neiges']);
+    expect(EDITOR_CIRCUITS.map((id) => TRACKS[id].name)).toEqual(['Dunes d’Ocre', 'Rues du Port', 'Corniche d’Azur', 'Boucle des Pins', 'Col des Neiges', 'Tour du Cratère']);
+  });
+
+  it('come two by number of laps: two of 1 lap, two of 2 laps, two of 3 laps', () => {
+    expect(EDITOR_CIRCUITS.map((id) => TRACKS[id].laps)).toEqual([1, 1, 2, 2, 3, 3]);
+  });
+
+  // every race lasts about five minutes (docs/gdd/01-vision.md: 4 to 6 minutes, about 12 rounds): the more laps, the shorter the lap
+  it.each(EDITOR_CIRCUITS)('%s lasts about five minutes over its laps (10.5 to 15 rounds of four cars)', (id) => {
+    const def = TRACKS[id];
+    const report = simulateSync(def, { races: 40, laps: def.laps });
+    expect(report.unfinished).toBe(0);
+    expect(report.avgRounds).toBeGreaterThan(10.5);
+    expect(report.avgRounds).toBeLessThan(15);
   });
 });
 
 describe('test circuits', () => {
   it('are in sync with their generator (run npm run gen:tracks), the test oval first and by default', () => {
     expect(TEST_CIRCUITS.map((o) => buildOval(o))).toEqual(TEST_CIRCUITS.map((o) => TRACKS[buildOval(o).id]));
-    expect(TRACK_LIST.map((t) => t.id)).toEqual([...TEST_CIRCUITS.map((o) => buildOval(o).id), ...EDITOR_CIRCUITS]);
+    // only the test oval is offered next to our circuits: the other test circuits are for the campaign
+    expect(TRACK_LIST.map((t) => t.id)).toEqual([DEFAULT_TRACK, ...EDITOR_CIRCUITS]);
     expect(DEFAULT_TRACK).toBe('oval');
     expect(TRACK_LIST[0].id).toBe(DEFAULT_TRACK);
   });

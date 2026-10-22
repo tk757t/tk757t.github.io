@@ -131,16 +131,16 @@ for (const size of sizes) {
       // create a game: circuit, laps, seats; the host starts it when they want
       await page.getByTestId('open-setup').click();
       await page.getByTestId('lobby-create').click();
-      await page.getByLabel('Circuit').selectOption('lac');
+      await page.getByLabel('Circuit').selectOption('corniche'); // starts from the 2 laps of the circuit
       await page.getByRole('button', { name: 'Tours : 3' }).click();
       await page.getByRole('button', { name: 'Places : 3' }).click();
       await audit(page, 'créer une partie');
       await page.screenshot({ path: `e2e/screenshots/lobbies-${size.name}-create.png` });
       await page.getByTestId('lobby-create-confirm').click();
       await expect(page.getByTestId('lobby-room')).toBeVisible();
-      expect(server.calls.find((c) => c.name === 'lobby_create')?.body).toEqual({ p_track: 'lac', p_laps: 3, p_max: 3 });
+      expect(server.calls.find((c) => c.name === 'lobby_create')?.body).toEqual({ p_track: 'corniche', p_laps: 3, p_max: 3 });
       await expect(page.getByTestId('open-room-status')).toContainText('1/3 joueurs');
-      await expect(page.getByTestId('open-room-track')).toContainText('Ovale du lac · 3 tours');
+      await expect(page.getByTestId('open-room-track')).toContainText('Corniche d’Azur · 3 tours');
       // never more AIs than seats: 3 seats, 1 human = 2 AIs at most
       for (let i = 0; i < 4; i++) if (await page.getByTestId('open-room-ai-plus').isEnabled()) await page.getByTestId('open-room-ai-plus').click();
       await expect(page.getByTestId('open-room-ai-count')).toHaveText('2 IA');

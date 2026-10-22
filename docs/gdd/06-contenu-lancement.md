@@ -4,7 +4,7 @@
 
 | Contenu | Lancement | Existe aujourd'hui | Reste à faire |
 |---|---|---|---|
-| Circuits originaux | **8** (3 faciles, 3 moyens, 2 difficiles ; 2 au moins avec pluie fréquente, 1 avec cases à risque nombreuses) | 4 circuits de test générés (ovale, Petit anneau, Ovale du lac, Ovale des épingles), sans art | 8 tracés dessinés à la main, avec plateau illustré et miniature |
+| Circuits originaux | **8** (3 faciles, 3 moyens, 2 difficiles ; 2 au moins avec pluie fréquente, 1 avec cases à risque nombreuses) | 6 circuits dessinés avec l'éditeur (de 1 à 3 tours, une course de 5 minutes chacun, `docs/circuits.md`) + 4 circuits de test générés (ovale, Petit anneau, Ovale du lac, Ovale des épingles, ces trois derniers pour la campagne), sans art | 8 tracés dessinés à la main, avec plateau illustré et miniature |
 | Pièces | **36** (6 emplacements × 6) | 30 | 6 pièces « face maximale », révision de la progression des jauges ([03-ajouts.md](03-ajouts.md)) |
 | Cosmétiques | **60** (peintures, numéros, casques, jantes, fumées, émotes, cadres) | 20 | 40, dont 8 du Pass de la saison 1 |
 | Cartes tactiques | **20** | 0 | les 20 cartes de [03-ajouts.md](03-ajouts.md), main et énergie dans l'interface de course |

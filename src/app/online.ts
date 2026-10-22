@@ -1,6 +1,6 @@
 import { getAccount } from './account';
 import { devParam, secureToken } from './devParams';
-import { TRACK_LIST } from '../data/tracks';
+import { DEFAULT_TRACK, TRACK_LIST, trackName } from '../data/tracks';
 import { Session, isRoomCode, newRoomCode, MAX_CARS, MAX_HUMANS, type RoomSettings } from '../net/session';
 import { transportFor } from '../net/transport';
 import { Badge, Button, Modal, type ModalHandle } from '../ui/kit';
@@ -82,7 +82,7 @@ export function openOnlineLobby(onSession: (s: Session) => void, joinCode?: stri
       id: clientId(code),
       name,
       host,
-      settings: { trackId: 'anneau', laps: 1, ais: 0 },
+      settings: { trackId: DEFAULT_TRACK, laps: 1, ais: 0 },
     });
     session = s;
     offLobby = s.onLobby(() => drawRoom(s));
@@ -151,7 +151,7 @@ export function openOnlineLobby(onSession: (s: Session) => void, joinCode?: stri
     return el(
       'div',
       { class: 'online__settings' },
-      select('Circuit', TRACK_LIST.map((t) => [t.id, t.name]), s.settings.trackId, (v) => set({ trackId: v }), 'online-track'),
+      select('Circuit', TRACK_LIST.map((t) => [t.id, t.name]), s.settings.trackId, (v) => set({ trackId: v, ...(TRACK_LIST.find((t) => t.id === v)?.laps ? { laps: TRACK_LIST.find((t) => t.id === v)!.laps! } : {}) }), 'online-track'),
       el(
         'div',
         { class: 'online__row' },
@@ -193,7 +193,7 @@ export function openOnlineLobby(onSession: (s: Session) => void, joinCode?: stri
       list.append(el('li', {}, el('span', { text: p.name }), ...(i === 0 ? [Badge({ text: 'hôte', tone: 'gold' })] : []), ...(p.id === s.id ? [Badge({ text: 'vous', tone: 'blue' })] : []))),
     );
     const cars = s.players.length + Math.min(s.settings.ais, MAX_CARS - s.players.length);
-    const track = TRACK_LIST.find((t) => t.id === s.settings.trackId)?.name ?? s.settings.trackId;
+    const track = trackName(s.settings.trackId);
     body.replaceChildren(
       el('p', { class: 'muted', text: 'Code de la partie' }),
       el('p', { class: 'online__code', 'data-testid': 'room-code', text: s.code }),

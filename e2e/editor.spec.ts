@@ -192,7 +192,7 @@ for (const size of sizes) {
     test.use({ viewport: { width: size.width, height: size.height }, reducedMotion: 'reduce' });
     test.setTimeout(90_000);
 
-    for (const id of ['dunes', 'pins', 'col']) {
+    for (const id of ['dunes', 'port', 'corniche', 'pins', 'col', 'cratere']) {
       test(`${id} : valide dans l’éditeur, et une course démarre dessus avec son décor`, async ({ page }) => {
         const errors = watchConsole(page);
         await page.goto(`/editor?load=${id}&aiDelay=0&seed=3`);

@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.6.0',
+    date: '2026-10-22',
+    notes: [
+      'Six nouveaux circuits : Dunes d’Ocre et Rues du Port (1 tour), Corniche d’Azur et Boucle des Pins (2 tours), Col des Neiges et Tour du Cratère (3 tours). Plus il y a de tours, plus le tour est court : une course dure environ 5 minutes, quel que soit le circuit.',
+      'Course classée et course non classée : le circuit est tiré au hasard, avec son nombre de tours.',
+      'Course perso et parties entre amis : vous choisissez toujours le circuit et le nombre de tours (qui part de celui du circuit).',
+    ],
+  },
+  {
     version: '0.5.1',
     date: '2026-10-22',
     notes: [

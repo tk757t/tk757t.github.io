@@ -8,10 +8,10 @@ import { newProfile, serializeProfile } from '../data/profile/profile';
 import { dailyOffers, parisDay } from '../data/shop';
 import { importSave } from './importSave';
 import { SOLO_GOLD, SOLO_PAID_PER_HOUR, openSlot } from '../data/profile/ops';
-import { TRACKS } from '../data/tracks';
+import { EDITOR_CIRCUITS, TRACKS } from '../data/tracks';
 import { applyAction, type ActionContext } from './actions';
 import { GameError } from './errors';
-import { LAP_LENGTH, RACE_RULES, minRaceMs } from './race';
+import { LAP_LENGTH, QUEUE_LAPS, RACE_RULES, minRaceMs } from './race';
 import { freshState, publicState, readState, rngFrom, type ServerState } from './state';
 
 const T0 = Date.UTC(2026, 9, 21, 12);
@@ -404,10 +404,16 @@ describe('races', () => {
     expect(Object.keys(LAP_LENGTH).sort()).toEqual(Object.keys(TRACKS).sort());
   });
 
+  it('the laps of the queue circuits match the circuits', () => {
+    for (const [trackId, laps] of Object.entries(QUEUE_LAPS)) expect(TRACKS[trackId].laps, trackId).toBe(laps);
+    expect(Object.keys(QUEUE_LAPS).sort()).toEqual([...EDITOR_CIRCUITS].sort());
+  });
+
   it('the minimum duration grows with laps and circuit length', () => {
-    expect(minRaceMs({ trackId: 'col', laps: 3 }, false)).toBeGreaterThan(minRaceMs({ trackId: 'col', laps: 1 }, false));
-    expect(minRaceMs({ trackId: 'col', laps: 3 }, false)).toBeGreaterThan(minRaceMs({ trackId: 'oval', laps: 3 }, false));
-    expect(minRaceMs({ trackId: 'col', laps: 3 }, true)).toBe(RACE_RULES.floorMs);
+    const slow = { ...RACE_RULES, msPerTurn: 10_000 }; // long enough turns for the floor not to hide the difference
+    expect(minRaceMs({ trackId: 'dunes', laps: 3 }, false, slow)).toBeGreaterThan(minRaceMs({ trackId: 'dunes', laps: 1 }, false, slow));
+    expect(minRaceMs({ trackId: 'dunes', laps: 3 }, false, slow)).toBeGreaterThan(minRaceMs({ trackId: 'cratere', laps: 3 }, false, slow));
+    expect(minRaceMs({ trackId: 'dunes', laps: 3 }, true)).toBe(RACE_RULES.floorMs);
   });
 });
 

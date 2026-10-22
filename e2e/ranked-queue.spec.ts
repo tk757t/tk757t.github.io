@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { createGameHandler, memoryStore, readState } from '../src/server';
+import { QUEUE_LAPS, createGameHandler, memoryStore, readState } from '../src/server';
 import { expectContrast, expectNoHorizontalOverflow, expectUsableLayout, humanStep, sizes, watchConsole } from './helpers';
 
 // Two tabs of one browser are two players: each has its own account on a fake Supabase, the fake queue forms the group, the room goes through
@@ -158,8 +158,11 @@ test.describe('course classée : mise en relation', () => {
     for (const p of [a, b]) await p.waitForFunction(() => '__game' in window, undefined, { timeout: 20_000 });
     for (const p of [a, b]) await expect(p.getByTestId('turn-chip')).toBeVisible();
     // each player has a ranked token from the server
-    expect(server.state('ua').race).toMatchObject({ ranked: true, players: 2, bots: 0, laps: 1 });
-    expect(server.state('ub').race).toMatchObject({ ranked: true });
+    // the circuit is drawn at random, the same for both, with its own number of laps
+    const race = server.state('ua').race!;
+    expect(race).toMatchObject({ ranked: true, players: 2, bots: 0 });
+    expect(QUEUE_LAPS[race.trackId]).toBe(race.laps);
+    expect(server.state('ub').race).toMatchObject({ ranked: true, trackId: race.trackId, laps: race.laps });
     server.advance(10 * 60_000);
 
     for (let i = 0; i < 1500; i++) {
@@ -238,6 +241,7 @@ test.describe('course non classée : la même file, sans trophées', () => {
     for (const p of pages.slice(0, 2)) await expect(p.getByTestId('ranked-found')).toBeVisible({ timeout: 20_000 });
     await expect(pages[0].getByTestId('ranked-players')).toContainText('Bob_02');
     await expect(pages[0].getByTestId('ranked-track')).toContainText('tour');
+    await expect(pages[1].getByTestId('ranked-track')).toHaveText((await pages[0].getByTestId('ranked-track').textContent()) ?? ''); // the same circuit for the whole group
     await audit(pages[1], 'groupe non classé');
     await pages[1].screenshot({ path: 'e2e/screenshots/unranked-mobile-found.png' });
     for (const p of pages.slice(0, 2)) await p.waitForFunction(() => '__game' in window, undefined, { timeout: 40_000 });

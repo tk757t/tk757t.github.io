@@ -8,7 +8,10 @@ import type { RaceToken } from './state';
  */
 
 /** Cells per lap of each of our circuits (kept here so the server bundle does not carry the circuit drawings; a test compares them with src/data/tracks). */
-export const LAP_LENGTH: Readonly<Record<string, number>> = { oval: 48, anneau: 60, lac: 76, epingles: 64, dunes: 113, pins: 135, col: 189 };
+export const LAP_LENGTH: Readonly<Record<string, number>> = { oval: 48, anneau: 60, lac: 76, epingles: 64, dunes: 51, port: 36, corniche: 24, pins: 24, col: 17, cratere: 18 };
+
+/** The circuits of the ranked and unranked queues, with the laps each is raced over (so every race lasts about five minutes); a test compares them with src/data/tracks. */
+export const QUEUE_LAPS: Readonly<Record<string, number>> = { dunes: 1, port: 1, corniche: 2, pins: 2, col: 3, cratere: 3 };
 
 export const MAX_LAPS = 3;
 export const MAX_PLAYERS = 4;

@@ -12,7 +12,7 @@ export interface Station extends Point {
 }
 
 /** Fewest cells in a lap: below this a circuit is too short to race. */
-export const MIN_SLOTS = 24;
+export const MIN_SLOTS = 14;
 
 /** Cubic Bézier between control points a and b (a's handle out, b's handle in). */
 export function segmentPoint(a: ControlPoint, b: ControlPoint, t: number): Point {

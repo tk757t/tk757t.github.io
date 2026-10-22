@@ -159,3 +159,25 @@ export async function linkDiscord(): Promise<void> {
   const { error } = await authClient().auth.linkIdentity({ provider: 'discord', options: { redirectTo: location.origin + location.pathname } });
   if (error) throw error;
 }
+
+/**
+ * Deletes the account for good: the server removes the user (and with it the game, the pseudo, the messages and the Discord
+ * identity), then this device forgets the session and every local save. The caller reloads the page afterwards.
+ */
+export async function deleteAccount(): Promise<void> {
+  const sb = authClient();
+  const { error } = await sb.rpc('delete_my_account');
+  if (error) throw error;
+  try {
+    await sb.auth.signOut({ scope: 'local' });
+  } catch {
+    /* the user no longer exists on the server: the local session is cleared below anyway */
+  }
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch {
+    /* storage blocked: nothing was kept */
+  }
+  current = null;
+}

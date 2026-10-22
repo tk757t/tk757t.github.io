@@ -22,6 +22,7 @@ import { chatUnread, onChatChange } from './chatStore';
 import { canAdmin, canTest, refreshRole } from '../net/staff';
 import { openAdmin } from './adminScreen';
 import { openTester } from './testerScreen';
+import { openDeleteAccount, openPrivacy } from './privacyScreen';
 import { onRaceChatUnread, raceChatUnread } from './chatRace';
 
 const TAB_INFO: Record<TabId, { label: string; icon: string }> = {
@@ -137,7 +138,7 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
         el('dl', { class: 'profile-stats' }, ...rows.flatMap(([k, v]) => [el('dt', { text: k }), el('dd', { text: v })])),
         ...(account?.guest
           ? [
-              el('p', { class: 'account__hint', text: 'Compte invité : liez-le à Discord pour le retrouver sur un autre appareil. Seul votre identifiant est utilisé, jamais votre nom ni votre e-mail.' }),
+              el('p', { class: 'account__hint', text: 'Compte invité : liez-le à Discord pour le retrouver sur un autre appareil. Le jeu ne lit que votre identifiant Discord (voir Confidentialité).' }),
               Button({
                 text: 'Lier à Discord',
                 variant: 'blue',
@@ -149,6 +150,12 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
               }),
             ]
           : []),
+        el(
+          'div',
+          { class: 'profile-privacy' },
+          Button({ text: 'Confidentialité', variant: 'ghost', attrs: { 'data-testid': 'open-privacy' }, onClick: () => void openPrivacy() }),
+          ...(account?.pseudo ? [Button({ text: 'Supprimer mon compte', variant: 'red', attrs: { 'data-testid': 'open-delete' }, onClick: openDeleteAccount })] : []),
+        ),
         el(
           'div',
           { class: 'profile-version' },

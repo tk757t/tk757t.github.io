@@ -7,7 +7,7 @@ const FAKE_TOKEN = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: 'u1', role
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 
 async function fakeSupabase(page: Page) {
-  const state = { pseudo: null as string | null, signups: 0 };
+  const state = { pseudo: null as string | null, signups: 0, deletions: 0 };
   await page.route('https://npaunxotjhkjzoxfpqgq.supabase.co/**', async (route) => {
     const req = route.request();
     const url = new URL(req.url());
@@ -29,6 +29,11 @@ async function fakeSupabase(page: Page) {
       return route.fulfill({ headers: CORS, json: p });
     }
     if (url.pathname === '/rest/v1/profiles') return route.fulfill({ headers: CORS, json: state.pseudo ? [{ pseudo: state.pseudo }] : [{ pseudo: null }] });
+    if (url.pathname === '/rest/v1/rpc/delete_my_account') {
+      state.deletions++;
+      state.pseudo = null;
+      return route.fulfill({ status: 204, headers: CORS });
+    }
     if (url.pathname === '/rest/v1/rpc/presence_ping') return route.fulfill({ status: 204, headers: CORS });
     if (url.pathname === '/rest/v1/rpc/lobby_stats') return route.fulfill({ headers: CORS, json: [{ online: 3, ranked_waiting: 1, open_waiting: 2 }] });
     if (url.pathname === '/rest/v1/rpc/my_role') return route.fulfill({ headers: CORS, json: 'player' });
@@ -84,6 +89,56 @@ for (const size of sizes) {
       await expectUsableLayout(page, 'profile with account');
       await expectContrast(page, 'profile with account');
       await page.screenshot({ path: `e2e/screenshots/account-${size.name}-profile.png` });
+      expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
+    });
+
+    test('confidentialité et suppression du compte en deux étapes', async ({ page }) => {
+      const errors = watchConsole(page);
+      await page.setViewportSize({ width: size.width, height: size.height });
+      const state = await fakeSupabase(page);
+      await page.goto('/?account=1');
+      await page.getByTestId('account-pseudo').fill('Max_07');
+      await page.getByTestId('account-guest').click();
+      await expect(page.getByTestId('avatar')).toBeVisible();
+
+      await page.getByTestId('avatar').click();
+      await page.getByTestId('open-privacy').click();
+      await expect(page.getByTestId('privacy-modal')).toContainText('FenrirT');
+      await expect(page.getByTestId('privacy-modal')).toContainText('e-mail');
+      await page.waitForFunction(() => !document.getAnimations().some((a) => a.playState === 'running'));
+      await expectUsableLayout(page, 'privacy');
+      await expectContrast(page, 'privacy');
+      await page.screenshot({ path: `e2e/screenshots/privacy-${size.name}-notice.png` });
+      await page.getByTestId('privacy-modal').getByRole('button', { name: 'Fermer' }).click();
+
+      // step 1 can be cancelled: nothing is sent
+      await page.getByTestId('open-delete').click();
+      await expect(page.getByTestId('delete-step1')).toBeVisible();
+      await page.waitForFunction(() => !document.getAnimations().some((a) => a.playState === 'running'));
+      await expectUsableLayout(page, 'delete step 1');
+      await expectContrast(page, 'delete step 1');
+      await page.screenshot({ path: `e2e/screenshots/privacy-${size.name}-delete1.png` });
+      await page.getByTestId('delete-cancel').click();
+      expect(state.deletions).toBe(0);
+
+      // step 2 needs the pseudo typed back
+      await page.getByTestId('open-delete').click();
+      await page.getByTestId('delete-continue').click();
+      const confirm = page.getByTestId('delete-confirm');
+      await expect(confirm).toBeDisabled();
+      await page.getByTestId('delete-pseudo').fill('Max_08');
+      await expect(confirm).toBeDisabled();
+      await page.getByTestId('delete-pseudo').fill('max_07');
+      await expect(confirm).toBeEnabled();
+      await page.waitForFunction(() => !document.getAnimations().some((a) => a.playState === 'running'));
+      await expectUsableLayout(page, 'delete step 2');
+      await expectContrast(page, 'delete step 2');
+      await page.screenshot({ path: `e2e/screenshots/privacy-${size.name}-delete2.png` });
+      await confirm.click();
+      await expect.poll(() => state.deletions).toBe(1);
+      // the page restarts without session or local data: the welcome screen is back
+      await expect(page.getByTestId('account-modal')).toBeVisible();
+      expect(await page.evaluate(() => localStorage.getItem('4mules.auth'))).toBeNull();
       expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
     });
 

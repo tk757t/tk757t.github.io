@@ -104,7 +104,7 @@ export async function ensureAccount(): Promise<void> {
       dismissible: false,
       children: [
         el('label', { class: 'online__field' }, el('span', { text: 'Pseudo (visible par les autres joueurs)' }), input),
-        el('p', { class: 'account__hint', text: 'Aucune donnée personnelle n’est demandée ni enregistrée : seulement ce pseudo.' }),
+        el('p', { class: 'account__hint', text: 'En invité, aucune donnée personnelle n’est demandée : seulement ce pseudo. Avec Discord, voir Confidentialité dans le profil.' }),
         message,
       ],
       actions: [...buttons, offlineBtn],

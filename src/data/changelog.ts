@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.5.1',
+    date: '2026-10-22',
+    notes: [
+      'Nouveau : Confidentialité (dans le Profil) dit ce que le jeu garde, ce que Discord ajoute, et qui édite le jeu.',
+      'Nouveau : « Supprimer mon compte », en deux étapes. Compte, pseudo, progression, messages et lien Discord sont effacés tout de suite, et le pseudo est libéré.',
+      'Texte corrigé : avec Discord, l’adresse e-mail de votre compte Discord est conservée par le service de comptes, mais le jeu ne la lit jamais.',
+    ],
+  },
+  {
     version: '0.5.0',
     date: '2026-10-22',
     notes: [

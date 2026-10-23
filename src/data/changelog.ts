@@ -7,6 +7,11 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.6.3',
+    date: '2026-10-23',
+    notes: ['La police du jeu change encore : Fredoka, très ronde et facile à lire.'],
+  },
+  {
     version: '0.6.2',
     date: '2026-10-23',
     notes: [

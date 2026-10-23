@@ -193,7 +193,7 @@ export class EditorView {
     const def = vm.gen.def;
     const r = def.cellRadius ?? 15;
     const text = (s: string, x: number, y: number, size: number, fill: number, stroke = 0x0b1020) => {
-      const t = new Text({ text: s, style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: size, fontWeight: '800', fill, stroke: { color: stroke, width: size * 0.22 } } });
+      const t = new Text({ text: s, style: { fontFamily: 'Fredoka, system-ui, sans-serif', fontSize: size, fontWeight: '700', fill, stroke: { color: stroke, width: size * 0.22 } } });
       t.anchor.set(0.5);
       t.position.set(x, y);
       this.labels.addChild(t);

@@ -228,7 +228,7 @@ export class RaceRenderer {
       this.reachLayer.poly(pts).stroke({ width: 3 * u, color: 0xffffff });
       if (mark.label) {
         const plate = new Container();
-        const text = new Text({ text: mark.label, style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 13 * u, fontWeight: '800', fill: ink } });
+        const text = new Text({ text: mark.label, style: { fontFamily: 'Fredoka, system-ui, sans-serif', fontSize: 13 * u, fontWeight: '700', fill: ink } });
         text.anchor.set(0.5);
         const bg = new Graphics();
         bg.roundRect(-text.width / 2 - 3 * u, -text.height / 2 - 1 * u, text.width + 6 * u, text.height + 2 * u, 4 * u).fill({ color, alpha: 0.95 });
@@ -413,7 +413,7 @@ export class RaceRenderer {
     const label = new Text({
       text: style.label ?? (carId.replace(/D+/g, '') || String(index + 1)),
       style: {
-        fontFamily: 'Nunito, system-ui, sans-serif',
+        fontFamily: 'Fredoka, system-ui, sans-serif',
         fontSize: ((style.label?.length ?? 1) > 1 ? 11 : 13) * (this.r / CELL_RADIUS) * (tex ? 0.8 : 1),
         fontWeight: '700',
         fill: isLight(color) ? 0x10151c : 0xffffff,
@@ -524,7 +524,7 @@ export class RaceRenderer {
       if (text) {
         const t = new Text({
           text,
-          style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: (stops ? 19 : 15) * u, fontWeight: '800', fill: st.ink, stroke: stops ? { color: st.fill, width: 3 * u } : undefined },
+          style: { fontFamily: 'Fredoka, system-ui, sans-serif', fontSize: (stops ? 19 : 15) * u, fontWeight: '700', fill: st.ink, stroke: stops ? { color: st.fill, width: 3 * u } : undefined },
         });
         t.anchor.set(0.5);
         t.position.set(c.x, c.y);
@@ -586,14 +586,14 @@ export class RaceRenderer {
       if (c.grid !== undefined) parts.push(`G${c.grid}`);
       const t = new Text({
         text: parts.join(' '),
-        style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 7.5 * u, fontWeight: '700', fill: c.grid !== undefined ? 0xff2bd6 : 0xffffff, stroke: { color: 0x000000, width: 2 * u } },
+        style: { fontFamily: 'Fredoka, system-ui, sans-serif', fontSize: 7.5 * u, fontWeight: '700', fill: c.grid !== undefined ? 0xff2bd6 : 0xffffff, stroke: { color: 0x000000, width: 2 * u } },
       });
       t.anchor.set(0.5);
       t.position.set(c.x, c.y - this.r * 0.15);
       this.debugLayer.addChild(t);
       const low = new Text({
         text: `${c.id.slice(1)}${c.toCorner !== undefined ? ` >${c.toCorner}` : ''}`,
-        style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 6 * u, fontWeight: '600', fill: 0x9fe8ff, stroke: { color: 0x000000, width: 1.6 * u } },
+        style: { fontFamily: 'Fredoka, system-ui, sans-serif', fontSize: 6 * u, fontWeight: '600', fill: 0x9fe8ff, stroke: { color: 0x000000, width: 1.6 * u } },
       });
       low.anchor.set(0.5);
       low.position.set(c.x, c.y + this.r * 0.45);
@@ -616,7 +616,7 @@ export class RaceRenderer {
     const len = Math.hypot(dx, dy) || 1;
     const t = new Text({
       text,
-      style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 15 * (this.r / CELL_RADIUS), fontWeight: '700', fill: color, letterSpacing: 1 },
+      style: { fontFamily: 'Fredoka, system-ui, sans-serif', fontSize: 15 * (this.r / CELL_RADIUS), fontWeight: '700', fill: color, letterSpacing: 1 },
     });
     // captions on the sides grow away from the circuit instead of over it
     const side = Math.abs(dx) / len > 0.5 ? (dx > 0 ? 0 : 1) : 0.5;

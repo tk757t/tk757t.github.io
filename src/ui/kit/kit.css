@@ -1,6 +1,6 @@
 /* Design system: colours come from tokens.ts (CSS variables written at start-up). */
 :root {
-  --font: 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
+  --font: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
   --radius: 14px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -24,7 +24,7 @@
   min-height: 48px;
   padding: 0 18px;
   font-family: var(--font);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 18px;
   line-height: 1.1;
   letter-spacing: 0.2px;
@@ -99,7 +99,7 @@
 }
 .kit-panel--dark { background: var(--panel-dark); }
 .kit-panel--gold { background: var(--panel-dark); border-color: var(--gold); box-shadow: 0 4px 0 var(--yellow-edge); }
-.kit-panel__title { margin: 0 0 8px; font-family: var(--font); font-weight: 900; font-size: 20px; letter-spacing: 0.2px; color: var(--text); }
+.kit-panel__title { margin: 0 0 8px; font-family: var(--font); font-weight: 700; font-size: 20px; letter-spacing: 0.2px; color: var(--text); }
 
 /* -------------------------------------------------------------- Badge */
 .kit-badge {
@@ -191,7 +191,7 @@
 }
 .kit-modal__header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .kit-modal__header .kit-btn { min-width: 48px; padding: 0 10px; font-size: 20px; }
-.kit-modal__title { margin: 0; font-family: var(--font); font-weight: 900; font-size: 26px; letter-spacing: 0.5px; }
+.kit-modal__title { margin: 0; font-family: var(--font); font-weight: 700; font-size: 26px; letter-spacing: 0.5px; }
 .kit-modal__floating-close { position: absolute; top: -14px; right: -6px; z-index: 2; }
 .kit-modal__body { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0; padding: 2px; }
 .kit-modal__actions { display: flex; gap: 10px; flex-wrap: wrap; }

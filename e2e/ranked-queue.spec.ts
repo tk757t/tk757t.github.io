@@ -119,7 +119,7 @@ async function audit(page: Page, where: string) {
 
 test.describe('course classée : mise en relation', () => {
   test.use({ reducedMotion: 'reduce' });
-  test.setTimeout(240_000);
+  test.setTimeout(600_000);
 
   test('deux joueurs entrent dans la file, le groupe se forme, ils courent et les trophées sont payés par le serveur', async ({ context }) => {
     const [mobile, desktop] = sizes;
@@ -165,7 +165,7 @@ test.describe('course classée : mise en relation', () => {
     expect(server.state('ub').race).toMatchObject({ ranked: true, trackId: race.trackId, laps: race.laps });
     server.advance(10 * 60_000);
 
-    for (let i = 0; i < 1500; i++) {
+    for (let i = 0; i < 4000; i++) {
       const done = await Promise.all([a, b].map((p) => p.getByTestId('ranking').isVisible()));
       if (done.every(Boolean)) break;
       let acted = false;

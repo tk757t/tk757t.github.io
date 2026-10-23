@@ -410,9 +410,9 @@ describe('races', () => {
   });
 
   it('the minimum duration grows with laps and circuit length', () => {
-    const slow = { ...RACE_RULES, msPerTurn: 10_000 }; // long enough turns for the floor not to hide the difference
+    const slow = { ...RACE_RULES, msPerTurn: 10_000, cellsPerTurn: 10 }; // long enough turns for the floor not to hide the difference
     expect(minRaceMs({ trackId: 'dunes', laps: 3 }, false, slow)).toBeGreaterThan(minRaceMs({ trackId: 'dunes', laps: 1 }, false, slow));
-    expect(minRaceMs({ trackId: 'dunes', laps: 3 }, false, slow)).toBeGreaterThan(minRaceMs({ trackId: 'cratere', laps: 3 }, false, slow));
+    expect(minRaceMs({ trackId: 'dunes', laps: 3 }, false, slow)).toBeGreaterThan(minRaceMs({ trackId: 'port', laps: 3 }, false, slow));
     expect(minRaceMs({ trackId: 'dunes', laps: 3 }, true)).toBe(RACE_RULES.floorMs);
   });
 });

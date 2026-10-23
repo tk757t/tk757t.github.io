@@ -2,50 +2,50 @@
 
 Généré par `npm run circuits:report` (scripts/circuits-report.ts) : ne pas modifier à la main.
 
-Six circuits dessinés avec l’éditeur (`/editor`, en développement), deux de 1 tour, deux de 2 tours, deux de 3 tours. **Une course dure environ 5 minutes**
-(docs/gdd/01-vision.md : 4 à 6 minutes, environ 12 rondes) **quel que soit le circuit** : plus il y a de tours, plus le tour est court (de 51 cases à 17 cases).
+Six circuits dessinés avec l’éditeur (`/editor`, en développement), deux de 1 tour, deux de 2 tours, deux de 3 tours. **Un tour dure environ 5 minutes**
+(environ 12 rondes à quatre voitures) et compte de 46 à 55 cases : une course dure donc environ 5 minutes par tour (de 5 à 14 minutes selon le circuit).
 Les files classée et non classée en tirent un au hasard, avec ses tours (`src/data/ranked.ts`, `queueCircuit`) ; « Course perso » et « Jouer avec des amis »
 proposent les mêmes circuits et partent de leurs tours, que le joueur peut changer. Chaque circuit porte son nombre de tours conseillé (`laps` du document de l’éditeur).
 Chaque fichier `src/data/tracks/<id>.json` contient le circuit au format du moteur **et** le document de l’éditeur qui l’a produit (champ `editor`) :
 on les rouvre avec `/editor?load=<id>` (ou « Ouvrir un circuit du jeu » dans l’onglet Circuit), et `npm run gen:tracks` régénère les cases depuis ce document
-(`src/data/tracks/tracks.test.ts` vérifie qu’ils sont synchrones, et que chaque course dure de 10,5 à 15 rondes).
+(`src/data/tracks/tracks.test.ts` vérifie qu’ils sont synchrones, et que chaque tour compte de 46 à 55 cases et dure de 9 à 15 rondes).
 
 ## Les circuits
 
 ### Dunes d’Ocre (`dunes`) : 1 tour
 
-- Décor : Désert ; 3 voies, 51 cases par voie et par tour, 162 cases en tout ; voie des stands de 9 cases.
-- Virages : V1 1 arrêt (9 cases), V2 1 arrêt (4 cases), V3 1 arrêt (5 cases).
+- Décor : Désert ; 3 voies, 55 cases par voie et par tour, 174 cases en tout ; voie des stands de 9 cases.
+- Virages : V1 1 arrêt (10 cases), V2 1 arrêt (4 cases), V3 1 arrêt (5 cases).
 - Météo (d20) : pluie 10 %, nuageux 35 %, soleil 55 % (seuils 3 / 9).
 
 ### Rues du Port (`port`) : 1 tour
 
-- Décor : Ville ; 3 voies, 36 cases par voie et par tour, 115 cases en tout ; voie des stands de 7 cases.
-- Virages : V1 1 arrêt (7 cases), V2 1 arrêt (3 cases, chicane 1 jet), V3 1 arrêt (3 cases), V4 1 arrêt (4 cases), V5 1 arrêt (3 cases).
+- Décor : Ville ; 3 voies, 46 cases par voie et par tour, 146 cases en tout ; voie des stands de 8 cases.
+- Virages : V1 1 arrêt (4 cases), V2 1 arrêt (4 cases, chicane 1 jet), V3 1 arrêt (5 cases), V4 1 arrêt (4 cases).
 - Météo (d20) : pluie 20 %, nuageux 40 %, soleil 40 % (seuils 5 / 12).
 
 ### Corniche d’Azur (`corniche`) : 2 tours
 
-- Décor : Côte ; 3 voies, 24 cases par voie et par tour, 79 cases en tout ; voie des stands de 7 cases.
-- Virages : V1 1 arrêt (7 cases), V2 1 arrêt (11 cases).
+- Décor : Côte ; 3 voies, 51 cases par voie et par tour, 160 cases en tout ; voie des stands de 7 cases.
+- Virages : V1 2 arrêts (7 cases), V2 1 arrêt (5 cases), V3 1 arrêt (4 cases, chicane 1 jet).
 - Météo (d20) : pluie 15 %, nuageux 35 %, soleil 50 % (seuils 4 / 10).
 
 ### Boucle des Pins (`pins`) : 2 tours
 
-- Décor : Forêt ; 3 voies, 24 cases par voie et par tour, 79 cases en tout ; voie des stands de 7 cases.
-- Virages : V1 1 arrêt (7 cases), V2 1 arrêt (5 cases, chicane 1 jet).
+- Décor : Forêt ; 3 voies, 52 cases par voie et par tour, 163 cases en tout ; voie des stands de 7 cases.
+- Virages : V1 1 arrêt (12 cases), V2 1 arrêt (10 cases, chicane 1 jet), V3 1 arrêt (10 cases).
 - Météo (d20) : pluie 30 %, nuageux 35 %, soleil 35 % (seuils 7 / 13).
 
 ### Col des Neiges (`col`) : 3 tours
 
-- Décor : Neige ; 2 voies, 17 cases par voie et par tour, 41 cases en tout ; voie des stands de 7 cases.
-- Virages : V1 1 arrêt (5 cases).
+- Décor : Neige ; 2 voies, 49 cases par voie et par tour, 105 cases en tout ; voie des stands de 7 cases.
+- Virages : V1 1 arrêt (7 cases), V2 1 arrêt (6 cases), V3 1 arrêt (4 cases).
 - Météo (d20) : pluie 40 %, nuageux 35 %, soleil 25 % (seuils 9 / 15).
 
 ### Tour du Cratère (`cratere`) : 3 tours
 
-- Décor : Désert ; 3 voies, 18 cases par voie et par tour, 61 cases en tout ; voie des stands de 7 cases.
-- Virages : V1 1 arrêt (7 cases).
+- Décor : Désert ; 3 voies, 53 cases par voie et par tour, 166 cases en tout ; voie des stands de 7 cases.
+- Virages : V1 1 arrêt (15 cases).
 - Météo (d20) : pluie 10 %, nuageux 30 %, soleil 60 % (seuils 3 / 8).
 
 ## Indicateurs de difficulté
@@ -55,12 +55,12 @@ Calculés par `src/data/tracks/difficulty.ts` (les mêmes que pour la campagne) 
 
 | Circuit | Tours | Voies | Cases / tour | Virages | Arrêts | À 2 arrêts ou plus | Enchaînés | Part en virage | Score |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Dunes d’Ocre | 1 | 3 | 51 | 3 | 3 (1, 1, 1) | 0 | 3 | 35,3 % | 27,1 |
-| Rues du Port | 1 | 3 | 36 | 5 | 5 (1, 1, 1, 1, 1) | 0 | 5 | 55,6 % | 44,2 |
-| Corniche d’Azur | 2 | 3 | 24 | 2 | 2 (1, 1) | 0 | 2 | 75,0 % | 33,5 |
-| Boucle des Pins | 2 | 3 | 24 | 2 | 2 (1, 1) | 0 | 2 | 50,0 % | 26,0 |
-| Col des Neiges | 3 | 2 | 17 | 1 | 1 (1) | 0 | 1 | 29,4 % | 14,3 |
-| Tour du Cratère | 3 | 3 | 18 | 1 | 1 (1) | 0 | 1 | 38,9 % | 17,2 |
+| Dunes d’Ocre | 1 | 3 | 55 | 3 | 3 (1, 1, 1) | 0 | 3 | 34,5 % | 26,9 |
+| Rues du Port | 1 | 3 | 46 | 4 | 4 (1, 1, 1, 1) | 0 | 4 | 37,0 % | 33,1 |
+| Corniche d’Azur | 2 | 3 | 51 | 3 | 4 (2, 1, 1) | 1 | 3 | 31,4 % | 27,9 |
+| Boucle des Pins | 2 | 3 | 52 | 3 | 3 (1, 1, 1) | 0 | 3 | 61,5 % | 35,0 |
+| Col des Neiges | 3 | 2 | 49 | 3 | 3 (1, 1, 1) | 0 | 3 | 34,7 % | 26,9 |
+| Tour du Cratère | 3 | 3 | 53 | 1 | 1 (1) | 0 | 0 | 28,3 % | 12,0 |
 
 ## Simulation
 
@@ -70,16 +70,16 @@ pneus durs, météo tirée au d20 du circuit : le bouton « Tester » de l’éd
 
 | Circuit | Tours | Cases en tout | Manches | Durée estimée (4 humains) | Abandons | Causes | Virages les plus coûteux (coût par course) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Dunes d’Ocre | 1 | 51 | 12,8 | 5,1 min | 1,3 % | carrosserie 5 | V2 (0,55), V3 (0,27), V1 (0,15) |
-| Rues du Port | 1 | 36 | 13,9 | 5,6 min | 6,5 % | carrosserie 26 | V3 (0,63), V2 (0,49), V5 (0,44) |
-| Corniche d’Azur | 2 | 48 | 12,3 | 4,9 min | 5,0 % | carrosserie 14, pneus 5, sans case jouable 1 | V2 (1,88), V1 (1,14) |
-| Boucle des Pins | 2 | 48 | 13,3 | 5,3 min | 7,5 % | carrosserie 16, tenue de route 14 | V1 (1,40), V2 (0,96) |
-| Col des Neiges | 3 | 51 | 13,8 | 5,5 min | 3,0 % | carrosserie 12 | V1 (0,72) |
-| Tour du Cratère | 3 | 54 | 12,9 | 5,2 min | 0,8 % | carrosserie 3 | V1 (0,66) |
+| Dunes d’Ocre | 1 | 55 | 13,7 | 5,5 min | 0,8 % | carrosserie 3 | V2 (0,44), V3 (0,32), V1 (0,10) |
+| Rues du Port | 1 | 46 | 14,4 | 5,8 min | 1,3 % | carrosserie 5 | V1 (0,54), V4 (0,34), V2 (0,26) |
+| Corniche d’Azur | 2 | 102 | 25,4 | 10,2 min | 4,5 % | carrosserie 10, tenue de route 8 | V1 (1,67), V3 (1,18), V2 (0,35) |
+| Boucle des Pins | 2 | 104 | 20,7 | 8,3 min | 7,5 % | tenue de route 15, carrosserie 11, moteur 4 | V2 (1,11), V3 (0,59), V1 (0,48) |
+| Col des Neiges | 3 | 147 | 34,0 | 13,6 min | 7,0 % | carrosserie 27, pneus 1 | V3 (1,85), V2 (0,72), V1 (0,66) |
+| Tour du Cratère | 3 | 159 | 28,5 | 11,4 min | 2,0 % | moteur 5, carrosserie 3 | V1 (0,60) |
 
 ## Lecture
 
-- **Durée** : de 12,3 à 13,9 manches, soit de 4,9 à 5,6 minutes à quatre joueurs humains : la durée d’une course ne dépend pas du circuit tiré.
+- **Durée** : de 13,7 à 34,0 manches, soit de 5,5 à 13,6 minutes à quatre joueurs humains : la durée d’une course ne dépend pas du circuit tiré.
   Chaque virage coûte environ 1,2 manche par tour (un virage large à 1 arrêt coûte moins qu’un virage court ou à 2 arrêts) : plus il y a de tours, moins le circuit peut avoir de virages.
 - **Dunes d’Ocre** (1 tour, facile) : deux longues lignes droites et trois virages larges à 1 arrêt ; il pleut rarement. Les abandons sont rares.
 - **Rues du Port** (1 tour, moyen) : des rues à angle droit, une chicane (cases à risque) entre deux virages à gauche, cinq virages à 1 arrêt qui s’enchaînent ; une course d’attention.

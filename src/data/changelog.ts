@@ -7,6 +7,14 @@ export interface ChangelogEntry {
 /** What changed, told to players. Most recent first; the first entry is the current version (tested). */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.6.1',
+    date: '2026-10-23',
+    notes: [
+      'Circuits refaits, plus longs : chaque tour compte de 46 à 55 cases, aussi pour les circuits à 2 et 3 tours. Une course dure donc environ 5 minutes par tour.',
+      'Chaque circuit a son propre tracé et ses défis : Dunes d’Ocre (deux grands virages), Rues du Port (rues serrées), Corniche d’Azur (virages enchaînés), Boucle des Pins (chicane risquée), Col des Neiges (lacets à deux voies), Tour du Cratère (anneau rapide).',
+    ],
+  },
+  {
     version: '0.6.0',
     date: '2026-10-22',
     notes: [

@@ -17,8 +17,8 @@ export { raceReadyProblems, validateTrackDef } from './validate';
 export const DEFAULT_TRACK = 'oval';
 
 /**
- * Our original circuits drawn with the editor (/editor), by number of laps (docs/circuits.md). All of them last about five minutes:
- * the more laps, the shorter the lap. They are the circuits the ranked and unranked queues draw from, and the ones of the setup screens.
+ * Our original circuits drawn with the editor (/editor), by number of laps (docs/circuits.md). All of them have 46 to 55 cells per lap and a lap lasts
+ * about five minutes: one, two or three laps. They are the circuits the ranked and unranked queues draw from, and the ones of the setup screens.
  */
 export const EDITOR_CIRCUITS = ['dunes', 'port', 'corniche', 'pins', 'col', 'cratere'];
 

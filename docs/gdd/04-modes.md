@@ -40,7 +40,7 @@ Le fil rouge en solo et le **tutoriel déguisé**. Existe aujourd'hui avec 3 niv
 
 - **Mise en relation** par trophées (écart initial ±100, élargi de 50 toutes les 5 s, 20 s au plus) ; 2 à 4 joueurs, complétés
   par des IA nommées comme telles si l'attente dépasse 20 s (en Ligue Paddock seulement).
-- **Format** : météo aléatoire, circuit tiré au hasard parmi les 6 circuits du jeu avec **son nombre de tours** (1, 2 ou 3 : plus il y a de tours, plus le tour est court, pour que toute course dure environ 5 minutes ; `docs/circuits.md`).
+- **Format** : météo aléatoire, circuit tiré au hasard parmi les 6 circuits du jeu avec **son nombre de tours** (1, 2 ou 3 ; chaque tour compte de 46 à 55 cases et dure environ 5 minutes ; `docs/circuits.md`).
 - **Grille** : inverse des trophées (le moins classé en pole), pour compenser.
 - **Minuteur par tour** : 15 s pour choisir son rapport, 15 s pour ajuster et choisir sa case, plus une **réserve de 20 s**
   par course qui se consomme quand on dépasse. À la fin du temps : l'IA joue ce tour à sa place (choix prudent).

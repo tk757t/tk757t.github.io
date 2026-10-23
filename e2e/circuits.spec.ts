@@ -16,12 +16,12 @@ for (const size of sizes) {
       const track = page.getByLabel('Circuit');
       await expect(track.locator('option')).toHaveText([
         /^Ovale de test · 48 cases$/,
-        /^Dunes d’Ocre · 1 tour · 51 cases$/,
-        /^Rues du Port · 1 tour · 36 cases$/,
-        /^Corniche d’Azur · 2 tours · 24 cases$/,
-        /^Boucle des Pins · 2 tours · 24 cases$/,
-        /^Col des Neiges · 3 tours · 17 cases$/,
-        /^Tour du Cratère · 3 tours · 18 cases$/,
+        /^Dunes d’Ocre · 1 tour · 55 cases$/,
+        /^Rues du Port · 1 tour · 46 cases$/,
+        /^Corniche d’Azur · 2 tours · 51 cases$/,
+        /^Boucle des Pins · 2 tours · 52 cases$/,
+        /^Col des Neiges · 3 tours · 49 cases$/,
+        /^Tour du Cratère · 3 tours · 53 cases$/,
       ]);
 
       await track.selectOption('cratere');

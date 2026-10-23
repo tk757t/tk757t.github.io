@@ -63,7 +63,7 @@ garder de quoi finir.
 
 ### 3. Parties courtes sur mobile
 
-Une course classée dure **5 minutes environ** (1 tour, 2 à 4 voitures, environ 12 rondes). Tout se joue au pouce, en portrait,
+Un tour dure **5 minutes environ** et une course classée en compte 1 à 3 (5 à 14 minutes ;  2 à 4 voitures, environ 12 rondes). Tout se joue au pouce, en portrait,
 à une main. Une partie peut être quittée et reprise : l'état de course est sur le serveur.
 
 - Écrans en portrait, 390 px de large au minimum, zones de toucher de 44 px au moins.

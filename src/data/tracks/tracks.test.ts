@@ -46,13 +46,15 @@ describe('circuits drawn with the editor', () => {
     expect(EDITOR_CIRCUITS.map((id) => TRACKS[id].laps)).toEqual([1, 1, 2, 2, 3, 3]);
   });
 
-  // every race lasts about five minutes (docs/gdd/01-vision.md: 4 to 6 minutes, about 12 rounds): the more laps, the shorter the lap
-  it.each(EDITOR_CIRCUITS)('%s lasts about five minutes over its laps (10.5 to 15 rounds of four cars)', (id) => {
+  // every lap is 46 to 55 cells and lasts about five minutes: a race lasts about five minutes per lap
+  it.each(EDITOR_CIRCUITS)('%s has 46 to 55 cells per lap and lasts 9 to 15 rounds of four cars per lap', (id) => {
     const def = TRACKS[id];
     const report = simulateSync(def, { races: 40, laps: def.laps });
     expect(report.unfinished).toBe(0);
-    expect(report.avgRounds).toBeGreaterThan(10.5);
-    expect(report.avgRounds).toBeLessThan(15);
+    expect(def.lapLength).toBeGreaterThanOrEqual(46);
+    expect(def.lapLength).toBeLessThanOrEqual(55);
+    expect(report.avgRounds / (def.laps ?? 1)).toBeGreaterThan(9);
+    expect(report.avgRounds / (def.laps ?? 1)).toBeLessThan(15);
   });
 });
 

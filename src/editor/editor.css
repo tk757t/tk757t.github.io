@@ -76,5 +76,5 @@
 .editor__subtitle { margin: 4px 0 0; font-size: 18px; }
 .editor__table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .editor__table th, .editor__table td { padding: 6px 4px; text-align: center; border-bottom: 2px solid var(--line); }
-.editor__table th { color: var(--text-muted); font-weight: 400; }
+.editor__table th { color: var(--text-muted); font-weight: 800; }
 .editor__table td:first-child, .editor__table th:first-child { text-align: left; }

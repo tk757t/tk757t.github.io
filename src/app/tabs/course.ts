@@ -36,7 +36,7 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
   // the ranked queue and the open rooms are on the server: they need an account with a pseudo
   const needAccount = (): boolean => {
     if (getAccount()?.pseudo) return false;
-    toast('Il faut un compte avec un pseudo (et une connexion) pour jouer en ligne. « Course perso » se joue hors ligne.', 'bad');
+    toast('Pour jouer en ligne, il vous faut un compte avec un pseudo et une connexion. « Course perso » se joue hors ligne.', 'bad');
     return true;
   };
   const start = Button({ text: 'COURSE !', variant: 'yellow', size: 'xl', block: true, attrs: { 'data-testid': 'start-ranked' }, onClick: () => needAccount() || ctx.openRanked() });
@@ -154,8 +154,8 @@ export function mountCourse(page: HTMLElement, ctx: AppContext): Dispose {
     trackName.textContent = nameOfTrack(cfg.trackId);
     const humans = cfg.controllers.slice(0, cfg.players).filter((c) => c === 'human').length;
     summary.textContent = `${cfg.players} joueur${cfg.players > 1 ? 's' : ''}${cfg.players - humans > 0 ? ` dont ${cfg.players - humans} IA` : ''} · ${cfg.laps} tour${cfg.laps > 1 ? 's' : ''}`;
-    reserve.replaceChildren(el('span', { text: 'Les coffres se débloquent avec le temps. Terminez des courses pour en recevoir, plus haut vous finissez, meilleure est leur qualité.' }), ...(p.packs.length > 0 ? [Badge({ text: `+${p.packs.length} en réserve`, tone: 'blue', attrs: { 'data-testid': 'reserve-badge' } })] : []));
-    pity.textContent = `Pitié : ${Math.min(p.pity, PITY_CHESTS - 1)}/${PITY_CHESTS - 1} coffres sans carte légendaire`;
+    reserve.replaceChildren(el('span', { text: 'Les coffres s’ouvrent avec le temps. Terminez des courses pour en gagner : plus vous finissez haut, meilleur est le coffre.' }), ...(p.packs.length > 0 ? [Badge({ text: `+${p.packs.length} en réserve`, tone: 'blue', attrs: { 'data-testid': 'reserve-badge' } })] : []));
+    pity.textContent = `Coffres sans carte légendaire : ${Math.min(p.pity, PITY_CHESTS - 1)}/${PITY_CHESTS - 1}`;
   }
 
   /** Once a second: refresh the countdowns, or redraw when a timer ran out. */

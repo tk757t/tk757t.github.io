@@ -45,7 +45,7 @@ export function openLobbies(o: LobbiesOptions): ModalHandle {
     },
     children: online
       ? [
-          el('p', { class: 'muted', text: 'Rejoignez une partie ou créez la vôtre : vous choisissez le circuit, les tours et les places. Rien n’est gagné ni perdu.' }),
+          el('p', { class: 'muted', text: 'Rejoignez une partie ou créez la vôtre en choisissant le circuit, les tours et les places. Ces parties ne rapportent rien et ne font rien perdre.' }),
           Button({ text: 'Créer une partie', variant: 'yellow', size: 'lg', block: true, attrs: { 'data-testid': 'lobby-create' }, onClick: () => openCreate() }),
           el('h3', { class: 'lobbies__h', text: 'Parties en attente' }),
           list,
@@ -53,7 +53,7 @@ export function openLobbies(o: LobbiesOptions): ModalHandle {
           Button({ text: 'Jouer hors ligne', variant: 'ghost', block: true, attrs: { 'data-testid': 'offline-race' }, onClick: () => leaveFor(o.offline) }),
         ]
       : [
-          el('p', { class: 'muted', 'data-testid': 'lobby-need-account', text: 'Pour rejoindre ou créer une partie en ligne, il faut un compte avec un pseudo. Hors ligne, réglez votre course avec des amis sur le même écran ou contre des IA.' }),
+          el('p', { class: 'muted', 'data-testid': 'lobby-need-account', text: 'Pour jouer en ligne, il vous faut un compte avec un pseudo. Hors ligne, vous pouvez régler une course entre amis sur le même écran, ou contre des IA.' }),
           Button({ text: 'Jouer hors ligne', variant: 'yellow', size: 'lg', block: true, attrs: { 'data-testid': 'offline-race' }, onClick: () => leaveFor(o.offline) }),
         ],
   });
@@ -72,7 +72,7 @@ export function openLobbies(o: LobbiesOptions): ModalHandle {
   function draw(lobbies: Lobby[]): void {
     list.replaceChildren(
       ...(lobbies.length === 0
-        ? [el('li', { class: 'lobbies__empty muted', 'data-testid': 'lobby-empty', text: 'Aucune partie pour le moment. Créez la vôtre !' })]
+        ? [el('li', { class: 'lobbies__empty muted', 'data-testid': 'lobby-empty', text: 'Aucune partie ouverte. Créez la vôtre !' })]
         : lobbies.map((l) =>
             el(
               'li',

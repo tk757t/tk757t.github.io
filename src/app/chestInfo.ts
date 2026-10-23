@@ -38,8 +38,8 @@ export function showChestInfo(): void {
       el('h3', { class: 'chest-info__title', text: 'Comment les obtenir' }),
       el('p', { class: 'chest-info__line', text: `Un coffre est gagné à chaque course terminée, et un second pour la victoire. Sa qualité est tirée à l’obtention selon votre place (à 4 joueurs, 1er : ${(['common', 'rare', 'epic', 'legendary'] as const).map((t) => `${CHESTS[t].label} ${first(t, 1, 4)}`).join(', ')} ; dernier : ${(['common', 'rare', 'epic', 'legendary'] as const).map((t) => `${CHESTS[t].label} ${first(t, 4, 4)}`).join(', ')}).` }),
       el('p', { class: 'chest-info__line', text: `Une victoire sur ${WINS_PER_RARE} donne au moins un coffre Rare.` }),
-      el('p', { class: 'chest-info__line', text: `Pitié : si ${PITY_CHESTS - 1} coffres de suite ne contiennent aucune carte légendaire, le suivant en contient une.` }),
-      el('p', { class: 'chest-info__line', text: 'Accélérer un coffre coûte 1 gemme par tranche de 10 minutes restantes (au moins 1) et ne change pas son contenu.' }),
+      el('p', { class: 'chest-info__line', text: `Si ${PITY_CHESTS - 1} coffres de suite ne contiennent aucune carte légendaire, le suivant en contient une.` }),
+      el('p', { class: 'chest-info__line', text: 'Accélérer un coffre coûte 1 gemme par tranche de 10 minutes restantes, avec 1 gemme au minimum. Le contenu ne change pas.' }),
     ],
     actions: [Button({ text: 'Fermer', variant: 'ghost', onClick: () => modal.close() })],
   });

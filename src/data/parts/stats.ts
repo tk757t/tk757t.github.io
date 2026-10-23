@@ -20,10 +20,10 @@ export const STAT_LABELS: Record<StatKey, string> = {
 };
 
 export const STAT_HINTS: Record<StatKey, string> = {
-  speed: 'Ce que le dé rapporte : cases bonus aux rapports.',
-  endurance: 'Tenir la distance : points de Pneus et de Freins.',
+  speed: 'Les cases en plus que le dé vous donne.',
+  endurance: 'Tenir la distance, avec plus de Pneus et de Freins.',
   handling: 'Bien prendre les virages : Tenue de route, arrêts gratuits, pneus épargnés.',
-  robustness: 'Encaisser les contacts : Carrosserie et carrosserie épargnée.',
+  robustness: 'Encaisser les contacts, avec plus de Carrosserie.',
   reliability: 'Ne pas casser : Moteur, Boîte, jet moteur, rétrogradation.',
   tactics: 'Choisir au bon moment : relances du dé.',
 };

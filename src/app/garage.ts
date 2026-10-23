@@ -57,7 +57,7 @@ export function mountGarage(page: HTMLElement): Dispose {
         try {
           const changed = await equipBestParts();
           if (changed === null) return; // the server's refusal is already shown
-          if (changed === 0) toast('Ton équipement est déjà le meilleur possible.');
+          if (changed === 0) toast('Votre équipement est déjà le meilleur possible.');
           else toast(`${changed} pièce${changed > 1 ? 's' : ''} changée${changed > 1 ? 's' : ''} · Puissance ${before} → ${statsOfProfile(getProfile()).power}`);
           playSound('levelup');
         } finally {
@@ -182,7 +182,7 @@ export function mountGarage(page: HTMLElement): Dispose {
               return el('li', {}, b);
             }),
           )
-        : el('p', { class: 'muted', text: 'Aucun objet pour cet emplacement. Ouvrez des paquets pour en trouver !' });
+        : el('p', { class: 'muted', text: 'Rien pour cet emplacement. Ouvrez des coffres pour en trouver !' });
 
       // preview: what changes if this item replaces the current one
       let preview: HTMLElement | null = null;

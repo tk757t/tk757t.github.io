@@ -19,38 +19,38 @@ export const GAUGES: Record<WearCategory, GaugeInfo> = {
   tires: {
     name: 'Pneus',
     role: 'L’usure de vos gommes.',
-    uses: 'Chaque tour terminé en use un point (selon la gomme) ; un virage dont on sort trop tôt en use davantage.',
-    empty: 'À 0 la voiture s’arrête (point mort) ; en dessous, sortie de piste : abandon. Un arrêt au stand remet les pneus à neuf.',
+    uses: 'Chaque tour terminé en use un point, selon la gomme. Sortir trop tôt d’un virage en use plus.',
+    empty: 'À 0, la voiture s’arrête (point mort). Sous 0, elle sort de piste et abandonne. Un arrêt au stand remet les pneus à neuf.',
   },
   brakes: {
     name: 'Freins',
-    role: 'Raccourcir le dé après le jet, et rétrograder de loin.',
-    uses: 'Après le jet, chaque point dépensé retire 1 case au résultat. Rétrograder de 3 rapports ou plus en coûte aussi 1.',
-    empty: 'En dessous de 0 : abandon.',
+    role: 'Raccourcir un jet trop long, et rétrograder de loin.',
+    uses: 'Après le jet, chaque point dépensé retire 1 case. Rétrograder de 3 rapports ou plus en coûte aussi 1.',
+    empty: 'Sous 0, la voiture abandonne.',
   },
   gearbox: {
     name: 'Boîte',
-    role: 'Gagner une case en plus, et rétrograder.',
-    uses: 'Le bouton « Boîte +1 » ajoute 1 case (une fois par tour) pour 1 point. Rétrograder de 2 rapports ou plus en coûte aussi 1.',
-    empty: 'En dessous de 0 : abandon.',
+    role: 'Gagner une case de plus, et rétrograder.',
+    uses: '« Boîte +1 » ajoute 1 case pour 1 point, une fois par tour. Rétrograder de 2 rapports ou plus en coûte aussi 1.',
+    empty: 'Sous 0, la voiture abandonne.',
   },
   body: {
     name: 'Carrosserie',
     role: 'Encaisser les contacts.',
-    uses: 'On perd 1 point quand une voiture barre la route (on s’arrête derrière) et quand un d20 de contact touche une voisine : 1 chance sur 20 par voiture voisine (2 sous la pluie).',
-    empty: 'En dessous de 0 : abandon.',
+    uses: 'Vous perdez 1 point quand une voiture bloque la route, ou quand un d20 de contact vous touche : 1 chance sur 20 par voiture voisine, 2 sous la pluie.',
+    empty: 'Sous 0, la voiture abandonne.',
   },
   engine: {
     name: 'Moteur',
     role: 'Tenir la vitesse.',
-    uses: 'En fin de tour en 5e ou 6e, un d20 : 1 à 4 (1 à 3 sous la pluie) = −1 point. Rétrograder de 4 rapports ou plus en coûte aussi 1.',
-    empty: 'En dessous de 0 : abandon.',
+    uses: 'Si vous finissez votre tour en 5e ou 6e, un d20 est lancé : de 1 à 4 (de 1 à 3 sous la pluie), vous perdez 1 point. Rétrograder de 4 rapports ou plus en coûte aussi 1.',
+    empty: 'Sous 0, la voiture abandonne.',
   },
   handling: {
     name: 'Tenue de route',
     role: 'Passer les cases à risque (chicanes).',
-    uses: 'Sur une case à risque, un d20 : 4 ou moins (5 sous la pluie) = −1 point.',
-    empty: 'En dessous de 0 : abandon.',
+    uses: 'Sur une case à risque, un d20 est lancé : avec 4 ou moins (5 sous la pluie), vous perdez 1 point.',
+    empty: 'Sous 0, la voiture abandonne.',
   },
 };
 
@@ -63,12 +63,12 @@ export interface StatInfo {
 }
 
 const RAISE: Record<StatKey, string> = {
-  speed: 'Des pièces qui donnent des cases bonus aux rapports (Turbo, V8, Hybride…).',
-  endurance: 'Des pièces qui ajoutent des points de Pneus et de Freins.',
-  handling: 'Des points de Tenue de route, des arrêts gratuits en virage et des pneus épargnés quand on rate un virage.',
-  robustness: 'Des points de Carrosserie, et de la carrosserie épargnée derrière une voiture.',
-  reliability: 'Des points de Moteur et de Boîte, un jet moteur plus sûr, des rapports offerts en rétrogradant.',
-  tactics: 'Des relances du dé : on relance un mauvais jet, une fois par relance.',
+  speed: 'Les pièces qui donnent des cases en plus, comme le Turbo, le V8 ou l’Hybride.',
+  endurance: 'Les pièces qui ajoutent des points de Pneus et de Freins.',
+  handling: 'Les points de Tenue de route, les arrêts gratuits en virage et les pneus épargnés quand on rate un virage.',
+  robustness: 'Les points de Carrosserie, et la carrosserie épargnée quand une voiture vous bloque.',
+  reliability: 'Les points de Moteur et de Boîte, un jet moteur plus sûr et des rapports offerts en rétrogradant.',
+  tactics: 'Les relances : on peut refaire un mauvais jet, une fois par relance.',
 };
 
 export const STATS: Record<StatKey, StatInfo> = Object.fromEntries(

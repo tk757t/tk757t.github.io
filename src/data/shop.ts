@@ -19,11 +19,11 @@ export interface Offer {
 /** The permanent offers. */
 export const OFFERS: Offer[] = [
   { id: 'pack-1', title: 'Coffre commun', detail: '3 cartes, prêt en 30 minutes', icon: '🎁', price: 120, currency: 'gold' },
-  { id: 'pack-3', title: 'Lot de 3 coffres communs', detail: 'Le meilleur prix par paquet', icon: '📦', price: 300, currency: 'gold' },
+  { id: 'pack-3', title: 'Lot de 3 coffres communs', detail: 'Le meilleur prix par coffre', icon: '📦', price: 300, currency: 'gold' },
   { id: 'fragments-40', title: '40 fragments', detail: 'Pour améliorer vos pièces', icon: '🔷', price: 150, currency: 'gold' },
   { id: 'pack-instant', title: 'Coffre rare express', detail: '4 cartes, or et gemmes, prêt tout de suite', icon: '⚡', price: 8, currency: 'gems' },
   { id: 'pack-epic', title: 'Coffre épique', detail: '5 cartes, or et gemmes, prêt en 8 heures', icon: '💜', price: 60, currency: 'gems' },
-  { id: 'gold-400', title: '400 pièces d’or', detail: 'Convertissez vos gemmes', icon: '🪙', price: 24, currency: 'gems' },
+  { id: 'gold-400', title: '400 pièces d’or', detail: 'Contre des gemmes', icon: '🪙', price: 24, currency: 'gems' },
 ];
 
 // ------------------------------------------------------------- offers of the day

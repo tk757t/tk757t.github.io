@@ -28,7 +28,7 @@ function discordProblem(msg: string, code = ''): string | null {
   if (/provider is not enabled|unsupported provider/i.test(all)) return 'La connexion Discord n’est pas encore disponible. Jouez en invité.';
   if (/manual linking/i.test(all)) return 'Lier ce compte à Discord n’est pas encore possible.';
   if (/identity_already_exists|already linked|already been linked|identity.*already/i.test(all)) return 'Ce compte Discord est déjà lié à un autre joueur.';
-  if (/redirect|requested path is invalid|invalid.*url/i.test(all)) return 'Retour de Discord refusé : l’adresse du jeu n’est pas autorisée côté serveur.';
+  if (/redirect|requested path is invalid|invalid.*url/i.test(all)) return 'Discord a refusé le retour : l’adresse du jeu n’est pas autorisée.';
   if (/email/i.test(all)) return 'Discord n’a pas donné d’adresse vérifiée : vérifiez votre compte Discord et réessayez.';
   return null;
 }

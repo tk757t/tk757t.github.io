@@ -400,9 +400,9 @@ export class RaceScreen {
         'ul',
         { class: 'legend__list' },
         row('legend__cell--neutral', '', 'Case claire', 'rien de spécial.'),
-        row('legend__cell--wear', '', 'Orange rayée', "virage : les pneus s'usent si on n'y fait pas ses arrêts."),
-        row('legend__cell--break', '✕', 'Rouge à croix', 'case à risque : un jet peut coûter de la tenue de route, et sous 0 on abandonne.'),
-        row('legend__cell--reach', '', 'Halo bleu ou jaune', 'case où vous pouvez aller (jaune : elle coûte de la carrosserie, des freins ou des pneus).'),
+        row('legend__cell--wear', '', 'Orange rayée', "virage. Les pneus s'usent si vous n'y faites pas tous vos arrêts."),
+        row('legend__cell--break', '✕', 'Rouge à croix', 'case à risque. Un jet peut vous coûter de la tenue de route, et sous 0 vous abandonnez.'),
+        row('legend__cell--reach', '', 'Halo bleu ou jaune', 'case que vous pouvez atteindre (en jaune, elle vous coûte de la carrosserie, des freins ou des pneus).'),
         row('legend__cell--wall', '', 'Halo rouge', 'le mur : la voiture qui y va abandonne.'),
       ),
     );
@@ -761,7 +761,7 @@ export class RaceScreen {
     if (this.state.phase !== 'adjust' || this.rolling || !this.isHumanTurn()) return;
     const option = enumerateMoves(this.state).find((o) => o.cellId === cellId);
     if (!option || !option.playable) {
-      this.notices = [option ? (option.reason === 'brakes' ? 'Pas assez de freins pour cette case.' : 'Pas assez de pneus pour cette case.') : "Choisissez une case en surbrillance : c'est votre case d'arrivée."];
+      this.notices = [option ? (option.reason === 'brakes' ? 'Pas assez de freins pour cette case.' : 'Pas assez de pneus pour cette case.') : "Touchez une case en surbrillance pour y arriver."];
       this.refresh();
       return;
     }
@@ -1024,7 +1024,7 @@ export class RaceScreen {
         el('p', { class: 'muted', text: `Pneus neufs à chaque arrêt. Il reste ${plural(left, 'point')} de réparation pour toute la course.` }),
         el('fieldset', {}, el('legend', { text: 'Pneus' }), tires),
         el('fieldset', {}, el('legend', { text: 'Réparations' }), ...rows),
-        el('p', { class: 'muted', text: used === 0 ? 'Sans réparation : arrêt rapide. Un d20 sous 11 et vous repartez tout de suite, sinon le tour est perdu.' : 'Avec réparations : arrêt long, le tour est perdu.' }),
+        el('p', { class: 'muted', text: used === 0 ? 'Sans réparation, l’arrêt est rapide : avec un d20 sous 11, vous repartez tout de suite, sinon vous perdez le tour.' : 'Avec réparations : arrêt long, le tour est perdu.' }),
       );
       const actions = modal.el.querySelector('.kit-modal') as HTMLElement;
       actions.querySelector('.kit-modal__actions')?.remove();

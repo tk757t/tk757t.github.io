@@ -113,7 +113,7 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
       ...(account?.pseudo ? ([['Ligue', ranked.league.label], ['Trophées', String(ranked.trophies)]] as [string, string][]) : []),
       ['Courses', String(p.races)],
       ['Victoires', String(p.wins)],
-      ['Paquets ouverts', String(p.packsOpened)],
+      ['Coffres ouverts', String(p.packsOpened)],
       ['Campagne', `${totalStars(p.campaign)}/${LEVEL_COUNT * MAX_STARS} étoiles`],
     ];
     // the driver's portrait, chosen from the race number of the loadout (the same number gives the same driver)
@@ -230,7 +230,7 @@ export function createShell(root: HTMLElement, ctx: AppContext, mounters: Record
       const n = counts[id] ?? 0;
       badge.hidden = n <= 0;
       badge.querySelector('.kit-badge__text')!.textContent = String(n);
-      badge.setAttribute('aria-label', id === 'quests' ? `${n} récompenses à récupérer` : `${n} paquets prêts`);
+      badge.setAttribute('aria-label', id === 'quests' ? `${n} récompenses à récupérer` : `${n} coffres prêts`);
     }
   }
 

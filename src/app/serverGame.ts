@@ -102,7 +102,7 @@ const FIELD_LABELS: Record<string, string> = { gold: 'or', gems: 'gemmes', fragm
 export function importMessage(report: Adjustment[]): string {
   if (report.length === 0) return 'Votre progression est maintenant enregistrée sur le serveur.';
   const names = [...new Set(report.map((r) => FIELD_LABELS[r.field] ?? (r.field.startsWith('owned.') ? 'pièces' : r.field.startsWith('slots') ? 'coffres' : 'compteurs')))];
-  return `Progression importée. Valeurs ramenées à un niveau plausible : ${names.join(', ')}.`;
+  return `Progression importée. Certaines valeurs ont été ramenées à un niveau raisonnable : ${names.join(', ')}.`;
 }
 
 /**

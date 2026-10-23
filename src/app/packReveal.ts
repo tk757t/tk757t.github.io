@@ -72,7 +72,7 @@ export function showPackReveal(loot: { cards: Card[]; gold?: number; gems?: numb
       ...(loot.gold !== undefined
         ? [el('p', { class: 'loot__currency', 'data-testid': 'loot-currency', text: `🪙 +${loot.gold} or${loot.gems ? ` · 💎 +${loot.gems} gemmes` : ''}` })]
         : []),
-      ...(loot.pityTriggered ? [el('p', { class: 'muted', text: 'Pitié : une carte légendaire était garantie !' })] : []),
+      ...(loot.pityTriggered ? [el('p', { class: 'muted', text: 'Une carte légendaire était garantie dans ce coffre !' })] : []),
       Button({
         text: 'Continuer',
         variant: 'green',

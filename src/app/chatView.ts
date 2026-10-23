@@ -73,7 +73,7 @@ export function createChatView(): ChatView {
   const root = el(
     'div',
     { class: 'chat' },
-    el('p', { class: 'muted chat__rules', text: 'Soyez respectueux : ni insultes ni liens. Les messages de plus de 30 jours sont effacés.' }),
+    el('p', { class: 'muted chat__rules', text: 'Restez respectueux : pas d’insultes, pas de liens. Les messages de plus de 30 jours sont effacés.' }),
     online,
     place,
     list,

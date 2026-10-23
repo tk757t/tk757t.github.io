@@ -130,7 +130,7 @@ for (const size of sizes) {
       // another gauge, another text; away from it the tooltip goes
       if (size.name === 'mobile') await page.locator('.gauge[data-cat="engine"]').tap();
       else await page.locator('.gauge[data-cat="engine"]').hover();
-      await expect(tip).toContainText('En fin de tour en 5e ou 6e');
+      await expect(tip).toContainText('en 5e ou 6e');
       if (size.name === 'mobile') await page.getByTestId('message').tap();
       else await page.mouse.move(5, 5);
       await expect(tip).toBeHidden();
@@ -146,7 +146,7 @@ for (const size of sizes) {
       else await speed.hover();
       await expect(tip).toBeVisible();
       await expect(tip).toContainText('Vitesse');
-      await expect(tip).toContainText('Ce que le dé rapporte');
+      await expect(tip).toContainText('Les cases en plus');
       await expect(tip).toContainText('Pour la monter');
       await page.screenshot({ path: `e2e/screenshots/tooltip-${size.name}-garage.png` });
       // another stat
@@ -167,7 +167,7 @@ for (const size of sizes) {
       await expect(guide.getByTestId('guide-prev')).toBeEnabled();
       await guide.getByTestId('guide-select').selectOption('dice');
       await expect(page.getByTestId('guide-page')).toContainText('Rapport 6 : 21 à 30 cases');
-      await expect(page.getByTestId('guide-page')).toContainText('un seul rapport à la fois');
+      await expect(page.getByTestId('guide-page')).toContainText('un rapport à la fois');
       await guide.getByTestId('guide-select').selectOption('gauges');
       for (const name of ['Pneus', 'Freins', 'Boîte', 'Carrosserie', 'Moteur', 'Tenue de route']) await expect(page.getByTestId('guide-page')).toContainText(name);
       await guide.getByTestId('guide-select').selectOption('colors');
@@ -187,7 +187,7 @@ for (const size of sizes) {
       await stageGear(page, 3);
       await page.getByTestId('race-guide-open').click();
       await expect(page.getByTestId('guide')).toContainText('Aide de course');
-      await expect(page.getByTestId('guide-now')).toContainText('touchez un dé pour choisir votre rapport');
+      await expect(page.getByTestId('guide-now')).toContainText('touchez un dé pour choisir le rapport');
       await expect(page.getByTestId('guide-quick').locator('li')).toHaveCount(7);
       await audit(page, 'aide de course');
       await page.screenshot({ path: `e2e/screenshots/guide-${size.name}-race.png` });
@@ -200,7 +200,7 @@ for (const size of sizes) {
       await page.getByTestId('die-3').click(); // already the chosen die: one touch rolls it
       await expect.poll(() => phase(page)).toBe('adjust');
       await page.getByTestId('race-guide-open').click();
-      await expect(page.getByTestId('guide-now')).toContainText('touchez la case d’arrivée');
+      await expect(page.getByTestId('guide-now')).toContainText('touchez votre case d’arrivée');
       expect(errors.filter((e) => !/Failed to load resource/.test(e))).toEqual([]);
     });
 

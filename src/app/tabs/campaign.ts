@@ -10,7 +10,7 @@ import type { Controller } from '../setup';
 import { MAX_STARS, levelStatus, starsOf, totalStars, type LevelStatus } from '../../storage/campaign';
 import { getProfile, onProfileChange } from '../profile';
 
-const PACK_LABELS = { common: 'paquet commun', rare: 'paquet rare', epic: 'paquet épique' } as const;
+const PACK_LABELS = { common: 'coffre commun', rare: 'coffre rare', epic: 'coffre épique' } as const;
 
 const trackOf = (level: CampaignLevel) => trackInfo(level.trackId);
 

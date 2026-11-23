@@ -257,11 +257,28 @@ table.rank .nm .cls-ico{width:28px;height:28px;margin-right:10px;border-width:1p
 .news-list li b{display:block;color:var(--text);margin-bottom:2px}
 .news-list li span{color:var(--dim)}
 .news-box .cta{margin-top:6px}
-.sitefoot{margin-top:34px;padding-top:18px;border-top:1px solid var(--edge);text-align:center;font-size:13px;color:var(--dim);line-height:1.8}
+.sitefoot{margin-top:34px;padding-top:22px;border-top:1px solid var(--edge);font-size:13px;color:var(--dim);line-height:1.65;text-align:left}
+.sitefoot .sf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:26px 34px}
+.sitefoot .sf-brand{font-weight:800;color:var(--text);font-size:16px;letter-spacing:.02em;margin-bottom:6px}
+.sitefoot .sf-h{font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.07em;font-size:12px;margin-bottom:6px}
+.sitefoot p{margin:0 0 8px}
+.sitefoot ul{list-style:none;padding:0;margin:0 0 8px;display:flex;flex-direction:column;gap:3px}
+.sitefoot li{padding-left:14px;position:relative}
+.sitefoot li:before{content:"";position:absolute;left:0;top:.72em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.sitefoot a{color:var(--text);border:0;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--edge2)}
+.sitefoot a:hover{text-decoration-color:var(--accent)}
 .sitefoot b{color:var(--text);font-weight:650}
 .sitefoot .linkbtn{font-size:13px}
-.sitefoot .by{color:var(--text)}
+.sitefoot .sf-note{font-size:12.5px;font-style:italic}
+.sitefoot .legal{margin-top:12px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:2px 14px}
+.sitefoot .legal summary{cursor:pointer;padding:10px 0;font-weight:650;color:var(--text);list-style:none}
+.sitefoot .legal summary::-webkit-details-marker{display:none}
+.sitefoot .legal summary:before{content:"▸ ";color:var(--accent)}
+.sitefoot .legal[open] summary:before{content:"▾ "}
+.sitefoot .legal-body{padding:2px 0 8px;font-size:12.5px}
+.sitefoot .by{margin-top:18px;text-align:center;color:var(--text)}
 .sitefoot .heart{color:#ff6b8a;display:inline-block;animation:beat 1.6s ease-in-out infinite}
+@media(max-width:720px){.sitefoot .sf-grid{grid-template-columns:1fr}}
 @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
 
 /* ---------- bulle « nouvelle version » ---------- */

@@ -230,8 +230,7 @@ function renderHeader() {
     <div class="chk warn">Des guides parlent de versions par rôle pour certaines classes ; vérifie en jeu la version proposée avant de valider la quête.</div>`;
   const comps = SETS.components;
   $("compTitle").textContent = "Composants " + c.fr;
-  $("compBox").innerHTML = ctx.parts.map(([ck, sk], i) => `<div class="chk info"><b>${i + 1}${i ? "e" : "er"} composant :</b> ${linkify(comps[ck].fr)} — ${COMP[ck].how} → esprit <b>${SPIRIT[sk].n}</b> (${SPIRIT[sk].d}${SPIRIT[sk].alt ? " / " + SPIRIT[sk].alt : ""}).</div>`).join("") +
-    `<div class="chk warn">Composants et esprits par classe : une seule source (HardcoreHelper), à confirmer en jeu.</div>`;
+  $("compBox").innerHTML = ctx.parts.map(([ck, sk], i) => `<div class="chk info"><b>${i + 1}${i ? "e" : "er"} composant :</b> ${linkify(comps[ck].fr)} — ${COMP[ck].how} → esprit <b>${SPIRIT[sk].n}</b> (${SPIRIT[sk].d}${SPIRIT[sk].alt ? " / " + SPIRIT[sk].alt : ""}).</div>`).join("");
   const dung = ["Stratholme", "Dire Maul", "Profondeurs de Blackrock", "Pic Blackrock (BRS, 10 joueurs en Forever)", "Haut du Pic (Valthalak)"];
   ctx.parts.forEach(([, sk]) => { const d = SPIRIT[sk].d.replace(" Est", "").replace(" inférieur", ""); if (!dung.some(x => x.startsWith(d.split(" ")[0]))) dung.push(d); });
   const kormok = ctx.parts.some(([, sk]) => sk === "kormok");
@@ -241,13 +240,7 @@ function renderHeader() {
   const mokvar = profile.faction === "horde" ? "Mokvar (Orgrimmar)" : "Deliana (Forgefer)";
   $("checkBox").innerHTML = `<div class="chk warn">Niveau : 58 minimum, 60 conseillé. La chaîne démarre chez ${mokvar}.</div>
     <div class="chk warn">Or total : 60 selon un guide, ~100 selon un autre (baguette de Vi'el ≈ 40 po).</div>
-    <div class="chk info">3e seigneur du feu (Trois rois de flamme) : <b>Cendre d'Asharell</b> (texte officiel de la quête sur Wowhead Forever), à chercher auprès de l'Exécuteur Asharell dans les Steppes ardentes.</div>
-    <div class="chk warn">Source des données : guides pré-sortie basés sur Wowhead Forever (nov. 2026). Peut changer.</div>`;
-  $("foot").innerHTML = `Suivi T0 / T0.5 ${c.fr} ${FACTIONS[profile.faction]} · Sources :
-    <a target="_blank" rel="noopener" href="https://www.zockify.com/forever/${profile.cls}/sets/">Zockify</a> ·
-    <a target="_blank" rel="noopener" href="https://www.hardcorehelper.com/forever/guides/wow-forever-tier-0-5-dungeon-set-2">HardcoreHelper</a> ·
-    <a target="_blank" rel="noopener" href="https://leprestore.com/guides/world-of-warcraft-forever/wow-forever-tier-0-5-upgrade-guide-dungeon-set-2/">Leprestore</a> ·
-    <a target="_blank" rel="noopener" href="https://www.wowhead.com/forever">Wowhead Forever</a><br>Données de sortie pré-release : peuvent changer. Les noms français sont ceux de Wowhead Forever (fr).`;
+    <div class="chk info">3e seigneur du feu (Trois rois de flamme) : <b>Cendre d'Asharell</b> (texte officiel de la quête sur Wowhead Forever), à chercher auprès de l'Exécuteur Asharell dans les Steppes ardentes.</div>`;
   $("saveInfo").textContent = "Ta progression est enregistrée dans ce navigateur et synchronisée avec le classement des joueurs (seuls le nom, la classe, la faction et la progression sont envoyés).";
 }
 

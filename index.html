@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TierTrack — Suivi T0 / T0.5 · WoW Forever</title>
+<meta name="description" content="Suivi de progression des sets T0 et T0.5 pour WoW Forever : checklist, BiS, préparations de raids et classement des joueurs.">
+<script>const whTooltips={colorLinks:true,iconizeLinks:false,renameLinks:false,iconSize:"small"};</script>
+<script src="https://wow.zamimg.com/js/tooltips.js"></script>
+<link rel="stylesheet" href="style.css?v=21">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ACCUEIL -->
+  <section id="screen-login" hidden>
+    <div class="panel login">
+      <h1>❮ TierTrack ❯</h1>
+      <p class="lead">Suivi de progression des sets <b style="color:var(--gold)">T0</b> et <b style="color:var(--gold)">T0.5</b> · WoW Forever EU<br>Entre le nom de ton personnage, choisis sa classe et sa faction.</p>
+      <div class="field"><label for="inName">Nom du personnage</label>
+        <input type="text" id="inName" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Ex. Twiikz Fen"></div>
+      <div class="field"><label>Classe</label><div class="choices cls" id="clsChoices"></div></div>
+      <div class="field"><label>Faction</label><div class="choices fac" id="facChoices"></div></div>
+      <button class="cta" id="goBtn" disabled>Suivre ma progression</button>
+      <div class="err" id="loginErr"></div>
+      <div class="owned-box" id="ownedBox" hidden>
+        <div class="chk warn">Ce personnage existe déjà. Si c'est le tien sur un autre navigateur, colle ton <b>code de récupération</b> (onglet « Matériaux &amp; or » → Sauvegarde). Sinon, choisis un autre nom.</div>
+        <input type="text" id="inCode" placeholder="Code de récupération" autocomplete="off" spellcheck="false">
+        <button class="cta" id="codeBtn">Récupérer mon personnage</button>
+      </div>
+      <div class="center"><button class="linkbtn" id="seeRank">Voir le classement</button> <button class="linkbtn" id="cancelAdd" hidden>← Retour à mes personnages</button></div>
+      <p class="center" style="font-size:11px;color:var(--dim)">Aucune donnée personnelle : seuls le nom du personnage, sa classe, sa faction et sa progression sont enregistrés.</p>
+    </div>
+  </section>
+
+  <!-- CLASSEMENT SEUL (sans personnage) -->
+  <section id="screen-rank" hidden>
+    <div class="panel"><h2>Classement T0 / T0.5 <small><button class="linkbtn" id="backLogin">← Retour</button></small></h2><div id="rankBoxAlone"></div></div>
+  </section>
+
+  <!-- APPLICATION -->
+  <div id="screen-app" hidden>
+    <div class="who"><span class="brand">❮ TierTrack ❯ <span style="color:var(--dim);font-weight:500;font-size:13px">· Suivi T0 / T0.5</span></span><span class="sp"></span><span id="syncBadge" class="sync">…</span><button class="linkbtn" id="switchBtn">Mes personnages</button></div>
+    <header class="panel hero">
+      <div class="crest" id="heroCrest"></div>
+      <div>
+        <h1 id="heroName"></h1>
+        <div class="sub" id="heroSub"></div>
+        <div class="sub" style="color:var(--dim);font-size:13px" id="heroSets"></div>
+      </div>
+      <div class="right">
+        <div class="big"><div class="n" id="hT0">0/8</div><div class="l">T0</div></div>
+        <div class="big"><div class="n" id="hT05">0/8</div><div class="l">T0.5</div></div>
+        <div class="big"><div class="n" id="hQ">0%</div><div class="l">Chaîne de quêtes</div></div>
+        <div class="big"><div class="n" id="hBis">—</div><div class="l">BiS</div></div>
+      </div>
+    </header>
+
+    <div class="layout">
+    <nav class="tabs" id="tabs">
+      <button data-v="profile" class="on"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span class="tl">Profil</span></button>
+      <button data-v="t0" id="tabT0"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.2 8.4-7 10-3.8-1.6-7-5-7-10V6l7-3z"/></svg><span class="tl">T0</span></button>
+      <button data-v="t05" id="tabT05"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.2 8.4-7 10-3.8-1.6-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg><span class="tl">T0.5</span></button>
+      <button data-v="quest"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg><span class="tl">Chaîne de quêtes T0.5</span></button>
+      <button data-v="raids"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l5-9 4 5 3-6 6 10H3z"/><path d="M15 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg><span class="tl">Préparations raids</span></button>
+      <button data-v="mats"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="tl">Matériaux &amp; or</span></button>
+      <button data-v="bis"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg><span class="tl">BiS</span></button>
+      <button data-v="rank"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg><span class="tl">Classement</span></button>
+    </nav>
+    <div class="content">
+
+    <section class="view" id="v-t0"><div class="grid">
+      <div class="panel"><h2><span id="t0title"></span> <small id="t0sum"></small></h2><div id="t0list"></div></div>
+      <div class="stack">
+        <div class="panel"><h2>Bonus de set</h2><div id="t0bon"></div></div>
+        <div class="panel"><h2>Infos</h2><div id="t0info"></div></div>
+      </div>
+    </div></section>
+
+    <section class="view" id="v-t05"><div class="grid">
+      <div class="panel"><h2><span id="t05title"></span> <small id="t05sum"></small></h2><div id="t05list"></div></div>
+      <div class="stack">
+        <div class="panel"><h2>Bonus de set</h2><div id="t05bon"></div></div>
+        <div class="panel"><h2>Infos</h2><div id="t05info"></div></div>
+      </div>
+    </div></section>
+
+    <section class="view" id="v-quest"><div class="grid">
+      <div class="panel"><h2><span id="qtitle"></span> <small id="qsum"></small></h2><div id="qlist"></div></div>
+      <div class="stack">
+        <div class="panel"><h2 id="compTitle">Composants</h2><div id="compBox"></div></div>
+        <div class="panel"><h2>Donjons nécessaires</h2><div id="dungBox"></div></div>
+        <div class="panel"><h2>Points à vérifier en jeu</h2><div id="checkBox"></div></div>
+        <div class="btns"><button id="qall">Tout cocher</button><button id="qnone">Tout décocher</button></div>
+      </div>
+    </div></section>
+
+    <section class="view" id="v-raids"><div id="raidBox"></div></section>
+
+    <section class="view" id="v-mats"><div class="grid">
+      <div class="panel"><h2>Ce qu'il faut rassembler <small id="msum"></small></h2>
+        <div class="chk info">Les objets sont rangés <b>par quête</b>, dans l'ordre de la chaîne. Pour chacun, indique dans la case combien tu en as déjà : la ligne passe en vert quand tu en as assez. Clique sur la ligne pour la marquer comme prête.</div>
+        <div id="mlist"></div></div>
+      <div class="stack">
+        <div class="panel"><h2>Or à prévoir <small>pièces d'or (po)</small></h2><div id="gold"></div></div>
+        <div class="panel"><h2>Sauvegarde</h2>
+          <div class="chk info" id="saveInfo"></div>
+          <div class="btns"><button id="exp">Exporter</button><button id="imp">Importer</button><button id="rst">Tout réinitialiser</button></div>
+          <div class="btns" style="margin-top:8px"><button id="showCode">Afficher mon code de récupération</button><button id="delChar">Supprimer mon personnage</button></div>
+          <div class="chk warn" id="codeBox" hidden style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div></section>
+
+    <section class="view" id="v-bis">
+      <div class="panel"><h2>Best in Slot <small>listes Pre Raid Forever · choisis ta spécialisation</small></h2>
+        <div id="bisBox"></div>
+        <div class="chk info" style="margin-top:12px">Clique une ligne pour la cocher quand tu possèdes le BiS de l'emplacement. Noms, icônes et niveaux d'objet : Wowhead Forever (fr). Choix des BiS : listes « Pre Raid » Forever (wowtbc.gg), à confirmer en jeu.</div></div>
+    </section>
+
+    <section class="view on" id="v-profile">
+      <div class="panel"><h2>Mes personnages <small>spécialisation, changement de personnage</small></h2>
+        <div class="chk info">Ajoute plusieurs personnages et indique leur spécialisation : les listes BiS en dépendent. Chaque personnage garde sa propre progression.</div>
+        <div id="profileBox"></div></div>
+    </section>
+
+    <section class="view" id="v-rank">
+      <div class="panel"><h2>Classement T0 / T0.5 <small>le plus avancé en haut</small></h2><div id="rankBox"></div></div>
+    </section>
+
+    </div>
+    </div>
+
+    <footer id="foot"></footer>
+  </div>
+<footer class="sitefoot"><div>TierTrack · Suivi T0 / T0.5 · <b id="siteVer"></b> · <button class="linkbtn" id="openNews">Nouveautés</button></div><div class="by">By Twiikz &amp; Claude with love &amp; fun <span class="heart">♥</span></div></footer>
+</div>
+
+<div class="toast" id="updateToast" hidden role="status" aria-live="polite"></div>
+<div class="modal" id="newsModal" hidden><div class="panel modal-box news-box" id="newsBox" role="dialog" aria-modal="true" aria-label="Nouveautés"></div></div>
+<div class="modal" id="memberModal" hidden><div class="panel modal-box" id="memberBox"></div></div>
+
+<script src="news.js?v=21"></script>
+<script src="config.js?v=21"></script>
+<script src="data.js?v=21"></script>
+<script src="bis.js?v=21"></script>
+<script src="sources.js?v=21"></script>
+<script src="chain.js?v=21"></script>
+<script src="quests.js?v=21"></script>
+<script src="raids.js?v=21"></script>
+<script src="app.js?v=21"></script>
+</body>
+</html>

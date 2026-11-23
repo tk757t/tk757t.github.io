@@ -500,14 +500,14 @@ async function loadRanking(box) {
       return `<tr class="${me && nameKey(r.name) === me ? "me" : ""}"><td class="pos">${medal}</td><td class="nm" style="color:${c.color}">${portrait(r.class, 24)}<a class="mlink" data-name="${esc(r.name)}" title="Voir la progression de ${esc(r.name)}">${esc(r.name)}</a></td>
         <td class="hide-s">${c.fr}${r.spec ? `<div class="sub2">${esc(specFr(r.class, r.spec))}</div>` : ""}</td><td class="hide-s ${r.faction === "horde" ? "fac-h" : "fac-a"}">${FACTIONS[r.faction] || r.faction}</td>
         <td class="num">${r.t0}/8</td><td class="num">${r.t05}/8</td><td class="num hide-s">${r.quests}/29</td><td class="num hide-s" title="${r.raids || 0}/${raidTotal(r.faction)} étapes">${raidPct(r.raids, r.faction)}%</td><td class="num hide-s">${r.spec && bisTotal(r.class, r.spec) ? (r.bis || 0) + "/" + bisTotal(r.class, r.spec) : "—"}</td>
-        <td class="pct"><b>${pct}%</b><div class="bar ${pct === 100 ? "ok" : ""}"><i style="width:${pct}%"></i></div></td><td class="when hide-s">${ago(r.updated_at)}</td></tr>`;
-    }).join("") : `<tr><td colspan="11" style="color:var(--dim);padding:18px">Personne dans ce filtre pour l'instant.</td></tr>`;
+        <td class="pct"><b>${pct}%</b><div class="bar ${pct === 100 ? "ok" : ""}"><i style="width:${pct}%"></i></div></td></tr>`;
+    }).join("") : `<tr><td colspan="10" style="color:var(--dim);padding:18px">Personne dans ce filtre pour l'instant.</td></tr>`;
   };
   box.innerHTML = `<div class="rank-tools">
       <select class="f-cls"><option value="">Toutes les classes</option>${Object.entries(CLASSES).map(([k, c]) => `<option value="${k}">${c.fr}</option>`).join("")}</select>
       <select class="f-fac"><option value="">Les deux factions</option><option value="horde">Horde</option><option value="alliance">Alliance</option></select>
       <button class="linkbtn rk-refresh">↻ Actualiser</button><span style="color:var(--dim);font-size:12px">${rows.length} personnage(s) · avancement = pièces T0 + pièces T0.5 + étapes de quête (sur ${MAX_POINTS})</span></div>
-    <div style="overflow-x:auto"><table class="rank"><thead><tr><th>#</th><th>Personnage</th><th class="hide-s">Classe</th><th class="hide-s">Faction</th><th>T0</th><th>T0.5</th><th class="hide-s">Quêtes</th><th class="hide-s" title="Préparations de raids (attunements)">Raids</th><th class="hide-s">BiS</th><th>Avancement</th><th class="hide-s">Mis à jour</th></tr></thead><tbody class="rk-body"></tbody></table></div>`;
+    <div style="overflow-x:auto"><table class="rank"><thead><tr><th>#</th><th>Personnage</th><th class="hide-s">Classe</th><th class="hide-s">Faction</th><th>T0</th><th>T0.5</th><th class="hide-s">Quêtes</th><th class="hide-s" title="Préparations de raids (attunements)">Raids</th><th class="hide-s">BiS</th><th>Avancement</th></tr></thead><tbody class="rk-body"></tbody></table></div>`;
   box.querySelector(".f-cls").onchange = draw; box.querySelector(".f-fac").onchange = draw;
   box.querySelector(".rk-refresh").onclick = () => loadRanking(box);
   box.querySelector(".rk-body").addEventListener("click", e => { const a = e.target.closest(".mlink"); if (a) showMember(a.dataset.name); });

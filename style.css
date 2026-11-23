@@ -258,7 +258,7 @@ table.rank .nm .cls-ico{width:28px;height:28px;margin-right:10px;border-width:1p
 .news-list li span{color:var(--dim)}
 .news-box .cta{margin-top:6px}
 .sitefoot{margin-top:34px;padding-top:22px;border-top:1px solid var(--edge);font-size:13px;color:var(--dim);line-height:1.65;text-align:left}
-.sitefoot .sf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:26px 34px}
+.sitefoot .sf-grid{display:block;text-align:center}
 .sitefoot .sf-brand{font-weight:800;color:var(--text);font-size:16px;letter-spacing:.02em;margin-bottom:6px}
 .sitefoot .sf-h{font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.07em;font-size:12px;margin-bottom:6px}
 .sitefoot p{margin:0 0 8px}

@@ -414,6 +414,19 @@ function renderRaids() {
     </div></div>`;
 }
 
+/* ============ MAJ WOW (historique des correctifs) ============ */
+function renderMaj() {
+  const box = $("majBox"); if (!box) return;
+  const U = window.WOW_UPDATES || [];
+  box.innerHTML = `<div class="panel"><h2>Mises à jour de WoW: Forever <small>depuis le lancement du 4 novembre 2026</small></h2>
+    <div class="chk info">Clique sur une date pour déplier le détail. Résumé en français des correctifs publiés par Blizzard — <a href="${window.WOW_SRC}" target="_blank" rel="noopener">journal officiel ↗</a>.</div>
+    <div class="maj-btns"><button type="button" class="btn2 sm" id="majOpen">Tout déplier</button><button type="button" class="btn2 sm" id="majClose">Tout replier</button></div>
+    ${U.map((u, i) => `<details class="maj" ${i === 0 ? "open" : ""}><summary><b>${esc(u.date)}</b><span class="maj-tag">${esc(u.tag || "")}</span></summary>
+      <div class="maj-body">${u.s.map(sec => `<div class="sdt">${esc(sec[0])}</div><ul>${sec[1].map(t => `<li>${esc(t)}</li>`).join("")}</ul>`).join("")}</div></details>`).join("")}</div>`;
+  $("majOpen").onclick = () => box.querySelectorAll("details.maj").forEach(d => d.open = true);
+  $("majClose").onclick = () => box.querySelectorAll("details.maj").forEach(d => d.open = false);
+}
+
 /* ============ SYNCHRONISATION ============ */
 let saveTimer = null, dirty = false, syncMsg = "";
 function setSync(kind, msg) {
@@ -763,6 +776,7 @@ $("tabs").addEventListener("click", e => {
   ls.set("tier-tab", b.dataset.v);
   if (b.dataset.v === "rank") loadRanking($("rankBox"));
   if (b.dataset.v === "bis") renderBis();
+  if (b.dataset.v === "maj") renderMaj();
   if (b.dataset.v === "profile") renderProfile();
 });
 document.addEventListener("click", e => {

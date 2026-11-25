@@ -7,7 +7,7 @@
 <meta name="description" content="Suivi de progression des sets T0 et T0.5 pour WoW Forever : checklist, BiS, préparations de raids et classement des joueurs.">
 <script>const whTooltips={colorLinks:true,iconizeLinks:false,renameLinks:false,iconSize:"small"};</script>
 <script src="https://wow.zamimg.com/js/tooltips.js"></script>
-<link rel="stylesheet" href="style.css?v=26">
+<link rel="stylesheet" href="style.css?v=27">
 </head>
 <body>
 <div class="wrap">
@@ -66,6 +66,7 @@
       <button data-v="mats"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="tl">Matériaux &amp; or</span></button>
       <button data-v="bis"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg><span class="tl">BiS</span></button>
       <button data-v="rank"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg><span class="tl">Classement</span></button>
+      <button data-v="maj"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12a3 3 0 013 3v11H7a3 3 0 01-3-3V5z"/><path d="M8 9h7M8 13h7M8 17h4"/></svg><span class="tl">Maj WoW</span></button>
     </nav>
     <div class="content">
 
@@ -94,6 +95,8 @@
         <div class="btns"><button id="qall">Tout cocher</button><button id="qnone">Tout décocher</button></div>
       </div>
     </div></section>
+
+    <section class="view" id="v-maj"><div id="majBox"></div></section>
 
     <section class="view" id="v-raids"><div id="raidBox"></div></section>
 
@@ -159,15 +162,16 @@
 <div class="modal" id="newsModal" hidden><div class="panel modal-box news-box" id="newsBox" role="dialog" aria-modal="true" aria-label="Nouveautés"></div></div>
 <div class="modal" id="memberModal" hidden><div class="panel modal-box" id="memberBox"></div></div>
 
-<script src="news.js?v=26"></script>
-<script src="config.js?v=26"></script>
-<script src="track.js?v=26"></script>
-<script src="data.js?v=26"></script>
-<script src="bis.js?v=26"></script>
-<script src="sources.js?v=26"></script>
-<script src="chain.js?v=26"></script>
-<script src="quests.js?v=26"></script>
-<script src="raids.js?v=26"></script>
-<script src="app.js?v=26"></script>
+<script src="news.js?v=27"></script>
+<script src="config.js?v=27"></script>
+<script src="track.js?v=27"></script>
+<script src="data.js?v=27"></script>
+<script src="bis.js?v=27"></script>
+<script src="sources.js?v=27"></script>
+<script src="chain.js?v=27"></script>
+<script src="quests.js?v=27"></script>
+<script src="raids.js?v=27"></script>
+<script src="maj.js?v=27"></script>
+<script src="app.js?v=27"></script>
 </body>
 </html>

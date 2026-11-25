@@ -347,3 +347,16 @@ table.rank .nm .cls-ico{width:28px;height:28px;margin-right:10px;border-width:1p
 .alt .alt-l{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .bis-col{flex:1;min-width:0}.bis-col .bis-src{margin-left:46px}
 .bis-alt .alt .bis-src{margin-left:30px}
+
+/* onglet Maj WoW */
+.maj-btns{display:flex;gap:8px;margin:10px 0}
+.maj{background:var(--panel2);border:1px solid var(--edge);border-radius:var(--radius-sm);margin-bottom:8px}
+.maj summary{cursor:pointer;padding:12px 14px;font-size:15px;list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.maj summary::-webkit-details-marker{display:none}
+.maj summary::before{content:"▸";color:var(--dim);transition:transform .15s}
+.maj[open] summary::before{transform:rotate(90deg)}
+.maj[open] summary{border-bottom:1px solid var(--edge)}
+.maj-tag{margin-left:auto;padding:1px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
+.maj-body{padding:6px 16px 12px;font-size:14px;line-height:1.55}
+.maj-body ul{margin:2px 0 2px 20px}
+.maj-body li{margin:3px 0}

@@ -2,8 +2,14 @@
 // Règle de version :
 //  - petit changement ou correction : seulement +0.0.1 sur TIER_VERSION (aucune entrée, aucun pop-up) ;
 //  - vraie nouveauté : nouvelle version x.y.0 + une entrée en HAUT de TIER_NEWS (le pop-up s'ouvre alors une fois pour chaque membre).
-window.TIER_VERSION = "1.11.6";
+window.TIER_VERSION = "1.12.0";
 window.TIER_NEWS = [
+  {
+    v: "1.12.0", date: "25/11/2026", title: "Historique des mises à jour de WoW",
+    items: [
+      { t: "📰 Nouvel onglet « Maj WoW »", d: "Toutes les mises à jour et correctifs de WoW: Forever depuis le lancement (4 novembre), classés par date en menus déroulants, avec le détail par catégorie (classes, donjons, objets, métiers, quêtes…)." },
+    ],
+  },
   {
     v: "1.11.0", date: "23/11/2026", title: "BroForever devient TierTrack",
     items: [

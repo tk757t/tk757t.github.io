@@ -2,6 +2,67 @@
 // Pour ajouter une MaJ : ajouter un objet EN HAUT de la liste. Texte traduit et résumé à partir du journal officiel Blizzard.
 window.WOW_SRC = "https://worldofwarcraft.blizzard.com/en-us/news/24315281";
 window.WOW_UPDATES = [
+  { date: "25 novembre 2026", tag: "Correctifs", s: [
+    ["Classes — Druide", [
+      "Ouragan porte bien son dernier coup.",
+      "Équilibre : Colère améliorée devient Courroux stellaire (Starlight Wrath) et réduit aussi l'incantation de Feu stellaire de 0,1 à 0,5 s.",
+      "Éclat lunaire amélioré devient Lune et étoiles (Moon and Stars) : Feu stellaire a aussi 50/100 % de chances de ne pas perdre de temps d'incantation quand vous subissez des dégâts.",
+      "Feu stellaire amélioré passe à 2 points (au lieu de 5), avec 8/15 % de chances. Si vous y aviez 3 points ou plus, tous vos talents sont réinitialisés.",
+      "Éclipse augmente aussi en permanence les chances de critique de Colère de 7/13/20 %.",
+      "Fureur lunaire (Moonfury) est remplacé par Dreamstate : vous recevez 20/40/60/80/100 % des effets d'Innervation quand vous la lancez sur quelqu'un d'autre.",
+      "Forme de sélénien augmente aussi les dégâts des Arcanes et de la Nature de 10 %.",
+      "Genesis augmente bien les dégâts d'Ouragan et les soins de Tranquillité."]],
+    ["Classes — autres", [
+      "Chasseur : les familiers n'avaient aucune chance de critique sur leurs attaques de mêlée de base, c'est corrigé.",
+      "Chasseur Maîtrise des bêtes : les Faucons invoqués attaquent leur cible même si le familier est en Passif, attaquent votre cible actuelle s'ils sont inactifs, sont renvoyés avec Renvoyer le familier ou un clic droit sur leur icône, et ne perdent plus environ 5 % de critique.",
+      "Paladin : les Jugements passés sous 20 s sont bien rafraîchis par vos attaques ; Exorcisme peut faire des critiques. Sacré : Serment de Lumière dure 60 minutes.",
+      "Voleur : tous les poisons et la Poudre aveuglante sont temporairement liés quand ramassés (le temps de corriger un bug). Poised est bien retiré après Assommer ou Distraction en Camouflage.",
+      "Chaman : Chaîne d'éclairs consomme bien Idées claires, même avec 5 charges d'Arme du Maelström.",
+      "Démoniste : les familiers n'avaient aucune chance de critique en mêlée, c'est corrigé. La Succube et l'Incube avaient 5 % de critique en trop.",
+      "Guerrier Armes : le talent Maître d'armes se réapplique après une mort en champ de bataille."]],
+    ["Donjons", [
+      "Profondeurs de Brassenoire : l'Autel des profondeurs redevient utilisable après 3 s et donne bien la Bénédiction de Brassenoire.",
+      "Temple d'Atal'Hakkar : l'Avatar d'Hakkar ne devrait plus refuser d'apparaître."]],
+    ["Monstres & PNJ", [
+      "Désolace : les centaures du village Magram réapparaissent plus vite.",
+      "Bois de la Pénombre : le Chevalier perdu n'apparaît plus dans un arbre.",
+      "Vallée des Rivières : Clubtoe (Sunnyglade) ne vous met plus en JcJ."]],
+    ["Objets", [
+      "Unerring Purpose se vend plus de 2 pièces de cuivre.",
+      "Le Totem de la tempête est renommé Totem du Maelström.",
+      "La Lame noire de Shahram donne bien son bonus de hâte, à son porteur uniquement.",
+      "Le Libram de loi (Libram of Law) agit bien sur Jugement d'autorité.",
+      "L'Essence enchaînée d'Eranikus ne traverse plus les immunités.",
+      "On ne peut plus résister au bijou Largeur de Main-noire.",
+      "La Torche du veilleur de nuit s'utilise de nouveau sur monture, en incantant, etc."]],
+    ["Système Legacy", [
+      "Les hauts faits Legacy JcJ sont bien validés après avoir atteint Exalté.",
+      "Terminer « Lord Valthalak Laid to Rest » donne bien le crédit Legacy.",
+      "Reinforce réduit bien la perte de durabilité de 8/16/24/32/40 %.",
+      "The Quick and the Dead rend bien gratuits Forme d'ombre, Forme de sélénien, Forme de voyage et Aura de précision."]],
+    ["JcJ — Vallée d'Alterac", [
+      "Objectif de Blizzard : pousser à prendre les objectifs au lieu de foncer sur le général.",
+      "Tuer le général ennemi donne beaucoup moins de réputation et d'honneur. Tours, cimetières et mines donnent plus de réputation et un peu plus d'honneur.",
+      "Plus de réputation en tuant les PNJ ennemis, et beaucoup plus avec les lieutenants.",
+      "Le bonus de « partie longue » se déclenche à 20 minutes (au lieu de 60).",
+      "Toutes les créatures ennemies ont plus de dégâts et de vie.",
+      "Maréchaux et maîtres de guerre ne quittent plus leur salle et vous repèrent de plus loin.",
+      "Généraux, maréchaux et maîtres de guerre ont un renfort de 20 minutes à 4 charges ; chaque objectif pris retire une charge.",
+      "Les généraux frappent plus fort, détectent mieux le camouflage, et certains défendent mieux comme prévu.",
+      "Les Cristaux de tempête et autres objets de quête non ramassés ne sont plus envoyés par courrier."]],
+    ["Métiers", [
+      "Enchantement : Révélation ne teste plus son déclenchement sur chaque cible d'un sort de zone (une fois par vague) et n'affecte plus toute la durée des sorts canalisés."]],
+    ["Réputations & montures", [
+      "Gnomes, humains, elfes de la nuit et nains ne peuvent plus entrer en guerre avec le Kirin Tor. Les nains non plus avec le clan Marteau-hardi.",
+      "Paladins et démonistes reçoivent la monte Compagnon en terminant « Justice and Retribution » (paladins Réprouvés), « Judgment and Redemption » (paladins nains et humains) ou « Dreadsteed of Xoroth » (démonistes).",
+      "Quête déjà faite ? Apprenez-la gratuitement auprès de : Danitha Morr (Bandarion Keep, paladins Réprouvés), Lord Grayson Shadowbreaker (cathédrale de Hurlevent), Zevrost (Faille de l'Ombre, Orgrimmar) ou Ursula Deline (L'Agneau assassiné, Hurlevent)."]],
+    ["Quêtes", [
+      "Mont Hyjal : l'Éclat runique explosif ne gonfle plus la Frappe mortelle du Gangregarde dans « Blind Vengeance ».",
+      "Chasseur (Horde) : « Saving the Best for Last » peut être terminée.",
+      "Silithus : les Textes du Crépuscule cryptés tombent de nouveau pour « Secret Communication », « True Believers » et « Still Believing ». La version répétable (réputation Cercle cénarien) reste volontairement indisponible.",
+      "Gorge des Vents brûlants : plus de Forgevapeurs pour la quête « STOLEN: Smithing Tuyere and Lookout's Spyglass ».",
+      "Maleterres de l'Ouest : l'illusion écarlate de « Scarlet Subterfuge » dure 1 heure (au lieu de 30 minutes)."]]
+  ]},
   { date: "23 novembre 2026", tag: "Correctifs", s: [
     ["Classes", [
       "Druide : le bonus 4 pièces de Cœur de la forêt (Feralheart) donne maintenant 4 énergie toutes les secondes pendant 5 secondes.",

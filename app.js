@@ -44,7 +44,7 @@ const bisTotal = (cls, spec) => (specList(cls)[spec] ? Object.keys(specList(cls)
 const COMP = {
   relic:   { loc: "Berceau-de-l'Hiver · géants Frostmaul", how: "géants Frostmaul, Berceau-de-l'Hiver" },
   remains: { loc: "Hive'Regal · silithides (SE de Silithus)", how: "silithides autour de Hive'Regal, SE de Silithus" },
-  sword:   { loc: "Prétorien écarlate (lieu à confirmer)", how: "Prétorien écarlate (lieu à confirmer en jeu)" },
+  sword:   { loc: "Maleterres de l'est · Prétorien écarlate", how: "Prétorien écarlate, Maleterres de l'est (vers 76, 73)" },
   ashes:   { loc: "Île de la Purgation · fantômes", how: "fantômes de l'île de la Purgation (côte de Hillsbrad)" },
 };
 const SPIRIT = {
@@ -145,7 +145,7 @@ function adaptChain(p) {
   step("q21").loc = spLoc(sp1);
   step("q23").loc = COMP[c2].loc; step("q23").req = comps[c2].fr;
   step("q24").loc = spLoc(sp2);
-  step("q19").loc = "Profondeurs de Blackrock · Pic Blackrock · Exécuteur Asharell (Steppes ardentes)";
+  step("q19").loc = "Profondeurs de Blackrock · Pic Blackrock · duc des Cendres (Silithus)";
   step("q19").req = "Incendicite d'Incendius (BRD) + Braise du prophète ardent (BRS) + Cendre d'Asharell + Brasero béni (Aube d'argent, Honoré)";
   step("q21").req = "Brasero de signal → invoquer l'esprit et le tuer";
   step("q24").req = "Brasero de signal → invoquer l'esprit et le tuer";
@@ -196,6 +196,48 @@ const ITEMS = [
   [/Incendicite d'Incendius/, 21987], [/Braise du prophète ardent/, 21988], [/Brasero béni/, 22014], [/Brasero d'invocation/, 22057],
   [/Bannière de provocation/, 21986], [/Médaillon d'Ysida/, 22139],
 ];
+/* ============ COMMENT OBTENIR LES OBJETS DE QUÊTE T0.5 ============ */
+// Sources : bases Polestar (monstres, taux de butin, positions) ; clé = id de l'objet
+const ITEM_HOW = {
+  22381: "En Silithus, tue et dépouille les scorpides Cinglepierre (Scorpide, Pinceur, Écorcheur) et les araignées (Glisseuse du sable, Traqueuse des rochers). Environ 30 % de butin.",
+  21928: "Au Berceau-de-l'Hiver, tue et dépouille les sabres-de-givre au nord (vers 50, 12) ou les ours Crocs acérés (vers 48, 45). Environ 30 % de butin.",
+  22338: "Pas de monstre à tuer : ramasse les tas de Cendre volcanique au sol dans les Steppes ardentes (vers 43, 44 et 78, 38).",
+  16006: "Ingénierie (285) : 1 barre d'arcanite + 1 soie d'araignée toilacier. Le schéma se vend chez Xizzer Fizzbolt (Long-guet, Berceau-de-l'Hiver). Sinon hôtel des ventes.",
+  16203: "Désenchantement d'objets inhabituels (verts) de niveau d'objet 51 à 56, surtout des armes. Sinon hôtel des ventes.",
+  13423: "Alchimie (250) : 1 anguille pierre-écaille + 1 fiole plombée. Sinon hôtel des ventes.",
+  21937: "Avec l'alambic ectoplasmique sur toi, tue les Sentinelles torturées (≈15 %) et les Druides torturés (≈13 %) en Silithus, vers 62, 54.",
+  21936: "Avec l'alambic ectoplasmique sur toi, tue les Bien-nés souffrants (≈20 %) et les Bien-nées angoissées (≈17 %) au Berceau-de-l'Hiver, vers 52, 45.",
+  21935: "Avec l'alambic ectoplasmique sur toi, tue les Hurleuses haineuses, Gardiens aveugles, Serviteurs invisibles (≈8 %) ou Chante-mort (≈6 %) dans les Maleterres de l'est.",
+  21938: "Tue le Seigneur-magma Bokk dans les Steppes ardentes, vers 35, 58 (butin garanti).",
+  11371: "Minage (230) : 8 minerais de sombrefer par barre, à la Forge noire des Profondeurs de Blackrock (la fonte s'apprend par la quête « Le calice spectral », auprès de Gloom'rel). Sinon hôtel des ventes.",
+  12810: "Enchantement (250) : 1 cuir robuste + 1 essence éternelle inférieure. Sinon hôtel des ventes.",
+  14342: "Couture (230) : 2 gangrétoffes, à purifier près d'un puits de lune (ceux de Gangrebois conviennent). Le patron se vend chez Qia (Long-guet). Sinon hôtel des ventes.",
+  15407: "Travail du cuir (225) : 1 peau robuste + 1 sel de Fonderoc raffiné. Sinon hôtel des ventes.",
+  21982: "Perles ramassées sur les ogres : à Hache-tripes Nord (Roi Gordok, Kreeg, les gardes… ≈50 % sur ces boss) ou au Pic Blackrock inférieur (Généralissime Omokk, ogres Pierre-du-pic ≈40 %).",
+  22224: "Hache-tripes Ouest : tue les fantômes Eldreth. Meilleur : les Rongés Eldreth (≈20 %), puis Revanchion (≈10 %). Les Spectres, Esprits, Fantômes, Fantasmes et Sorciers Eldreth la lâchent aussi, rarement (≈1 %).",
+  20520: "Scholomance : Nécromanciens (≈39 %) et Invocateurs des ténèbres (≈34 %), certains boss (≈11-13 %). Aussi sur des invocateurs des Maleterres de l'est. Sinon hôtel des ventes.",
+  14344: "Désenchantement d'objets rares (bleus) de niveau d'objet 51 à 60. Sinon hôtel des ventes.",
+  22094: "Île d'Alcaz (Marécage d'Âprefange, vers 75, 17) : ramasse les Paniers de varech de sang, ou tue les nagas Strashaz (≈20 %). Viens à plusieurs.",
+  22138: "Tue les orcs du Pic Blackrock. Dans la base, les Grunts du Bouclier balafré (près de l'entrée, dans le mont Rochenoire) sont de loin les meilleurs (≈80 %, les autres orcs ≈5 %).",
+  13512: "Alchimie (300) : 30 feuillerêves + 10 sauges-argent des montagnes + 1 lotus noir + 1 fiole de cristal. La recette tombe sur Ras Frostwhisper (Scholomance). Sinon hôtel des ventes.",
+  22227: "Tue les Géants et Protecteurs Cognegivre au sud du Berceau-de-l'Hiver (vers 62, 69).",
+  22226: "En Silithus, tue les silithides de la Ruche'Regal : Embusquées, Fouisseuses, Crache-feu, Esclavagistes, Seigneurs.",
+  22228: "À la Main de Tyr (Maleterres de l'est, vers 76, 73), tue les Prétoriens écarlates.",
+  22229: "Île de la Purgation, au sud des Contreforts de Hautebrande (vers 16, 80) : Acolytes, Moines et Clercs condamnés, Paladins et Justiciers maudits, Mages frémissants.",
+  21987: "Butin du Seigneur Incendius, dans les Profondeurs de Blackrock.",
+  21988: "Butin du Pyrogarde Prophète ardent, au Pic Blackrock supérieur.",
+  22014: "Acheté (environ 120 po à Honoré, d'après les données Classic) avec la réputation Honoré auprès de l'Aube d'argent, chez un intendant : Hasana (Le Rempart, vers 83, 68), Lightspark (Maleterres de l'ouest, vers 43, 84) ou Miranda Breechlock (Chapelle de l'Espoir de Lumière, vers 72, 50).",
+};
+const ASHARELL_HOW = "Butin du duc des Cendres (Silithus), appelé « Cinder of Cynders » en anglais. Il faut l'invoquer à une pierre des vents : porte la tenue de sectateur du crépuscule (capuche, mantelet, robe, butin des sectateurs du Marteau du crépuscule en Silithus) et le Médaillon de statut (quêtes d'Aurel Goldleaf au Fort cénarien : 1 grand éclat brillant + 3 écussons abyssaux). La tenue est consommée à chaque invocation et le duc est un élite : viens en groupe.";
+const itemHow = name => {
+  if (/Asharell/.test(name)) return ASHARELL_HOW;
+  const hit = ITEMS.find(([re, id]) => ITEM_HOW[id] && re.test(name));
+  return hit ? ITEM_HOW[hit[1]] : "";
+};
+// Objets à réunir pour une étape (liste des matériaux), avec leur provenance
+const stepHow = id => (ctx.M || []).flatMap(g => g[1]).filter(m => m[3] === id && m[2] !== "po")
+  .map(m => [m[0], itemHow(m[0])]).filter(x => x[1]);
+
 const SLOT_BY_LABEL = { Poignets: "wrist", Taille: "waist", Mains: "hands", Pieds: "feet", Jambes: "legs", "Épaules": "shoulder", "Tête": "head", Torse: "chest" };
 function linkify(txt) {
   let out = txt;
@@ -239,8 +281,8 @@ function renderHeader() {
     : `<div class="chk info">Scholomance n'est <b>pas</b> requise pour ce personnage (esprit Kormok non utilisé), mais elle fait tomber des pièces T0.</div>`);
   const mokvar = profile.faction === "horde" ? "Mokvar (Orgrimmar)" : "Deliana (Forgefer)";
   $("checkBox").innerHTML = `<div class="chk warn">Niveau : 58 minimum, 60 conseillé. La chaîne démarre chez ${mokvar}.</div>
-    <div class="chk warn">Or total : 60 selon un guide, ~100 selon un autre (baguette de Vi'el ≈ 40 po).</div>
-    <div class="chk info">3e seigneur du feu (Trois rois de flamme) : <b>Cendre d'Asharell</b> (texte officiel de la quête sur Wowhead Forever), à chercher auprès de l'Exécuteur Asharell dans les Steppes ardentes.</div>`;
+    <div class="chk warn">Or total : environ 100 po (20 + 40 + 40 pour le bâtonnet de Vi'el), plus le Brasero béni (environ 120 po à Honoré). Chiffres issus des données Classic.</div>
+    <div class="chk info">3e seigneur du feu (Trois rois de flamme) : <b>duc des Cendres</b> en Silithus, qui lâche les « Cendres d'Asharell » (nom du texte de quête).</div>`;
   $("saveInfo").textContent = "Ta progression est enregistrée dans ce navigateur et synchronisée avec le classement des joueurs (seuls le nom, la classe, la faction et la progression sont envoyés).";
 }
 
@@ -263,23 +305,49 @@ function questInfo(id) {
   if (id === "q24") return Qd.spiritR[parts[1][1]] || null;
   return null;
 }
+// Détails de chaque étape (PNJ, positions, déroulement)
+const giver = p => p.faction === "alliance" ? "Deliana, à Forgefer (vers 43, 53)" : "Mokvar, à Orgrimmar (Vallée de la Sagesse, vers 35, 38)";
+const MUX = "Mux Manascrambler est à Gadgetzan (Tanaris), vers 52, 27.";
+const BODLEY = "Bodley est sur le balcon à l'entrée du Pic Blackrock supérieur, dans le mont Rochenoire. Il n'est visible qu'avec le Révélateur de fantômes.";
+const ANTHION = "Anthion Harmon est devant Stratholme (Maleterres de l'est, vers 26, 11). Il n'est visible qu'avec le Révélateur de fantômes.";
+const COMP_WHY = { relic: "Bodley l'utilise pour attirer l'esprit d'Isalien.", remains: "Bodley l'utilise pour attirer l'esprit de Mor Grayhoof.", sword: "Bodley l'utilise pour invoquer Jarien et Sothos.", ashes: "Bodley l'utilise pour attirer l'esprit de Kormok." };
+const SPIRIT_WHERE = {
+  isalien: "Entre dans Hache-tripes Est et utilise le brasero au sanctuaire d'Eldretharr pour invoquer Isalien.",
+  mor: "Entre au Pic Blackrock inférieur et utilise le brasero pour invoquer Mor Grayhoof (il est mort près du Maître de guerre Voone, d'après Bodley).",
+  kormok: "Entre à Scholomance et utilise le brasero dans la salle de Ras Frostwhisper pour invoquer Kormok.",
+  jarien: "Entre à Stratholme, côté écarlate, et utilise le brasero au Bastion écarlate pour invoquer Jarien et Sothos.",
+};
+const spiritTips = i => [SPIRIT_WHERE[ctx.parts[i][1]], "Le brasero de signal t'est donné par la quête. Tue l'esprit, ramasse le morceau d'amulette, puis rapporte-le avec le brasero à Bodley.", BODLEY, "Viens en groupe : c'est un combat de donjon."];
 const STEP_TIPS = {
-  q1: p => [p.faction === "alliance" ? "Les 15 échantillons de sang se ramassent sur les ours et les sabres-de-givre de Berceau-de-l'Hiver." : "Les 15 échantillons de venin se ramassent sur les scorpides et les araignées de Silithus.", "Niveau 58 minimum pour toute la chaîne ; garde-toi 20 po pour cette étape."],
-  q3: () => ["Convertisseur d'arcanite délicat : ingénierie ou hôtel des ventes.", "Essence éternelle supérieure : enchantement ou hôtel des ventes.", "Huile de pierre-écaille : alchimie ou hôtel des ventes.", "Cendre volcanique : tas de cendre dans les Steppes ardentes et en Silithus.", "Prévois 40 po (voir l'onglet Matériaux & or)."],
-  q4: () => ["Utilise l'alambic à proximité de morts-vivants désincarnés (fantômes) de chaque zone : Silithus, Berceau-de-l'Hiver, Maleterres de l'est."],
-  q5: () => ["Le seigneur du magma Bokk se trouve dans les Steppes ardentes."],
-  q6: () => ["Vi'el est un diablotin dans la grotte, à l'entrée des Gorges des Murmures sombres (Berceau-de-l'Hiver).", "Le prix de la baguette (~40 po) n'est pas confirmé."],
-  q9: () => ["Le Révélateur de fantômes extradimensionnel permet de voir le fantôme d'Anthion Harmon."],
-  q10: () => ["Donjon : Stratholme. Il faut venir à bout du baron Vivebise (Rivendare)."],
-  q12: () => ["Barres de sombrefer (forge), cuir enchanté et peaux traitées (travail du cuir), étoffe lunaire (couture) : tout s'achète aussi à l'hôtel des ventes."],
-  q14: () => ["Les perles de guerre ogre tombent sur les ogres de Dire Maul ou du Pic Blackrock."],
-  q16: () => ["Donjon : Profondeurs de Blackrock, dans le Cercle de la loi (l'arène).", "Place la bannière au centre pendant la sentence du Grand Juge Grimstone, puis bats Theldren et ses gladiateurs."],
-  q19: () => ["Incendicite : Incendius (Profondeurs de Blackrock). Braise : prophète ardent (Pic Blackrock).", "Cendre d'Asharell : Exécuteur Asharell (Steppes ardentes, d'après HardcoreHelper).", "Brasero béni : réputation Aube d'argent Honoré."],
-  q21: () => ["Invoque l'esprit avec le Brasero de signal, puis tue-le. Viens en groupe : c'est un combat de donjon."],
-  q22: () => ["Le varech de sang se ramasse sur l'île d'Alcaz (Marécage d'Âprefange)."],
-  q24: () => ["Même principe que l'étape 21 : Brasero de signal, esprit à tuer, retour chez Bodley."],
-  q25: () => ["Brassards blackrock : butin du Pic Blackrock. Flacon de pouvoir suprême : alchimie ou hôtel des ventes."],
-  q26: () => ["Haut du Pic Blackrock, l'antre de la Bête : invoque Valthalak avec le brasero, puis utilise l'amulette sur son cadavre."],
+  q1: p => [giver(p) + ".", "Niveau 58 minimum pour toute la chaîne. Prévois 20 po et tes poignets T0."],
+  q2: p => ["Rien à farmer : le conteneur scellé t'est donné par " + giver(p) + ".", MUX],
+  q3: () => [MUX, "Prévois 40 po en plus des objets."],
+  q4: () => ["Mux te donne l'alambic ectoplasmique ; garde-le sur toi et rapporte-le avec les 36 ectoplasmes.", MUX],
+  q5: () => [MUX],
+  q6: () => ["Vi'el est un diablotin marchand dans une caverne de la gorge du Sombre murmure, au sud du Berceau-de-l'Hiver (vers 59, 78).", "Achète-lui le Bâtonnet élémentaire de corruption (40 po d'après les données Classic).", MUX],
+  q7: p => ["Rien à farmer : Mux te donne le Révélateur de fantômes extradimensionnel.", "Rapporte-le à " + giver(p) + "."],
+  q8: p => ["Apporte ta ceinture et tes gants T0 à " + giver(p) + ". Les enchantements posés dessus sont perdus."],
+  q9: p => ["Quête donnée par " + giver(p) + ".", ANTHION],
+  q10: () => ["Donjon : Stratholme, côté mort-vivant. C'est la « course du baron en 45 minutes » : il faut atteindre le baron Vivebise (Rivendare) avant la fin du minuteur pour libérer Ysida.", "Prépare un groupe solide et connais la route avant de lancer le chrono."],
+  q11: () => ["Ysida Harmon te remet son médaillon : rien à farmer.", ANTHION],
+  q12: () => ["Les quatre matériaux peuvent s'échanger : un artisan ou l'hôtel des ventes suffit.", ANTHION],
+  q13: () => ["Anthion te donne la Bannière de provocation incomplète.", "Falrin Treeshaper est dans la bibliothèque (l'Athenaeum) de Hache-tripes Ouest."],
+  q14: () => ["Falrin Treeshaper est dans la bibliothèque de Hache-tripes Ouest."],
+  q15: () => ["Falrin Treeshaper est dans la bibliothèque de Hache-tripes Ouest."],
+  q16: () => ["Donjon : Profondeurs de Blackrock, au Cercle de la loi (l'arène).", "Pendant que le Juge supérieur Grimstone te condamne, place la bannière au centre. Tue Theldren et ses gladiateurs : ils se battent comme un groupe JcJ.", "Ramasse le morceau supérieur de l'amulette puis retourne voir Anthion.", ANTHION],
+  q17: p => ["Apporte tes bottes, jambières et spallières T0 à " + giver(p) + "."],
+  q18: p => ["Quête donnée par " + giver(p) + ".", BODLEY],
+  q19: () => [BODLEY, "Les trois objets de feu viennent de trois lieux différents (Profondeurs de Blackrock, Pic Blackrock, Silithus) : commence tôt la réputation Aube d'argent pour le brasero."],
+  q20: () => [COMP_WHY[ctx.parts[0][0]], BODLEY],
+  q21: () => spiritTips(0),
+  q22: () => ["Bodley garde ton morceau gauche et demande 20 varechs de sang.", BODLEY],
+  q23: () => [COMP_WHY[ctx.parts[1][0]], BODLEY],
+  q24: () => spiritTips(1),
+  q25: () => [BODLEY],
+  q26: () => ["Haut du Pic Blackrock, dans la salle de La Bête : tue d'abord La Bête, puis utilise le Brasero de signal pour invoquer Valthalak.", "Tue-le, utilise l'amulette sur son cadavre, puis rends l'amulette à l'Esprit du seigneur Valthalak. Prévois un groupe complet."],
+  q27: () => ["Rapporte le Brasero de signal à Bodley : il te donne en échange le Brasero d'invocation.", BODLEY],
+  q28: p => ["Rien à farmer : retourne voir " + giver(p) + "."],
+  q29: p => ["Apporte ton casque et ta cuirasse T0 à " + giver(p) + ".", p.faction === "horde" && p.cls === "hunter" ? "Chasseur Horde : cette quête était bloquée ; le correctif Blizzard du 25 novembre 2026 permet de la terminer." : "Dernière étape de la chaîne."],
 };
 const fixReq = x => x.replace(/^Argent\s*:\s*(\d+)\s*$/, "$1 po").replace(/^(.+?) x (\d+)$/, "$2 × $1");
 function stepDetail(s, qi) {
@@ -288,6 +356,8 @@ function stepDetail(s, qi) {
   h += `<div class="sdt">📖 Ce qu'il faut faire</div><p>${qi ? esc(qi.d.replace(/<([^<>\/]+)\/([^<>]+)>/g, "$1/$2")) : esc(s.req)}</p>`;
   if (!qi) h += `<div class="sdsmall">Le texte officiel n'est pas disponible pour ${cls} ${fac} : explication simplifiée.</div>`;
   if (qi && qi.r.length) h += `<div class="sdt">🎒 Objectifs et objets à apporter</div><ul>${qi.r.map(x => `<li>${linkify(esc(fixReq(x)))}</li>`).join("")}</ul>`;
+  const how = stepHow(s.id);
+  if (how.length) h += `<div class="sdt">🔎 Comment obtenir les objets</div><ul>${how.map(([n, t]) => `<li><b>${linkify(n)}</b> : ${esc(t)}</li>`).join("")}</ul>`;
   h += `<div class="sdt">📍 Où ?</div><p>${s.loc}</p>`;
   const reward = ctx.T05.filter(p => p.step === s.id);
   if (reward.length) {
@@ -353,7 +423,7 @@ function render() {
       items.map(m => {
         const key = m[0], h = st.m[key] || 0, ck = !!st.c[key], full = done || ck || h >= m[1];
         const nm = linkify(m[0]) !== m[0] ? linkify(m[0]) : aSearch(m[0], m[0]);
-        return `<div class="mat ${full ? "full" : ""}" data-k="c" data-id="${esc(key)}"><div class="box">✓</div><div class="mn">${nm}<small>${HINT[key] || ""}</small></div>
+        return `<div class="mat ${full ? "full" : ""}" data-k="c" data-id="${esc(key)}"><div class="box">✓</div><div class="mn">${nm}<small>${esc(itemHow(key) || HINT[key] || "")}</small></div>
         <div class="have">${done ? "<b>✓</b>" : `J'en ai <input type="number" min="0" value="${h}" data-m="${esc(key)}">`}<span class="need">sur <b>${m[1]}</b></span></div></div>`;
       }).join("") +
       golds.map(m => `<div class="mat ${done || st.c[m[0]] ? "full" : ""}" data-k="c" data-id="${esc(m[0])}"><div class="box">✓</div><div class="mn">💰 ${m[0].replace(" (non confirmé)", "")}<small>Or à payer${m[0].includes("non confirmé") ? " — à confirmer en jeu" : ""}</small></div><div class="have">${done || st.c[m[0]] ? "<b>✓ payé</b>" : "<b class='gp'>" + m[1] + " po</b>"}</div></div>`).join("") + `</div>`;

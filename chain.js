@@ -153,7 +153,7 @@ window.TIER_CHAIN = {
      "id": "q19",
      "n": "Les trois rois des flammes",
      "id2": "8961",
-     "loc": "BRD · BRS · 3e seigneur (voir « à vérifier »)",
+     "loc": "BRD · BRS · duc des Cendres (Silithus)",
      "req": "Incendicite d'Incendius (BRD) + Braise du prophète ardent (BRS) + 3e objet de feu + Brasero béni (Aube d'argent, Honoré)"
     },
     {

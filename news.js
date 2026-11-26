@@ -2,8 +2,15 @@
 // Règle de version :
 //  - petit changement ou correction : seulement +0.0.1 sur TIER_VERSION (aucune entrée, aucun pop-up) ;
 //  - vraie nouveauté : nouvelle version x.y.0 + une entrée en HAUT de TIER_NEWS (le pop-up s'ouvre alors une fois pour chaque membre).
-window.TIER_VERSION = "1.12.1";
+window.TIER_VERSION = "1.13.0";
 window.TIER_NEWS = [
+  {
+    v: "1.13.0", date: "26/11/2026", title: "Farm réputation : les commissions d'artisan",
+    items: [
+      { t: "⭐ Nouvel onglet « Farm réputation »", d: "Pour les Transports Logistiques de Durotar : chaque commission d'artisan, l'objet à acheter à l'hôtel des ventes, la réputation gagnée et le PNJ à qui la rendre." },
+      { t: "🗺 Tournée par continent", d: "Les PNJ sont classés par continent et par zone, dans un ordre de passage. Coche « J'ai » sur tes commissions pour n'afficher que tes arrêts du jour." },
+    ],
+  },
   {
     v: "1.12.0", date: "25/11/2026", title: "Historique des mises à jour de WoW",
     items: [

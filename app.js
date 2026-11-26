@@ -847,6 +847,7 @@ $("tabs").addEventListener("click", e => {
   if (b.dataset.v === "rank") loadRanking($("rankBox"));
   if (b.dataset.v === "bis") renderBis();
   if (b.dataset.v === "maj") renderMaj();
+  if (b.dataset.v === "farm" && window.TierFarm) window.TierFarm.init($("farmBox"), "tier-farm:" + nameKey(profile ? profile.name : ""));
   if (b.dataset.v === "profile") renderProfile();
 });
 document.addEventListener("click", e => {

@@ -5,6 +5,10 @@
   if (window.TIER_LANG !== "en") return;
 
   const NEWS = {
+    "1.15.0": ["Reputation farm: your shortest hand-in route", [
+      ["💰 Sort by price", "Pick a continent, then sort the writs from cheapest to most expensive (or the reverse), with the last price seen at the auction house."],
+      ["🧭 Optimized hand-in route", "Tick “Have” on your complete writs: the site works out the shortest visiting order, flights included. Tick “Done” and the rest starts from there."],
+    ]],
     "1.14.0": ["The site is now available in English", [
       ["🌍 Language menu FR / ENG", "At the top of the page: switch the whole site between French and English. Your progress is the same in both languages."],
       ["👀 Visit without a character", "From the home screen, browse the whole site by just picking a class and a faction. Nothing is saved."],

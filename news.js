@@ -2,8 +2,15 @@
 // Règle de version :
 //  - petit changement ou correction : seulement +0.0.1 sur TIER_VERSION (aucune entrée, aucun pop-up) ;
 //  - vraie nouveauté : nouvelle version x.y.0 + une entrée en HAUT de TIER_NEWS (le pop-up s'ouvre alors une fois pour chaque membre).
-window.TIER_VERSION = "1.14.2";
+window.TIER_VERSION = "1.15.0";
 window.TIER_NEWS = [
+  {
+    v: "1.15.0", date: "26/11/2026", title: "Farm réputation : ta tournée de rendu la plus courte",
+    items: [
+      { t: "💰 Tri par prix", d: "Choisis un continent, puis classe les commissions de la moins chère à la plus chère (ou l'inverse), avec le dernier prix vu à l'hôtel des ventes." },
+      { t: "🧭 Tournée de rendu optimisée", d: "Coche « J'ai » sur tes commissions complètes : le site calcule l'ordre de passage le plus court, vols compris. Coche « Rendue » et la suite repart de là." },
+    ],
+  },
   {
     v: "1.14.0", date: "26/11/2026", title: "Le site existe en anglais",
     items: [

@@ -398,3 +398,9 @@ table.rank .nm .cls-ico{width:28px;height:28px;margin-right:10px;border-width:1p
 .tabs button[hidden],.guestbar[hidden],#savePanel[hidden]{display:none}
 
 .fw-price{color:var(--gold);font-size:13px;white-space:nowrap}
+
+.froute{border:1px solid var(--accent);border-radius:var(--radius-sm);padding:10px 12px;margin:10px 0}
+.froute h4{font-size:15px}
+.fleg{color:var(--dim);font-size:12.5px;margin:2px 0 0 34px}
+.fnote{color:var(--dim);font-size:12px;margin-top:10px}
+.froute-rest{font-weight:700;margin-top:18px}

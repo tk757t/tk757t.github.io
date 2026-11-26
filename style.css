@@ -396,3 +396,5 @@ table.rank .nm .cls-ico{width:28px;height:28px;margin-right:10px;border-width:1p
 .guestbar .gb-text{flex:1;min-width:220px}
 .guestbar select{font:inherit;background:var(--panel);color:inherit;border:1px solid var(--edge2);border-radius:6px;padding:5px 8px}
 .tabs button[hidden],.guestbar[hidden],#savePanel[hidden]{display:none}
+
+.fw-price{color:var(--gold);font-size:13px;white-space:nowrap}

@@ -19,11 +19,25 @@
   }
   const save = () => write(key, S);
 
+  // dernier prix vu à l'hôtel des ventes (farm-prices.js)
+  const PRICES = window.TIER_PRICES || {};
+  const money = c => [[Math.floor(c / 10000), L("po", "g")], [Math.floor(c / 100) % 100, L("pa", "s")], [c % 100, L("pc", "c")]]
+    .filter(x => x[0]).map(x => x[0] + " " + x[1]).join(" ");
+  const day = iso => iso.split("-").reverse().join("/");
+  const lastDay = () => Object.values(PRICES).reduce((m, p) => (p[1] > m ? p[1] : m), "");
+  function price(w) {
+    const p = PRICES[w.i];
+    if (!p) return "";
+    const date = p[1] ? L("Vu le ", "Seen on ") + (EN ? p[1] : day(p[1])) : "";
+    const each = w.q > 1 ? L(" · pour ", " · for ") + w.q : "";
+    return ` <span class="fw-price" title="${date}${each}">(${money(p[0] * w.q)})</span>`;
+  }
+
   function writLine(w, withNpc, where) {
     const have = !!S.have[w.w], done = !!S.done[w.w];
     return `<li class="fw${done ? " done" : ""}">
       <label class="fw-have" title="${L("J'ai cette commission", "I have this writ")}"><input type="checkbox" data-have="${w.w}" ${have ? "checked" : ""}><span>${L("J'ai", "Have")}</span></label>
-      <span class="fw-main"><b>${link(w.i, (w.q > 1 ? w.q + " × " : "") + w.n)}</b>
+      <span class="fw-main"><b>${link(w.i, (w.q > 1 ? w.q + " × " : "") + w.n)}</b>${price(w)}
         <small>${esc(w.p)} · ${link(w.w, L("commission", "writ"))}${withNpc ? " · " + where : ""}</small></span>
       <span class="fw-rep">+${w.r}</span>
       <label class="fw-done" title="${L("Rendue aujourd'hui", "Handed in today")}"><input type="checkbox" data-done="${w.w}" ${done ? "checked" : ""}><span>${L("Rendue", "Done")}</span></label>
@@ -78,7 +92,7 @@
       ${data.map(R => `<details class="maj frep" data-open="${R.id}" ${S.open[R.id] ? "open" : ""}>
         <summary><b>${esc(R.name)}</b><span class="maj-tag">${esc(R.faction)}</span></summary>
         <div class="maj-body">
-          <div class="chk info">${L("Les <b>commissions d'artisan</b> s'échangent à l'hôtel des ventes. Rends chacune avec l'objet demandé au PNJ indiqué : une fois par jour et par commission. Seules les commissions dont l'objet a été vu à l'hôtel des ventes sont listées", "<b>Craftsman's Writs</b> can be traded at the auction house. Hand each one in with the requested item to the listed NPC: once per day per writ. Only writs whose item has been seen at the auction house are listed")} (${R.writs.length}).</div>
+          <div class="chk info">${L("Les <b>commissions d'artisan</b> s'échangent à l'hôtel des ventes. Rends chacune avec l'objet demandé au PNJ indiqué : une fois par jour et par commission. Seules les commissions dont l'objet a été vu à l'hôtel des ventes sont listées", "<b>Craftsman's Writs</b> can be traded at the auction house. Hand each one in with the requested item to the listed NPC: once per day per writ. Only writs whose item has been seen at the auction house are listed")} (${R.writs.length}).${lastDay() ? L(" Entre parenthèses : dernier prix vu à l'hôtel des ventes (royaume PvE Horde, relevé du " + day(lastDay()) + "). Les prix changent.", " In brackets: last price seen at the auction house (PvE Horde realm, scanned " + lastDay() + "). Prices change.") : ""}</div>
           <div class="fseg"><button type="button" data-view="route" class="${S.view === "route" ? "on" : ""}">${L("Tournée par continent", "Route by continent")}</button><button type="button" data-view="list" class="${S.view === "list" ? "on" : ""}">${L("Toutes, par métier", "All, by profession")}</button></div>
           ${S.view === "list" ? listView(R) : routeView(R)}
         </div></details>`).join("")}</div>`;

@@ -10,7 +10,7 @@
   const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
 
   let box = null, key = "tier-farm", S = null;
-  const fresh = () => ({ open: {}, view: "route", cont: "kal", have: {}, done: {}, day: "", mine: false });
+  const fresh = () => ({ open: {}, view: "route", cont: "kal", have: {}, done: {}, day: "", mine: false, pcont: "all", pdesc: false });
   const today = () => new Date().toLocaleDateString("fr-FR");
 
   function load() {
@@ -73,6 +73,29 @@
     return h + `<p class="fsum">${step} ${L("arrêt", "stop")}${step > 1 ? "s" : ""} · ${total.toLocaleString(L("fr-FR", "en-US"))} ${L("réputation à rendre", "reputation to hand in")}${S.mine ? "" : L(" (si tu avais toutes les commissions)", " (if you had every writ)")}</p>` + body;
   }
 
+  // toutes les commissions triées par prix, avec choix du continent
+  function priceView(R) {
+    const where = {};
+    R.routes.forEach(c => c.zones.forEach(z => z.npcs.forEach(n => { where[n.id] = { cont: c.id, text: `${esc(n.name)} (${esc(z.name)})` }; })));
+    const contOf = w => (where[w.npc] ? where[w.npc].cont : "none");
+    const tabs = [{ id: "all", name: L("Les deux continents", "Both continents") }].concat(R.routes.map(c => ({ id: c.id, name: c.name })), { id: "none", name: L("Lieu inconnu", "Unknown location") });
+    const cost = w => (PRICES[w.i] ? PRICES[w.i][0] * w.q : null);
+    const list = R.writs.filter(w => (S.pcont === "all" || contOf(w) === S.pcont) && (!S.mine || S.have[w.w]))
+      .sort((a, b) => {
+        const x = cost(a), y = cost(b);
+        if (x === null || y === null) return (x === null) - (y === null); // sans prix : à la fin
+        return S.pdesc ? y - x : x - y;
+      });
+    let h = `<div class="fseg">${tabs.map(t => `<button type="button" data-pcont="${t.id}" class="${S.pcont === t.id ? "on" : ""}">${esc(t.name)}</button>`).join("")}</div>
+      <div class="fseg"><button type="button" data-pdir="asc" class="${S.pdesc ? "" : "on"}">${L("Moins cher d'abord", "Cheapest first")}</button><button type="button" data-pdir="desc" class="${S.pdesc ? "on" : ""}">${L("Plus cher d'abord", "Most expensive first")}</button></div>
+      <label class="fmine"><input type="checkbox" data-mine ${S.mine ? "checked" : ""}> ${L("N'afficher que les commissions que j'ai (tournée du jour)", "Only show the writs I have (today's route)")}</label>`;
+    const todo = list.filter(w => !S.done[w.w]);
+    const total = todo.reduce((s, w) => s + (cost(w) || 0), 0), rep = todo.reduce((s, w) => s + w.r, 0);
+    if (!list.length) return h + `<div class="chk warn">${L("Aucune commission à afficher avec ces filtres.", "No writ to show with these filters.")}</div>`;
+    h += `<p class="fsum">${list.length} ${L("commission", "writ")}${list.length > 1 ? "s" : ""} · ${L("reste à rendre : ", "left to hand in: ")}${rep.toLocaleString(L("fr-FR", "en-US"))} ${L("réputation pour", "reputation for")} ${money(total) || "0"}</p>`;
+    return h + `<ul class="fwlist">${list.map(w => writLine(w, true, where[w.npc] ? where[w.npc].text : L("PNJ inconnu", "unknown NPC"))).join("")}</ul>`;
+  }
+
   function listView(R) {
     const where = {};
     R.routes.forEach(c => c.zones.forEach(z => z.npcs.forEach(n => { where[n.id] = `${esc(n.name)} (${esc(z.name)}, ${esc(c.name)})`; })));
@@ -93,8 +116,8 @@
         <summary><b>${esc(R.name)}</b><span class="maj-tag">${esc(R.faction)}</span></summary>
         <div class="maj-body">
           <div class="chk info">${L("Les <b>commissions d'artisan</b> s'échangent à l'hôtel des ventes. Rends chacune avec l'objet demandé au PNJ indiqué : une fois par jour et par commission. Seules les commissions dont l'objet a été vu à l'hôtel des ventes sont listées", "<b>Craftsman's Writs</b> can be traded at the auction house. Hand each one in with the requested item to the listed NPC: once per day per writ. Only writs whose item has been seen at the auction house are listed")} (${R.writs.length}).${lastDay() ? L(" Entre parenthèses : dernier prix vu à l'hôtel des ventes (royaume PvE Horde, relevé du " + day(lastDay()) + "). Les prix changent.", " In brackets: last price seen at the auction house (PvE Horde realm, scanned " + lastDay() + "). Prices change.") : ""}</div>
-          <div class="fseg"><button type="button" data-view="route" class="${S.view === "route" ? "on" : ""}">${L("Tournée par continent", "Route by continent")}</button><button type="button" data-view="list" class="${S.view === "list" ? "on" : ""}">${L("Toutes, par métier", "All, by profession")}</button></div>
-          ${S.view === "list" ? listView(R) : routeView(R)}
+          <div class="fseg"><button type="button" data-view="route" class="${S.view === "route" ? "on" : ""}">${L("Tournée par continent", "Route by continent")}</button><button type="button" data-view="list" class="${S.view === "list" ? "on" : ""}">${L("Toutes, par métier", "All, by profession")}</button><button type="button" data-view="price" class="${S.view === "price" ? "on" : ""}">${L("Par prix", "By price")}</button></div>
+          ${S.view === "list" ? listView(R) : S.view === "price" ? priceView(R) : routeView(R)}
         </div></details>`).join("")}</div>`;
   }
 
@@ -105,7 +128,7 @@
       box = el;
       box.addEventListener("click", e => {
         const b = e.target.closest("button"); if (!b) return;
-        if (b.dataset.view) S.view = b.dataset.view; else if (b.dataset.cont) S.cont = b.dataset.cont; else return;
+        if (b.dataset.view) S.view = b.dataset.view; else if (b.dataset.cont) S.cont = b.dataset.cont; else if (b.dataset.pcont) S.pcont = b.dataset.pcont; else if (b.dataset.pdir) S.pdesc = b.dataset.pdir === "desc"; else return;
         save(); render();
       });
       box.addEventListener("change", e => {

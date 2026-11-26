@@ -384,3 +384,15 @@ table.rank .nm .cls-ico{width:28px;height:28px;margin-right:10px;border-width:1p
 .fw.done .fw-main{opacity:.45;text-decoration:line-through}
 .fempty{color:var(--dim);padding:6px 8px}
 @media (max-width:560px){.fw-have span,.fw-done span{display:none}.maj-body li.fw{gap:7px;padding:6px 0}}
+
+/* ---------- choix de la langue ---------- */
+.langbar{display:flex;justify-content:flex-end;gap:4px;margin:0 0 8px}
+.langbar button{font:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;background:var(--panel);border:1px solid var(--edge2);color:var(--dim);border-radius:6px;padding:4px 10px;cursor:pointer}
+.langbar button.on{color:#fff;background:var(--accent-soft);border-color:var(--accent)}
+
+/* ---------- mode visite ---------- */
+.guest-btn{display:block;width:100%;margin-top:10px}
+.guestbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-color:var(--accent)}
+.guestbar .gb-text{flex:1;min-width:220px}
+.guestbar select{font:inherit;background:var(--panel);color:inherit;border:1px solid var(--edge2);border-radius:6px;padding:5px 8px}
+.tabs button[hidden],.guestbar[hidden],#savePanel[hidden]{display:none}

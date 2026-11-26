@@ -2,8 +2,15 @@
 // Règle de version :
 //  - petit changement ou correction : seulement +0.0.1 sur TIER_VERSION (aucune entrée, aucun pop-up) ;
 //  - vraie nouveauté : nouvelle version x.y.0 + une entrée en HAUT de TIER_NEWS (le pop-up s'ouvre alors une fois pour chaque membre).
-window.TIER_VERSION = "1.13.0";
+window.TIER_VERSION = "1.14.0";
 window.TIER_NEWS = [
+  {
+    v: "1.14.0", date: "26/11/2026", title: "Le site existe en anglais",
+    items: [
+      { t: "🌍 Menu de langue FR / ENG", d: "En haut de la page : bascule tout le site entre le français et l'anglais. Ta progression est la même dans les deux langues." },
+      { t: "👀 Visiter sans personnage", d: "Depuis l'accueil, parcours tout le site en choisissant simplement une classe et une faction. Rien n'est enregistré." },
+    ],
+  },
   {
     v: "1.13.0", date: "26/11/2026", title: "Farm réputation : les commissions d'artisan",
     items: [

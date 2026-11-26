@@ -7,7 +7,7 @@
 <meta name="description" content="Suivi de progression des sets T0 et T0.5 pour WoW Forever : checklist, BiS, préparations de raids et classement des joueurs.">
 <script>const whTooltips={colorLinks:true,iconizeLinks:false,renameLinks:false,iconSize:"small"};</script>
 <script src="https://wow.zamimg.com/js/tooltips.js"></script>
-<link rel="stylesheet" href="style.css?v=29">
+<link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
 <div class="wrap">
@@ -23,6 +23,7 @@
       <div class="field"><label>Faction</label><div class="choices fac" id="facChoices"></div></div>
       <button class="cta" id="goBtn" disabled>Suivre ma progression</button>
       <div class="err" id="loginErr"></div>
+      <button type="button" class="btn2 guest-btn" id="seeGuest">👀 Visiter le site sans personnage</button>
       <div class="owned-box" id="ownedBox" hidden>
         <div class="chk warn">Ce personnage existe déjà. Si c'est le tien sur un autre navigateur, colle ton <b>code de récupération</b> (onglet « Matériaux &amp; or » → Sauvegarde). Sinon, choisis un autre nom.</div>
         <input type="text" id="inCode" placeholder="Code de récupération" autocomplete="off" spellcheck="false">
@@ -41,6 +42,7 @@
   <!-- APPLICATION -->
   <div id="screen-app" hidden>
     <div class="who"><span class="brand">❮ TierTrack ❯ <span style="color:var(--dim);font-weight:500;font-size:13px">· Suivi T0 / T0.5</span></span><span class="sp"></span><span id="syncBadge" class="sync">…</span><button class="linkbtn" id="switchBtn">Mes personnages</button></div>
+    <div class="panel guestbar" id="guestBar" hidden></div>
     <header class="panel hero">
       <div class="crest" id="heroCrest"></div>
       <div>
@@ -109,7 +111,7 @@
         <div id="mlist"></div></div>
       <div class="stack">
         <div class="panel"><h2>Or à prévoir <small>pièces d'or (po)</small></h2><div id="gold"></div></div>
-        <div class="panel"><h2>Sauvegarde</h2>
+        <div class="panel" id="savePanel"><h2>Sauvegarde</h2>
           <div class="chk info" id="saveInfo"></div>
           <div class="btns"><button id="exp">Exporter</button><button id="imp">Importer</button><button id="rst">Tout réinitialiser</button></div>
           <div class="btns" style="margin-top:8px"><button id="showCode">Afficher mon code de récupération</button><button id="delChar">Supprimer mon personnage</button></div>
@@ -165,18 +167,22 @@
 <div class="modal" id="newsModal" hidden><div class="panel modal-box news-box" id="newsBox" role="dialog" aria-modal="true" aria-label="Nouveautés"></div></div>
 <div class="modal" id="memberModal" hidden><div class="panel modal-box" id="memberBox"></div></div>
 
-<script src="news.js?v=29"></script>
-<script src="config.js?v=29"></script>
-<script src="track.js?v=29"></script>
-<script src="data.js?v=29"></script>
-<script src="bis.js?v=29"></script>
-<script src="sources.js?v=29"></script>
-<script src="chain.js?v=29"></script>
-<script src="quests.js?v=29"></script>
-<script src="raids.js?v=29"></script>
-<script src="maj.js?v=29"></script>
-<script src="farm-data.js?v=29"></script>
-<script src="farm.js?v=29"></script>
-<script src="app.js?v=29"></script>
+<script src="i18n.js?v=30"></script>
+<script src="news.js?v=30"></script>
+<script src="config.js?v=30"></script>
+<script src="track.js?v=30"></script>
+<script src="data.js?v=30"></script>
+<script src="bis.js?v=30"></script>
+<script src="sources.js?v=30"></script>
+<script src="chain.js?v=30"></script>
+<script src="quests.js?v=30"></script>
+<script src="raids.js?v=30"></script>
+<script src="maj.js?v=30"></script>
+<script src="farm-data.js?v=30"></script>
+<script src="en-names.js?v=30"></script>
+<script src="en.js?v=30"></script>
+<script src="en-news.js?v=30"></script>
+<script src="farm.js?v=30"></script>
+<script src="app.js?v=30"></script>
 </body>
 </html>
